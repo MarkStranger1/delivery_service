@@ -1,0 +1,72 @@
+version: '3.3'
+services:
+
+
+  database:
+    container_name: delivery_database
+    image: postgres:alpine
+    restart: always
+    env_file:
+    - .env
+    ports:
+      - "${DB_PORT}:${DB_PORT}"
+    volumes:
+      - database:/var/lib/postgresql/data/
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    container_name: delivery_backend
+    build:
+      context: ../backend
+      dockerfile: Dockerfile
+#    image: nikiafree/foodgram_backend:latest
+    restart: always
+    volumes:
+      - static_value:/backend/static_value/
+      - media_value:/backend/media/
+      - "../backend:/backend"
+    depends_on:
+      - database
+    env_file:
+      - .env
+
+#  frontend:
+#    build:
+#      context: ../frontend
+#      dockerfile: Dockerfile
+##    image: nikiafree/foodgram_frontend:lates
+#    volumes:
+#      - ../frontend/:/app/result_build/
+#    depends_on:
+#      - backend
+
+  nginx:
+    container_name: delivery_nginx
+    restart: always
+    build:
+      context: ./
+      dockerfile: nginx.Dockerfile
+    volumes:
+      - static_value:/usr/share/nginx/html/static_value/
+      - media_value:/usr/share/nginx/html/media/
+    ports:
+      - "80:80"
+    links:
+      - backend
+    depends_on:
+      - backend
+
+#  certbot:
+#    image: certbot/certbot
+#    volumes:
+#      - ./certbot/conf:/etc/letsencrypt
+#      - ./certbot/www:/var/www/certbot
+
+volumes:
+  static_value:
+  media_value:
+  database:

@@ -1,0 +1,25 @@
+[tool.poetry]
+name = "delivery-service"
+version = "0.1.0"
+description = ""
+authors = ["NikSe <niksen09@mail.ru>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+django = "^5.0.3"
+djangorestframework = "^3.14.0"
+python-dotenv = "^1.0.1"
+django-phonenumber-field = {extras = ["phonenumberslite"], version = "^7.3.0"}
+djoser = "^2.2.2"
+django-filter = "^24.2"
+djangorestframework-simplejwt = "^5.3.1"
+pillow = "^10.3.0"
+drf-extra-fields = "^3.7.0"
+psycopg2-binary = "^2.9.9"
+gunicorn = "^22.0.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
