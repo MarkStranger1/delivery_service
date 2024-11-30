@@ -60,8 +60,7 @@ npm install gulp --save-dev
 Добавьте нужные скрипты в package.json.
 Запустите задачи, используя команды npm.
 # О разработчиках  
-* Сенгилейцев Никита ([NikAfraim](https://github.com/NikAfraim)) - Капитан команды, Backend :crown:
-* Саблин Сергей ([Figrac0](https://github.com/Figrac0)) - Front
-* Титов Артем ([MarkStranger1](https://github.com/MarkStranger1)) - Backend
-* Трухова Александра ([T-Alexandra](https://github.com/T-Alexandra)) - Front
-* Романова Анастасия ([Uniroman96](https://github.com/Uniroman96)) - Front
+* Титов Артем ([MarkStranger1](https://github.com/MarkStranger1)):
+* Университет: Самарский национальный исследовательский университет имени академика С.П. Королева
+* Институт: Институт информатики и кибернетики
+* Направление обучения: Фундаментальная информатика и информационные технологии
