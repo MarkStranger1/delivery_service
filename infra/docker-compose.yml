@@ -51,8 +51,8 @@ services:
       context: ./
       dockerfile: nginx.Dockerfile
     volumes:
-      - static_value:/usr/share/nginx/html/static_value/
-      - media_value:/usr/share/nginx/html/media/
+      - ./static:/app/static
+      - media_value:/app/media
     ports:
       - "80:80"
     links:
