@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.contrib.auth.models import Group
 from django.db.models import Sum
 
-from .models import Dish, Ingredient, IngredientAmount, Type
+from .models import Dish, Ingredient, IngredientAmount, Type, Order, OrderDish
 
 admin.site.unregister(Group)
 
@@ -16,6 +16,23 @@ class IngredientAdmin(admin.ModelAdmin):
     search_fields = ('name',)
     list_editable = ('name', 'measurement_unit',)
     ordering = ('pk',)
+
+
+@admin.register(Order)
+class OrderAdmin(admin.ModelAdmin):
+    """Настройка Order для панели Admin"""
+
+    list_display = ('pk', 'user', 'total_cost', 'payment')
+    list_editable = ('user', 'total_cost', 'payment',)
+
+
+@admin.register(OrderDish)
+class OrderDishAdmin(admin.ModelAdmin):
+    """Настройка OrderDish для панели Admin"""
+
+    list_display = ('pk', 'order', 'dish', 'quantity')
+    list_editable = ('order', 'dish', 'quantity',)
+
 
 
 @admin.register(Type)
