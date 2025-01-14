@@ -22,8 +22,8 @@ class IngredientAdmin(admin.ModelAdmin):
 class OrderAdmin(admin.ModelAdmin):
     """Настройка Order для панели Admin"""
 
-    list_display = ('pk', 'user', 'total_cost', 'payment')
-    list_editable = ('user', 'total_cost', 'payment',)
+    list_display = ('pk', 'user', 'total_cost', 'status')
+    list_editable = ('user', 'total_cost',)
 
 
 @admin.register(OrderDish)

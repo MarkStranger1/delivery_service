@@ -9,7 +9,8 @@
 from django.conf import settings
 from django.core.validators import MinValueValidator
 from django.db import models
-from user.models import User
+from user.models import User, DeliveryAddress
+from django.utils import timezone
 
 
 class Ingredient(models.Model):
@@ -63,6 +64,12 @@ class Type(models.Model):
 class Dish(models.Model):
     """Модель блюда"""
 
+    class Cuisine(models.TextChoices):
+        RUSSIAN_CUISINE = "russian_cuisine", "Русская кухня"
+        GEORGIAN_CUISINE = "georgian_cuisine", "Грузинская кухня"
+        ITALIAN_CUISINE = "italian_cuisine", "Итальянская кухня"
+        JAPANESE_CUISINE = "japanese_cuisine", "Японская кухня"
+
     name = models.CharField(
         verbose_name="Название",
         max_length=settings.LIMIT_CHAR_100
@@ -83,6 +90,11 @@ class Dish(models.Model):
     image = models.ImageField(
         verbose_name="Фотография",
         upload_to="dishes/"
+    )
+    cuisine = models.CharField(
+        verbose_name="Вид кухни",
+        max_length=settings.LIMIT_CHAR_100,
+        choices=Cuisine.choices
     )
     type = models.ForeignKey(  # Связь один ко многу
         Type,
@@ -135,10 +147,26 @@ class IngredientAmount(models.Model):
 class Order(models.Model):
     """Модель заказа"""
 
+    class Status(models.TextChoices):
+        awaiting_payment = "awaiting_payment", "ожидание оплаты"
+        awaiting_courier = "awaiting_courier", "ожидание курьера"
+        deliver = "deliver", "доставляем"
+        delivered = "delivered", "доставлен"
+        cancelled = "cancelled", "отменен"
+
     user = models.ForeignKey(
         User,
-        verbose_name="Пользователь",
-        on_delete=models.CASCADE
+        verbose_name="Клиент",
+        on_delete=models.CASCADE,
+        related_name='orders'
+    )
+    courier = models.ForeignKey(
+        User,
+        verbose_name="Курьер",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='courier_orders'
     )
     dishes = models.ManyToManyField(
         Dish,
@@ -149,9 +177,33 @@ class Order(models.Model):
         verbose_name="Общая стоимость",
         default=0
     )
-    payment = models.BooleanField(
-        verbose_name="Оплачена",
-        default=False
+    count_dishes = models.PositiveSmallIntegerField(
+        verbose_name="Количество блюд",
+        default=0
+    )
+    status = models.CharField(
+        verbose_name="Статус",
+        max_length=settings.LIMIT_CHAR_100,
+        choices=Status.choices,
+        default=Status.awaiting_payment
+    )
+    comment = models.CharField(
+        verbose_name="Комментарий",
+        max_length=settings.LIMIT_CHAR_500,
+        null=True,
+        blank=True
+    )
+    delivery_time = models.DateTimeField(
+        verbose_name="Дата и время доставки",
+        default=timezone.now
+    )
+    address = models.ForeignKey(
+        DeliveryAddress,
+        verbose_name="Адрес доставки",
+        max_length=settings.LIMIT_CHAR_254,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True
     )
 
     class Meta:
