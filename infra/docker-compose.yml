@@ -29,6 +29,9 @@ services:
       - static_value:/backend/static_value/
       - media_value:/backend/media/
       - "../backend:/app"
+    command: "top -d1"
+    expose:
+      - 8000
     depends_on:
       - database
     env_file:

@@ -12,7 +12,7 @@ SECRET_KEY = os.getenv(
 )
 
 
-DEBUG = os.getenv("DEBUG", default="False") == "True"
+DEBUG = True
 
 ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", default=["*", "localhost", "127.0.0.1"])
 

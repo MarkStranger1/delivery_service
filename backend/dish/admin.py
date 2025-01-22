@@ -1,8 +1,10 @@
 from django.contrib import admin
 from django.contrib.auth.models import Group
 from django.db.models import Sum
+from django import forms
 
-from .models import Dish, Ingredient, IngredientAmount, Type, Order, OrderDish
+from dish.models import Dish, Ingredient, IngredientAmount, Type, Order, OrderDish
+from user.models import User
 
 admin.site.unregister(Group)
 
@@ -18,21 +20,76 @@ class IngredientAdmin(admin.ModelAdmin):
     ordering = ('pk',)
 
 
+class DishInline(admin.TabularInline):
+    """Настройка OrderDish для панели Admin"""
+
+    model = OrderDish
+    extra = 1
+    min_num = 1
+
+
+class OrderAdminForm(forms.ModelForm):
+    """Кастомная форма для Order в админке"""
+    user = forms.ModelChoiceField(
+        queryset=User.objects.filter(role=User.Role.client),
+        label="Клиент",
+        required=True,
+    )
+    courier = forms.ModelChoiceField(
+        queryset=User.objects.filter(role=User.Role.courier),
+        label="Курьер",
+        required=False,
+    )
+
+    class Meta:
+        model = Order
+        fields = '__all__'
+
+
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
     """Настройка Order для панели Admin"""
 
-    list_display = ('pk', 'user', 'total_cost', 'status')
-    list_editable = ('user', 'total_cost',)
+    list_display = (
+        'pk',
+        'user',
+        'courier',
+        'total_cost',
+        'count_dishes',
+        'status',
+        'address'
+    )
+    inlines = [DishInline]
+    form = OrderAdminForm
+    list_filter = ('user', 'courier', 'count_dishes', 'status')
+    search_fields = ('user', 'courier', 'count_dishes', 'status')
+    list_editable = ('user', 'courier', 'status', 'address')
+    ordering = ('pk',)
+
+    def order_dish(self, obj):
+        dishes = (
+            OrderDish.objects
+            .filter(order=obj)
+            .order_by('dish__name').values('dish')
+            .values_list('dish__name', 'quantity')
+        )
+        dish_list = []
+        [dish_list.append('{} - {}.'.format(*dish))
+         for dish in dishes]
+        return dish_list
+
+    order_dish.short_description = 'Блюда'
 
 
+# если хочется скрыть, то можно полностью удалить
 @admin.register(OrderDish)
 class OrderDishAdmin(admin.ModelAdmin):
     """Настройка OrderDish для панели Admin"""
 
     list_display = ('pk', 'order', 'dish', 'quantity')
-    list_editable = ('order', 'dish', 'quantity',)
-
+    list_filter = ('order', 'dish')
+    search_fields = ('order', 'dish')
+    ordering = ('pk',)
 
 
 @admin.register(Type)
@@ -51,8 +108,8 @@ class IngredientAmountAdmin(admin.ModelAdmin):
     """Настройка IngredientAmount для панели Admin"""
 
     list_display = ('pk', 'dish', 'ingredient', 'amount')
-    list_filter = ('dish',)
-    search_fields = ('dish',)
+    list_filter = ('dish', 'ingredient')
+    search_fields = ('dish', 'ingredient')
     ordering = ('pk',)
 
 
@@ -68,12 +125,18 @@ class IngredientInline(admin.TabularInline):
 class DishAdmin(admin.ModelAdmin):
     """Настройка Dish для панели Admin"""
 
-    list_display = ('pk', 'name', 'description', 'cost',
-                    'ccal', 'weight', 'type', 'dish_ingredients')
-    search_fields = ('name',)
-    list_filter = ('name', 'type')
+    list_display = (
+        'pk',
+        'name',
+        'cost',
+        'cuisine',
+        'type',
+        'dish_ingredients'
+    )
+    search_fields = ('name', 'type', 'cuisine')
+    list_filter = ('name', 'type', 'cuisine')
     inlines = [IngredientInline]
-    list_editable = ('name', 'description', 'cost', 'ccal', 'weight')
+    list_editable = ('name', 'cost', 'cuisine')
 
     def dish_ingredients(self, obj):
         ingredients = (

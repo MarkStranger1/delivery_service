@@ -1,4 +1,4 @@
-FROM python:3.11-slim
+FROM python:3.12-alpine
 
 WORKDIR /app
 
@@ -13,4 +13,4 @@ COPY . .
 
 EXPOSE 8000
 
-CMD ["poetry", "run", "gunicorn", "--capture-output", "delivery.wsgi:application", "--bind", "0.0.0.0:8000"]
+# CMD ["poetry", "run", "gunicorn", "--capture-output", "delivery.wsgi:application", "--bind", "0.0.0.0:8000"]
