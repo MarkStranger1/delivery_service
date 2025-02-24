@@ -2,7 +2,7 @@ FROM python:3.12-alpine
 
 WORKDIR /app
 
-ENV POETRY_VIRTUALENVS_CREATE=false
+# ENV POETRY_VIRTUALENVS_CREATE=false
 
 RUN pip install --upgrade pip && \
     pip install poetry
@@ -19,4 +19,4 @@ EXPOSE 8000
 
 # CMD ["poetry", "run", "gunicorn", "--capture-output", "delivery.wsgi:application", "--bind", "0.0.0.0:8000"]
 
-CMD ["python3", "manage.py", "runserver", "0:8000"]
+# CMD ["python3", "manage.py", "runserver", "0:8000"]
