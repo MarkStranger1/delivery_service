@@ -222,6 +222,12 @@ class Order(models.Model):
         self.total_cost = total
         self.save()
 
+    def calculate_count_dishes(self):
+        """Метод для расчета количества блюд в заказе"""
+        total_count = sum(order_dish.quantity for order_dish in self.orderdish_set.all())
+        self.count_dishes = total_count
+        self.save()
+
 
 class OrderDish(models.Model):
     """Промежуточная модель для хранения количества блюд в заказе"""

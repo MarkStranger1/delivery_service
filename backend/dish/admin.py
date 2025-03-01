@@ -137,6 +137,7 @@ class DishAdmin(admin.ModelAdmin):
     list_filter = ('name', 'type', 'cuisine')
     inlines = [IngredientInline]
     list_editable = ('name', 'cost', 'cuisine')
+    ordering = ('pk',)
 
     def dish_ingredients(self, obj):
         ingredients = (
