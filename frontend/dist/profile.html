@@ -1,0 +1,18 @@
+<!DOCTYPE html><html lang="ru"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Личный кабинет</title><link rel="stylesheet" href="css/style.min.css"><!-- Подключение стилей --></head><body><section id="up" class="promo"><div class="container"><header class="header"><a href="index.html" class="header__logo"><img src="icons/Rectangle 1.png" alt="logo"><p class="header__logo-text">Kanagawa<br>Pizza Place</p></a><div class="header__official"><span class="highlight">Вкусная пицца, созданная с <span class="pulse">любовью</span></span></div><div class="header__contacts"><a href="tel:+79083807057" class="header__phone">+7 (908) 380-70-57 </a><a href="profile.html" class="button_for_head">Личный кабинет</a></div></header></div></section><section><header><nav class="profile-nav"><a href="profile.html">Профиль</a> <a href="faq.html">FAQ</a></nav></header><div class="container_for_profile"><h1>Личный кабинет</h1><div class="section_for_profile"><h2>Личные данные</h2><div class="personal-info-row"><div class="personal-info-label">ФИО:</div><input type="text" value="Титов Артем Сергеевич" style="width: 300px;" pattern="^[а-яА-ЯёЁ\s]+$" title="Пожалуйста, введите только буквы" required></div><div class="personal-info-row"><div class="personal-info-label">Номер телефона:</div><input type="tel" value="89083807057" style="width: 300px;" maxlength="11" pattern="^\d{0,11}$" title="Пожалуйста, введите до 11 цифр" required></div><div class="personal-info-row"><div class="personal-info-label">Почта:</div><input type="email" value="titovartem.work@gmail.com" style="width: 300px;" pattern="^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$" title="Пожалуйста, введите действительный адрес электронной почты" required></div><div class="personal-info-row"><div class="personal-info-label">День рождения:</div><input type="date" value="2003-02-10" required></div></div><button class="button_for_profile">Сохранить изменения</button><div class="section_for_profile"><h1></h1><h2>История заказов</h2><p>20 заказов за последние 90 дней</p><table><thead><tr><th>№</th><th>Время заказа</th><th>Сумма</th><th>Способ оплаты</th><th>Чек</th></tr></thead><tbody><tr><td>462</td><td>17 нояб. 2024 г., 17:04</td><td>3 371 ₽</td><td>Картой</td><td><a href="#" class="view-check">Посмотреть</a></td></tr><tr><td>395</td><td>7 нояб. 2024 г., 22:09</td><td>7 796 ₽</td><td>Картой</td><td><a href="#" class="view-check">Посмотреть</a></td></tr><tr><td>278</td><td>16 окт. 2024 г., 15:40</td><td>290 ₽</td><td>Картой</td><td><a href="#" class="view-check">Посмотреть</a></td></tr><tr><td>508</td><td>8 окт. 2024 г., 16:33</td><td>859 ₽</td><td>Картой</td><td><a href="#" class="view-check">Посмотреть</a></td></tr></tbody></table></div><button class="button_for_profile">Выйти из профиля</button></div></section></body><script>// Дополнительная проверка ФИО
+    const nameInput = document.querySelector('input[type="text"]');
+    nameInput.addEventListener('input', function() {
+      this.value = this.value.replace(/[^а-яА-ЯёЁ\s]/g, '');
+    });
+  
+    // Дополнительная проверка номера телефона
+    const phoneInput = document.querySelector('input[type="tel"]');
+    phoneInput.addEventListener('input', function() {
+      this.value = this.value.replace(/\D/g, '');
+      this.value = this.value.slice(0, 11);
+    });
+  
+    // Дополнительная проверка email
+    const emailInput = document.querySelector('input[type="email"]');
+    emailInput.addEventListener('input', function() {
+      this.value = this.value.replace(/[^a-zA-Z0-9._%+-@]/g, '');
+    });</script></html>
