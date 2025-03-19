@@ -27,7 +27,7 @@ services:
     restart: always
     volumes:
       - static_value:/backend/static_value/
-      - media_value:/backend/media/
+      - media_value:/app/media/
       - "../backend:/app"
     command: "top -d1"
     expose:
@@ -58,7 +58,7 @@ services:
       - media_value:/app/media
       - ../frontend/dist:/app/dist
     ports:
-      - "80:80"
+      - "80:80" # можно поменять первое значение, тогда надо будет указывать новый порт
     links:
       - backend
     depends_on:
