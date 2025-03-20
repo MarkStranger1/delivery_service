@@ -1,0 +1,304 @@
+
+.catalog{
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Центрируем по горизонтали */
+    position: relative; /* Необходимо для позиционирования корзины относительно секции каталога */
+    overflow: auto;
+    padding-bottom: 100px;
+    background-color: #46789d; 
+    background-image: 
+        radial-gradient(circle at 70% 10%, rgba(0, 0, 0, 0.1) 1%, transparent 20%),
+        radial-gradient(circle at 20% 30%, rgba(0, 0, 0, 0.4) 10%, transparent 20%),
+        radial-gradient(circle at 60% 70%, rgba(0, 0, 0, 0.4) 1%, transparent 20%),
+        radial-gradient(circle at 50% 70%, rgba(0, 0, 0, 0.3) 8%, transparent 15%),
+        radial-gradient(circle at 80% 10%, rgba(0, 0, 0, 0.2) 6%, transparent 10%),
+        radial-gradient(circle at 10% 80%, rgba(0, 0, 0, 0.3) 7%, transparent 12%); 
+    background-size: 20px 25px; 
+    &__tabs{
+        margin-top: 70px;
+        list-style-type: none;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin-bottom: 0;
+        padding-left: 0;
+    }
+    &__tab{
+        width: 220px;
+        height: 50px;
+        border: 2px #D0D0D0 solid;
+        font-weight: 400;
+        font-size: 18px; 
+        text-transform: uppercase;
+        color: #fff;
+        text-align: center;
+        line-height: 48px;
+        transform: skewX(-20deg);
+        margin: 0 5px;
+        cursor: pointer;
+        transition: 0.5s all;
+        &:hover{
+            box-shadow: 3px 3px 20px #1d4260;
+            border: none;
+        }
+        div{
+            transform: skewX(25deg);
+        }
+        &__active{
+            color: #fff;
+            background-color: #1d4260;
+            border:none;
+        }
+    }
+    &__content{
+        margin-top: 60px;
+        display: none;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        &_active{
+            display: flex;
+        }
+
+    }
+    &-item{
+        
+        width: 300px;
+        min-height: 440px; 
+        border: 2px #46789d solid;
+        padding:20px 20px 26px 20px;
+        overflow: hidden;
+        margin-bottom: 20px; 
+        background-color: #fff;
+        &__img{
+            display: block;
+            margin: 0 auto;
+            max-width: 100%;
+            height: 200px;
+        }
+        &__subtitle{
+            margin-top: 20px;
+            text-align: center; 
+            color: #0D0D0D; 
+            font-size: 16px; 
+            font-weight: 700; 
+        }
+        &__descr{
+            margin-top: 16px;
+            font-weight: 300;
+            font-size: 14px;
+            color: #0d0d0d;
+            text-align: center;
+        }
+        &__link{
+            display: block;
+            margin-top: 17px;
+            font-weight: 500;
+            font-size: 14px;
+            text-decoration: underline;
+            text-align: center;
+            color: #1d4260;
+            text-transform: uppercase;
+            &:hover{
+                color: #1d4260;
+            }
+        }
+        hr{
+            margin: 19px 0 20px 0;
+            background-color: #e8e8e8;
+            border-bottom: none;
+        }
+        &__footer{
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        &__old-price{
+            font-weight: 300;
+            font-size: 14px;
+            text-decoration: line-through;
+            color: #555555;
+        }
+        &__price{
+            font-weight: 700;
+            font-size: 20px;
+            color: #050505;
+        }
+        &__wrapper{
+            background-color: #fff;
+            display: flex;
+            width: calc(200% + 40px);
+        }
+        &__content{
+            width: 50%;
+            margin-right: 0px;
+            transform: translateX(-110%);
+            transition: 0.5s all;
+            &_active{
+                transform: translateX(0%);
+                margin-right: 20px;
+            }
+        }
+        &__list{
+            position: relative;
+            width: 50%;
+            margin-left: 20px;
+            transform: translateX(0%);
+            padding-right: 20px;
+            transition: 0.5s all;
+            padding-left: 19px;
+            margin-bottom: 0;
+            list-style-type: none;
+            &_active{
+                transform: translateX(-100%);
+                margin-left: 0px;
+            }
+            li{
+                position: relative;
+                font-weight: 300;
+                font-size: 14px;
+                color: #555555;
+                margin-bottom: 20px;
+                &:before{
+                    content: '';
+                    position: absolute;
+                    width: 5px;
+                    height: 5px;
+                    background-color: #1d4260;
+                    left: -14px;
+                    top: 7px;
+                }
+            }
+        }
+        &__back{
+            top: 30px;
+            position:relative;
+            text-align: center;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(calc(-50% - 19px));
+            display: block;
+            color: #1d4260;
+            font-size: 14px;
+            font-weight: 500;
+            text-decoration: underline;
+            text-transform: uppercase;
+            &:hover{
+                color: #1d4260;
+            }
+
+        }
+    }
+
+    .catalog__cart {
+        position: absolute;    
+        border: radius 10px;
+        right: 20px;
+        width: 280px;
+        height: 610px;
+        background-color: #fff;
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        margin: 485px 0 200px 0;
+        transform: translateY(-50%);
+        z-index: 999;
+        border: 2px solid #000000; /* Первая граница */
+        &:after{
+            content: ''; /* Добавляем пустое содержимое */
+            position: absolute; /* Позиционируем псевдоэлемент абсолютно */
+            top: 10px; /* Смещаем псевдоэлемент вниз на 5px относительно основного элемента */
+            left: +10px; /* Смещаем псевдоэлемент вправо на 5px относительно основного элемента */
+            right: +10px; /* Корректируем ширину псевдоэлемента на -5px для компенсации смещения */
+            bottom: +10px; /* Корректируем высоту псевдоэлемента на -5px для компенсации смещения */
+            border: 1px solid #000000; /* Вторая граница */
+            border-radius: 8px; /* Применяем радиус скругления, если необходимо */
+        }
+    }
+    
+    .cart__content {
+        text-align: center;
+        margin-top: 20px;
+    }
+
+    .button_order {
+        z-index: 999;
+        display: none; /* Скрытая по умолчанию */
+        position: absolute; /* Абсолютное позиционирование */
+        bottom: 15px; /* Располагаем внизу контейнера */
+        left: 50%; /* Располагаем по горизонтали в центре */
+        transform: translateX(-50%); /* Центрируем по горизонтали */
+    }
+    
+    .cart__text {
+        font-size: 18px;
+        margin-bottom: 20px;
+    }
+    
+    .cart__image {
+        padding: 130px 0px 40px 0px;
+    }
+    
+}
+
+.catalog.scrolled {
+
+    margin-top: 150px;
+}
+
+.overlay{
+    display: none;
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    background-color:rgba(0,0,0, .56) ;
+    top: 0;
+}
+
+.modals{
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 380px;
+    min-height: 400px;
+    background-color: #f2f2f2;
+    padding: 38px 40px 40px 40px;
+    &__close{
+        position: absolute;
+        top: 0;
+        right: -40px;
+        font-size: 41px;
+        line-height: 21px;
+        color: #1d4260;
+        cursor: pointer;
+    }
+    &__subtitle{
+        font-weight: 700;
+        font-size: 18px;
+        text-align: center;
+        color: #0d0d0d;
+    }
+    &__descr{
+        font-weight: 500;
+        font-size: 14px;
+        text-align: center;
+        color: #0d0d0d;
+    }
+    &_mini{
+        min-height: 140px;
+    }
+    .error{
+        border: 1px solid red;
+    }
+    label.error{
+        border:none;
+        text-align: center;
+        margin-bottom: 15px;
+    }
+    
+}
+
+#consultation, #order, #thanks{
+    display: none;
+
+}

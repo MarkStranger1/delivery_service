@@ -1,0 +1,32 @@
+@use 'libs/bootstrap-reboot.min' as *;
+@use 'libs/font' as *;
+@use 'libs/slick' as *;
+@use 'libs/animate' as *;
+@use 'base/variables' as *;
+
+@use 'blocks/promo' as *;
+@use 'blocks/header' as *;
+@use 'blocks/buttons' as *;
+@use 'blocks/carousel' as *;
+@use 'blocks/nav' as *;
+@use 'blocks/catalog' as *;
+@use 'blocks/footer' as *;
+@use 'blocks/sidepanel' as *;
+@use 'blocks/sales' as *;
+@use 'blocks/feed' as *;
+@use 'blocks/modals' as *;
+@use 'blocks/pageup' as *;
+
+@use 'profile/profile' as *;
+
+* {
+    font-family: 'Museo Sans Cyrl', sans-serif;
+}
+
+.container{
+    max-width: 1200px;
+    margin: 0 auto;
+    position: relative;
+}
+
+

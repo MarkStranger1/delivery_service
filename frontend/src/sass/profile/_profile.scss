@@ -1,0 +1,116 @@
+.container_for_profile {
+    max-width: 800px;
+    margin: auto;
+    background: white;
+    padding: 20px;
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+h1 {
+    text-align: center;
+    color: #333;
+}
+
+.section_for_profile {
+    margin-bottom: 20px;
+}
+
+.button_for_profile {
+    display: block;
+    width: calc(100% - 40px);
+    padding: 10px;
+    background-color: #46789d;
+    color: black;
+    border: none;
+    border-radius: 5px;
+    text-align: center;
+    text-decoration: none;
+    font-size: 16px;
+    margin: 0 auto;
+    margin-top: 20px;
+
+    &:hover {
+        background-color: #1d4260;
+        color: white;
+    }
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+
+    th, td {
+        padding: 10px;
+        text-align: left;
+        border-bottom: 1px solid #ddd;
+    }
+
+    th {
+        background-color: #f2f2f2;
+    }
+
+    .view-check {
+        color: #46789d;
+        text-decoration: none;
+
+        &:hover {
+            text-decoration: underline;
+        }
+    }
+}
+
+.faq-section {
+    margin-bottom: 40px;
+
+    .faq-item {
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        margin-bottom: 10px;
+
+        .faq-question {
+            background-color: #f1f1f1;
+            padding: 10px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+
+            .question-text {
+                flex-grow: 1;
+                text-align: left;
+            }
+
+            .arrow {
+                font-size: 16px;
+                transition: transform 0.3s ease;
+
+                &.active {
+                    transform: rotate(180deg);
+                }
+            }
+        }
+
+        .faq-answer {
+            padding: 10px;
+            display: none;
+        }
+    }
+}
+
+.profile-nav {
+    display: flex;
+    justify-content: center;
+
+    a {
+        color: #0077b6;
+        text-decoration: none;
+        padding: 10px 20px;
+        font-size: 16px;
+
+        &:hover {
+            background-color: #f2f2f2;
+        }
+    }
+}

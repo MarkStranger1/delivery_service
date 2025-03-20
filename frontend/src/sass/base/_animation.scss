@@ -1,0 +1,13 @@
+@keyframes pulse {
+    0% { color: rgb(247, 155, 155); transform: scale(1); }
+    50% { color: #f12b2b; transform: scale(1.2); }
+    100% { color: rgb(250, 149, 149); transform: scale(1); }
+}
+
+.highlight {
+    color: inherit; /* Используйте цвет родителя */
+}
+
+.pulse {
+    animation: pulse 2s infinite; /* Применяем анимацию к слову "любовью" */
+}

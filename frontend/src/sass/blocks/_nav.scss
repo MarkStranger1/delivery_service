@@ -1,0 +1,66 @@
+.nav {
+    padding-top: 11px;
+    width: 100%;
+    height: 120px;
+    z-index: 5;
+    background-color: rgba(0, 0, 0, 0); 
+    
+}
+
+.nav__menu {
+    opacity: 1;
+    border-radius: 30px;
+    background-color: #ffffff;
+    display: flex;
+    justify-content: space-between;
+    padding: 19px 60px;
+    margin: 0;
+    list-style: none;
+    
+
+}
+.nav__menu.scrolled {
+    display: flex;
+    align-items:center;
+    border: 1px solid #000; /* Граница для меню при фиксированном nav */
+    padding: 10px 30px;
+    padding-top: 10px;
+
+    
+}
+
+
+.nav__menu.scrolled .nav__icon {
+    order: 2; /* Изменяем порядок элемента, чтобы иконка была справа */
+}
+
+.nav__item {
+    
+    position: relative; 
+    display: flex; 
+    align-items: flex-end; 
+}
+
+.nav__icon {
+    
+    margin-top: -10px; 
+    display: block; 
+    margin-left: auto; 
+    margin-right: auto; 
+}
+
+.nav__link {
+    color: #000; 
+    text-decoration: none; 
+    font-size: 16px; 
+    transition: transform 0.3s ease; 
+    &:focus{
+        outline: none;
+    }
+    &:hover{
+        text-decoration: none;
+        color:#1d4260;
+        transform: scale(1.3);
+    }
+    
+    }

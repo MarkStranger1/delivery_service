@@ -1,0 +1,33 @@
+.button {
+    width: 150px;
+    height: 30px;
+    border-radius: 5px;
+    background-color: #46789d;
+    border: none;
+    color: #0a0a0a;
+    font-size: 12px;
+    font-weight: 500;
+    text-transform: uppercase;
+    
+}
+
+.button_for_head {
+    background-color: #46789d; // Цвет фона
+    color: #fff; // Цвет текста
+    border: none; // Без границы
+    border-radius: 5px; // Скругленные углы
+    padding: 10px 20px; // Отступы
+    font-size: 14px; // Размер шрифта
+    font-weight: bold; // Жирный шрифт
+    text-align: center; // Центрирование текста
+    text-decoration: none; // Без подчеркивания
+    transition: background-color 0.3s, transform 0.3s; // Плавные переходы
+
+    &:hover {
+        transform: scale(1.05); // Увеличение при наведении
+    }
+
+    &:active {
+        transform: scale(0.95); // Уменьшение при нажатии
+    }
+}
