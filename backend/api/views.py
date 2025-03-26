@@ -97,7 +97,7 @@ class OrderViewSet(viewsets.ModelViewSet):
             permission_classes=(CurrentUserOrAdmin,))
     def payment(self, request):
         try:
-            order = Order.objects.get(user=request.user, payment=False)
+            order = Order.objects.get(user=request.user, status=False)
         except Order.DoesNotExist:
             raise NotFound("Нету неоплаченных заказов")
 

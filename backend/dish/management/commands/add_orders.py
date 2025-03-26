@@ -19,12 +19,12 @@ class Command(BaseCommand):
             next(reader)  # Пропускаем заголовок
 
             for row in reader:
-                (user_id, courier_id, status, comment, delivery_time, address_id, dish_data) = row
+                (username, courier_username, status, comment, delivery_time, address, dish_data) = row
 
                 # Получаем связанные объекты
-                user = User.objects.get(id=user_id)
-                courier = User.objects.get(id=courier_id) if courier_id else None
-                address = DeliveryAddress.objects.get(id=address_id) if address_id else None
+                user = User.objects.get(username=username)
+                courier = User.objects.get(username=courier_username) if courier_username else None
+                address = DeliveryAddress.objects.get(address=address) if address else None
 
                 # Создаем заказ
                 order, created = Order.objects.get_or_create(
@@ -39,8 +39,8 @@ class Command(BaseCommand):
                 if created:
                     # Обрабатываем блюда в заказе
                     for dish_info in dish_data.split(';'):
-                        dish_id, quantity = dish_info.split(':')
-                        dish = Dish.objects.get(id=dish_id)
+                        dish_name, quantity = dish_info.split(':')
+                        dish = Dish.objects.get(name=dish_name)
 
                         OrderDish.objects.create(
                             order=order,
