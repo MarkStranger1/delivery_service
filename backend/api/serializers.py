@@ -232,7 +232,7 @@ class OrderSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Order
-        fields = ['id', 'user', 'dishes', 'total_cost', 'payment']
+        fields = ['id', 'user', 'dishes', 'total_cost', 'status']
 
     def validate(self, attrs):
         for attr in attrs['orderdish_set']:
