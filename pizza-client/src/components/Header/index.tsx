@@ -16,7 +16,7 @@ export const Header = () => {
 
             <div className="header__contacts">
                 <a href="tel:+79083807057" className="header__phone">+7 (908) 380-70-57 </a>
-                <a href="profile.html" className="button_for_head">Личный кабинет</a>
+                <a href="/lk" className="button_for_head">Личный кабинет</a>
             </div>
         </header>
     </>

@@ -23,3 +23,12 @@ export interface Dish {
     weight: number,
     image: any // по сути должен быть blob хз
 }
+
+export interface User {
+    id: number,
+    email: string,
+    username: string,
+    phone: string,
+    scores: number,
+    role: string
+} 

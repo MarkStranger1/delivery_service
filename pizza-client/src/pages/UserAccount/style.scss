@@ -1,0 +1,18 @@
+.user-page {
+    display: flex;
+    height: 100vh;
+}
+
+.user-page__nav-bar {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 200px;
+    max-width: 300px;
+    height: 30%;
+    justify-content: space-around;
+}
+
+.user-page__main-content {
+    flex: 4;
+}
