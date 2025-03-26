@@ -1,8 +1,6 @@
-import axios, { AxiosRequestConfig } from 'axios'
-
 class BaseApi {
 
-    private basePath = `http://localhost:8000/api/`;
+    private basePath = `http://localhost:${process.env.REACT_APP_SERVER_PORT ?? 8000}/api/`;
 
     constructor(basePath?: string) {
         if (basePath) this.basePath = basePath
@@ -13,9 +11,8 @@ class BaseApi {
         url: string,
         data?: any
     ): Promise<any> {
-        const requestBody: AxiosRequestConfig = {
+        const requestBody = {
             method: method,
-            url: "",
             headers: {
                 "Content-Type": "application/json",
             },
@@ -25,7 +22,6 @@ class BaseApi {
 
 
         if (url.startsWith('/')) url = url.slice(1);
-        Object.assign(requestBody, { url: this.basePath + url });
 
         const requestUrl = new URLSearchParams();
 
@@ -35,35 +31,12 @@ class BaseApi {
             })
         }
 
-        requestBody.url += requestUrl.toString();
-
-
-        return axios(requestBody)
-            .then(r => {
-                debugger
-                return r.data
-            })
-    }
-
-    protected parseXML(xmlString: string): any {
-        const { XMLParser } = require("fast-xml-parser");
-        const parser = new XMLParser();
-        try {
-            let jObj = parser.parse(xmlString);
-            return jObj
-        } catch (error) {
-            throw error;
-        }
+        return fetch(this.basePath + url + requestUrl.toString(), requestBody)
+            .then(r => { return r; })
     }
 }
 
-export class StationApi extends BaseApi {
+export class MainApi extends BaseApi {
 
-    getAllStations() {
-        return this.sendRequest('GET', "stations?", { format: 'json', lang: "ru_RU" })
-            .then(response => {
-                return response;
-            })
-    }
 
 }
