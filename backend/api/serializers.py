@@ -29,7 +29,8 @@ class UserReadSerializer(UserSerializer):
             "email",
             "username",
             "phone",
-            "scores"
+            "scores",
+            "role"
         )
 
 
@@ -196,6 +197,7 @@ class DishReadSerializer(serializers.ModelSerializer):
             'ccal',
             'weight',
             'image',
+            'cuisine',
             'type',
             'ingredients',
             'is_in_order',
