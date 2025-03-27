@@ -15,8 +15,9 @@ from djoser.views import UserViewSet as DjoserUserViewSet
 from rest_framework import filters, mixins, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.exceptions import NotFound
-from rest_framework.permissions import IsAdminUser
+from rest_framework.permissions import IsAdminUser, IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.generics import RetrieveUpdateAPIView
 from user.models import User
 
 from .filters import DishFilter, IngredientFilter
@@ -24,14 +25,29 @@ from .permissions import (CanModifyOrder, IsAdminOrOwnerAndPaymentTrue,
                           IsAdminOrReadOnly)
 from .serializers import (DishReadSerializer, DishWriteSerializer,
                           IngredientSerializer, OrderSerializer,
-                          TypeSerializer, UserReadSerializer)
+                          TypeSerializer, UserReadSerializer,
+                          UserUpdateSerializer, OrderCartSerializer,
+                          OrderCartUpdateSerializer)
 
 
 class UserViewSet(DjoserUserViewSet):
-    """View-класс реализующий операции модели User"""
+    """View-класс для работы с пользователем"""
 
-    queryset = User.objects.all()
     serializer_class = UserReadSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        """Возвращает только текущего пользователя"""
+        return User.objects.filter(id=self.request.user.id)
+
+
+class UserSelfUpdateView(RetrieveUpdateAPIView):
+    """Обновление данных текущего пользователя"""
+    serializer_class = UserUpdateSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_object(self):
+        return self.request.user  # Всегда возвращает текущего пользователя
 
 
 class ListRetrieveViewSet(
@@ -73,6 +89,55 @@ class DishViewSet(viewsets.ModelViewSet):
         if self.request.method == 'GET':
             return DishReadSerializer
         return DishWriteSerializer
+
+
+class OrderCartViewSet(viewsets.ModelViewSet):
+    """ViewSet для управления заказами в корзине (ожидание оплаты)."""
+
+    serializer_class = OrderCartSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        """Выбираем только заказы текущего пользователя со статусом 'awaiting_payment'."""
+        return Order.objects.filter(user=self.request.user, status=Order.Status.awaiting_payment)
+
+    def get_serializer_class(self):
+        """Определяем сериализатор в зависимости от типа запроса."""
+        if self.action in ["update", "partial_update"]:
+            return OrderCartUpdateSerializer
+        return OrderCartSerializer
+
+
+class OrderHistoryViewSet(viewsets.ModelViewSet):
+    """ViewSet для управления заказами в истории."""
+
+    serializer_class = OrderCartSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        """Выбираем только заказы текущего пользователя у которых любой статус, кроме 'awaiting_payment'."""
+        return Order.objects.filter(user=self.request.user).exclude(status=Order.Status.awaiting_payment)
+
+    def get_serializer_class(self):
+        """Определяем сериализатор в зависимости от типа запроса."""
+        if self.action in ["update", "partial_update"]:
+            return OrderCartUpdateSerializer
+        return OrderCartSerializer
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 class OrderViewSet(viewsets.ModelViewSet):

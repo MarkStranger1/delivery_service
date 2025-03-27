@@ -17,14 +17,17 @@ class Command(BaseCommand):
             reader = csv.reader(file)
             next(reader)  # Пропускаем заголовок
             for email, username, phone, scores, role in reader:
-                User.objects.get_or_create(
+                user = User.objects.get_or_create(
                     email=email,
                     defaults={
                         'username': username,
                         'phone': PhoneNumber.from_string(phone),
                         'scores': int(scores) if scores.isdigit() else settings.DEFAULT_SCORES,
                         'role': role,
-                        'password': 'defaultpassword'  # Лучше потом поменять
+                        'password': 'defaultpassword'  # Просто заглушка
                     }
                 )
+                user.set_password("defaultpassword")
+                user.save()
+
         self.stdout.write(self.style.SUCCESS('Пользователи загружены успешно!'))

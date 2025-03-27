@@ -4,14 +4,13 @@
     - ...
 """
 
-from dish.models import (Dish, Ingredient, IngredientAmount, Order, OrderDish,
-                         Type)
+from dish.models import (Dish, Ingredient, IngredientAmount, Order, OrderDish, Type)
 from django.conf import settings
 from djoser.serializers import UserSerializer
 from drf_extra_fields.fields import Base64ImageField
 from phonenumber_field.serializerfields import PhoneNumberField
 from rest_framework import serializers
-from user.models import User
+from user.models import User, DeliveryAddress
 
 
 class UserReadSerializer(UserSerializer):
@@ -32,6 +31,19 @@ class UserReadSerializer(UserSerializer):
             "scores",
             "role"
         )
+
+
+class UserUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ["email", "username", "phone", "scores", "role"]
+        extra_kwargs = {
+            "email": {"required": False},
+            "username": {"required": False},
+            "phone": {"required": False},
+            "scores": {"required": False},
+            "role": {"required": False},
+        }
 
 
 class IngredientSerializer(serializers.ModelSerializer):
@@ -212,19 +224,110 @@ class DishReadSerializer(serializers.ModelSerializer):
 
 
 class OrderDishSerializer(serializers.ModelSerializer):
-    id = serializers.IntegerField(source='dish.id')
-    name = serializers.ReadOnlyField(source='dish.name')
-    image = serializers.SerializerMethodField()
-    cost = serializers.IntegerField(source='dish.cost', read_only=True)
-    weight = serializers.IntegerField(source='dish.weight', read_only=True)
-    quantity = serializers.IntegerField(read_only=True)
+    """Сериализатор для блюд в заказе (название блюда и количество)."""
+
+    dish = serializers.CharField(source="dish.name")  # Получаем название блюда
 
     class Meta:
         model = OrderDish
-        fields = ['id', 'name', 'image', 'cost', 'quantity', 'weight']
+        fields = ["dish", "quantity"]
 
-    def get_image(self, obj):
-        return obj.dish.image.url if obj.dish.image else None
+
+class OrderCartSerializer(serializers.ModelSerializer):
+    """Сериализатор заказов со статусом 'awaiting_payment'."""
+
+    address = serializers.StringRelatedField()  # Отображает текстовый адрес
+    dishes = OrderDishSerializer(source="orderdish_set", many=True)  # Используем вложенный сериализатор
+
+    class Meta:
+        model = Order
+        fields = [
+            "id",
+            "dishes",
+            "total_cost",
+            "count_dishes",
+            "status",
+            "comment",
+            "delivery_time",
+            "address",
+        ]
+
+
+class OrderDishUpdateSerializer(serializers.ModelSerializer):
+    """Сериализатор для обновления списка блюд в заказе."""
+
+    dish = serializers.CharField()  # Ожидаем название блюда, а не ID
+
+    class Meta:
+        model = OrderDish
+        fields = ["dish", "quantity"]
+
+
+class OrderCartUpdateSerializer(serializers.ModelSerializer):
+    """Сериализатор для обновления заказа со статусом 'awaiting_payment'."""
+
+    address = serializers.CharField()
+    dishes = OrderDishUpdateSerializer(many=True)
+
+    class Meta:
+        model = Order
+        fields = [
+            "id",
+            "dishes",
+            "total_cost",
+            "count_dishes",
+            "status",
+            "comment",
+            "delivery_time",
+            "address",
+        ]
+
+    def update(self, instance, validated_data):
+        """Метод обновления заказа"""
+        dishes_data = validated_data.pop("dishes", None)
+        address_text = validated_data.pop("address", None)
+
+        if address_text:
+            address, _ = DeliveryAddress.objects.get_or_create(address=address_text)
+            instance.address = address
+
+        if dishes_data:
+            instance.orderdish_set.all().delete()  # Удаляем старые блюда
+            total_cost = 0
+            total_count = 0
+
+            for dish_data in dishes_data:
+                dish_name = dish_data["dish"]
+                quantity = dish_data["quantity"]
+
+                dish = Dish.objects.filter(name=dish_name).first()
+                if not dish:
+                    raise serializers.ValidationError({"dish": f"Блюдо '{dish_name}' не найдено"})
+
+                OrderDish.objects.create(order=instance, dish=dish, quantity=quantity)
+                total_cost += dish.cost * quantity
+                total_count += quantity
+
+            instance.total_cost = total_cost
+            instance.count_dishes = total_count
+
+        instance.save()
+        return instance
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 class OrderSerializer(serializers.ModelSerializer):

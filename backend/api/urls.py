@@ -19,11 +19,11 @@ router.register("users", views.UserViewSet, basename="users")
 router.register('ingredients', views.IngredientViewSet, basename='ingredients')
 router.register('types', views.TypeViewSet, basename='types')
 router.register('dishes', views.DishViewSet, basename='dishes')
-router.register('orders', views.OrderViewSet, basename='orders')
-router.register('orders/payment', views.OrderViewSet, basename='payment')
-router.register('orders/history', views.OrderViewSet, basename='history')
+router.register(r'orders/cart', views.OrderCartViewSet, basename='cart')
+router.register(r'orders/history', views.OrderHistoryViewSet, basename='history')
 
 urlpatterns = [
+    path("users/me", views.UserSelfUpdateView.as_view(), name="user-self-update"),
     path("", include(router.urls)),
     path(r"auth/", include("djoser.urls")),
     path(r"auth/", include("djoser.urls.authtoken")),
