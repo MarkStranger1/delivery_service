@@ -1,18 +1,74 @@
 .user-page {
-    display: flex;
+    display: grid;
+    grid-template-areas:
+        "header header"
+        "left right";
+    grid-template-columns: 200px auto;
+    grid-template-rows: 85px auto;
     height: 100vh;
 }
 
-.user-page__nav-bar {
-    flex: 1;
+.user-page__header {
+    grid-area: header;
+    background-color: #1d4260;
     display: flex;
-    flex-direction: column;
-    min-width: 200px;
-    max-width: 300px;
-    height: 30%;
-    justify-content: space-around;
+    align-items: center;
 }
 
+.header__return {
+    cursor: pointer;
+    display: block;
+    color: #d8d8d8;
+    text-decoration: none;
+    background-color: #567e9f;
+    padding: 7px;
+    border-radius: 10px;
+    width: fit-content;
+    margin-left: 30px;
+}
+
+.header__title {
+    color: #d8d8d8;
+    margin-left: 30px;
+    font-weight: 600;
+    font-size: 23px;
+}
+
+.user-page__nav-bar {
+    grid-area: left;
+    display: flex;
+    flex-direction: column;
+    background-color: #42759e;
+}
+
+.change-user {
+    cursor: pointer;
+    margin: 20px 7px 0;
+}
+
+
 .user-page__main-content {
-    flex: 4;
+    grid-area: right;
+}
+
+.main-content__create-login-form {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    margin: 0 auto;
+    width: 400px;
+}
+
+.create-login-form__form-item {
+    width: 100%;
+    margin: 10px 0;
+}
+
+.create-login-form__form-item label {
+    display: block;
+    width: 100%;
+}
+
+.create-login-form__input {
+    width: 100%;
 }

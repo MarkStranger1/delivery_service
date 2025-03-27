@@ -1,6 +1,6 @@
 class BaseApi {
 
-    private basePath = `http://localhost:${process.env.REACT_APP_SERVER_PORT ?? 8000}/api/`;
+    private basePath = `http://localhost/api/`;
 
     constructor(basePath?: string) {
         if (basePath) this.basePath = basePath
@@ -38,5 +38,13 @@ class BaseApi {
 
 export class MainApi extends BaseApi {
 
+    getDishes() {
+        return this.sendRequest('GET', 'dishes/')
+            .then(r => { return r.json() })
+    }
 
+    getTypes() {
+        return this.sendRequest('GET', 'types/')
+            .then(r => { return r.json() })
+    }
 }

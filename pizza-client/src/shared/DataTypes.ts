@@ -19,7 +19,8 @@ export interface Dish {
     ccal: number,
     cost: number,
     is_in_order: boolean,
-    type: TypeOfDish
+    type: TypeOfDish,
+    cuisine: string,
     weight: number,
     image: any // по сути должен быть blob хз
 }
