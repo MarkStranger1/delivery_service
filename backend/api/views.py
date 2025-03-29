@@ -10,24 +10,21 @@
 
 from dish.models import Dish, Ingredient, Order, Type
 from django_filters.rest_framework import DjangoFilterBackend
-from djoser.permissions import CurrentUserOrAdmin
 from djoser.views import UserViewSet as DjoserUserViewSet
 from rest_framework import filters, mixins, status, viewsets
-from rest_framework.decorators import action
-from rest_framework.exceptions import NotFound
+from rest_framework import serializers
 from rest_framework.permissions import IsAdminUser, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.generics import RetrieveUpdateAPIView
-from user.models import User
+from user.models import User, DeliveryAddress, UserDeliveryAddress
 
 from .filters import DishFilter, IngredientFilter
-from .permissions import (CanModifyOrder, IsAdminOrOwnerAndPaymentTrue,
-                          IsAdminOrReadOnly)
-from .serializers import (DishReadSerializer, DishWriteSerializer,
-                          IngredientSerializer, OrderSerializer,
+from .permissions import IsAdminOrReadOnly
+from .serializers import (DishReadSerializer,
+                          IngredientSerializer,
                           TypeSerializer, UserReadSerializer,
                           UserUpdateSerializer, OrderCartSerializer,
-                          OrderCartUpdateSerializer)
+                          OrderCartUpdateSerializer, UserDeliveryAddressSerializer)
 
 
 class UserViewSet(DjoserUserViewSet):
@@ -48,6 +45,71 @@ class UserSelfUpdateView(RetrieveUpdateAPIView):
 
     def get_object(self):
         return self.request.user  # Всегда возвращает текущего пользователя
+
+
+class UserDeliveryAddressViewSet(viewsets.ModelViewSet):
+    serializer_class = UserDeliveryAddressSerializer
+    permission_classes = [IsAuthenticated]
+    http_method_names = ['get', 'post', 'put', 'patch', 'delete']  # Добавь 'delete', если его нет
+
+    def get_queryset(self):
+        return UserDeliveryAddress.objects.filter(user=self.request.user)
+
+    def create(self, request):
+        user = request.user
+        address_text = request.data.get("delivery_address")
+        is_default = request.data.get("is_default", False)
+
+        if not address_text:
+            return Response({"error": "Address is required."}, status=status.HTTP_400_BAD_REQUEST)
+
+        address_obj, created = DeliveryAddress.objects.get_or_create(address=address_text)
+        user_address, created = UserDeliveryAddress.objects.get_or_create(
+            user=user,
+            delivery_address=address_obj,
+            defaults={"is_default": is_default}
+        )
+        user_address.save()
+
+        return Response(self.get_serializer(user_address).data, status=status.HTTP_201_CREATED)
+
+    def destroy(self, request, *args, **kwargs):
+        user = request.user
+        address_id = kwargs.get("pk")  # Получаем ID из URL
+
+        user_address = UserDeliveryAddress.objects.filter(id=address_id, user=user).first()
+        if not user_address:
+            return Response({"error": "Address not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        address_obj = user_address.delivery_address  # Получаем сам объект DeliveryAddress
+        user_address.delete()
+
+        # Проверяем, остался ли этот адрес у кого-то еще
+        if not UserDeliveryAddress.objects.filter(delivery_address=address_obj).exists():
+            address_obj.delete()  # Если адрес больше никому не нужен – удаляем
+
+        return Response({"message": "Address deleted successfully."}, status=status.HTTP_204_NO_CONTENT)
+
+    def partial_update(self, request, *args, **kwargs):
+        """Обновление только поля is_default"""
+        user = request.user
+        address_id = kwargs.get("pk")
+        is_default = request.data.get("is_default")
+
+        if is_default is None:
+            return Response({"error": "Field 'is_default' is required."}, status=status.HTTP_400_BAD_REQUEST)
+
+        user_address = UserDeliveryAddress.objects.filter(id=address_id, user=user).first()
+        if not user_address:
+            return Response({"error": "Address not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        if is_default:  # Если делаем этот адрес основным, снимаем is_default с других
+            UserDeliveryAddress.objects.filter(user=user).update(is_default=False)
+
+        user_address.is_default = is_default
+        user_address.save()
+
+        return Response(self.get_serializer(user_address).data, status=status.HTTP_200_OK)
 
 
 class ListRetrieveViewSet(
@@ -88,7 +150,6 @@ class DishViewSet(viewsets.ModelViewSet):
     def get_serializer_class(self):
         if self.request.method == 'GET':
             return DishReadSerializer
-        return DishWriteSerializer
 
 
 class OrderCartViewSet(viewsets.ModelViewSet):
@@ -96,16 +157,37 @@ class OrderCartViewSet(viewsets.ModelViewSet):
 
     serializer_class = OrderCartSerializer
     permission_classes = [IsAuthenticated]
+    http_method_names = ["get", "patch", "put", "delete", "head", "options"]
 
     def get_queryset(self):
-        """Выбираем только заказы текущего пользователя со статусом 'awaiting_payment'."""
         return Order.objects.filter(user=self.request.user, status=Order.Status.awaiting_payment)
 
     def get_serializer_class(self):
-        """Определяем сериализатор в зависимости от типа запроса."""
         if self.action in ["update", "partial_update"]:
             return OrderCartUpdateSerializer
         return OrderCartSerializer
+
+    def update(self, instance, validated_data):
+        dish_data = validated_data.get("dish")  # Здесь dish_data — это словарь {'name': 'Тайяки'}
+
+        if isinstance(dish_data, dict):
+            dish_name = dish_data.get("name")  # Извлекаем название
+        else:
+            dish_name = dish_data  # Если вдруг пришла строка, используем как есть
+
+        try:
+            dish = Dish.objects.get(name=dish_name)  # Находим блюдо по названию
+        except Dish.DoesNotExist:
+            raise serializers.ValidationError({"dish": f"Блюдо '{dish_name}' не найдено"})
+
+        instance.dish = dish
+        instance.quantity = validated_data.get("quantity", instance.quantity)
+        instance.save()
+        return instance
+
+    def partial_update(self, request, *args, **kwargs):
+        """Обрабатывает частичное обновление"""
+        return self.update(request, *args, partial=True, **kwargs)
 
 
 class OrderHistoryViewSet(viewsets.ModelViewSet):
@@ -117,66 +199,3 @@ class OrderHistoryViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         """Выбираем только заказы текущего пользователя у которых любой статус, кроме 'awaiting_payment'."""
         return Order.objects.filter(user=self.request.user).exclude(status=Order.Status.awaiting_payment)
-
-    def get_serializer_class(self):
-        """Определяем сериализатор в зависимости от типа запроса."""
-        if self.action in ["update", "partial_update"]:
-            return OrderCartUpdateSerializer
-        return OrderCartSerializer
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-class OrderViewSet(viewsets.ModelViewSet):
-    """View-класс реализующий операции модели Order"""
-
-    queryset = Order.objects.all()
-    serializer_class = OrderSerializer
-
-    def get_permissions(self):
-        if self.action == 'list':
-            self.permission_classes = [IsAdminUser]
-        elif self.action == 'retrieve':
-            self.permission_classes = [CurrentUserOrAdmin]
-        elif self.action in ['update', 'partial_update']:
-            self.permission_classes = [CanModifyOrder]
-        elif self.action == 'destroy':
-            self.permission_classes = [IsAdminOrOwnerAndPaymentTrue]
-        return super(OrderViewSet, self).get_permissions()
-
-    @action(detail=False,
-            methods=['post'],
-            permission_classes=(CurrentUserOrAdmin,))
-    def payment(self, request):
-        try:
-            order = Order.objects.get(user=request.user, status=False)
-        except Order.DoesNotExist:
-            raise NotFound("Нету неоплаченных заказов")
-
-        order.payment = True
-        order.save()
-        return Response(status=status.HTTP_204_NO_CONTENT)
-
-    @action(detail=False,
-            methods=['get'],
-            permission_classes=(CurrentUserOrAdmin,))
-    def history(self, request):
-        try:
-            orders = Order.objects.filter(user=request.user, payment=True)
-        except Order.DoesNotExist:
-            raise NotFound("Нету оплаченных заказов")
-        serializer = self.get_serializer(orders, many=True)
-        return Response(serializer.data)

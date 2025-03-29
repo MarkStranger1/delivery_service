@@ -42,4 +42,4 @@ class Command(BaseCommand):
                                 amount=int(amount)  # Преобразуем в целое число
                             )
 
-        self.stdout.write('Блюда и количества ингредиентов успешно добавлены')
+        self.stdout.write('Блюда и их количества ингредиентов успешно добавлены')
