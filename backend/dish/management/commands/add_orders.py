@@ -40,7 +40,13 @@ class Command(BaseCommand):
                     # Обрабатываем блюда в заказе
                     for dish_info in dish_data.split(';'):
                         dish_name, quantity = dish_info.split(':')
-                        dish = Dish.objects.get(name=dish_name)
+                        dish_name = dish_name.strip().strip('"\'')
+                        dish_name = dish_name.strip()
+                        try:
+                            dish = Dish.objects.get(name=dish_name)
+                        except Dish.DoesNotExist:
+                            self.stdout.write(f"Блюдо с именем '{dish_name}' не найдено в базе данных.")
+                            continue  # Пропустить этот заказ или обработать ошибку иначе
 
                         OrderDish.objects.create(
                             order=order,

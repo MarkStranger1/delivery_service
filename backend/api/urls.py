@@ -19,8 +19,9 @@ router.register("users", views.UserViewSet, basename="users")
 router.register('ingredients', views.IngredientViewSet, basename='ingredients')
 router.register('types', views.TypeViewSet, basename='types')
 router.register('dishes', views.DishViewSet, basename='dishes')
-router.register(r'orders/cart', views.OrderCartViewSet, basename='cart')
+router.register(r'orders/cart', views.OrderCartViewSet, basename='orders-cart')
 router.register(r'orders/history', views.OrderHistoryViewSet, basename='history')
+router.register(r'deliveryaddress', views.UserDeliveryAddressViewSet, basename="deliveryaddress")
 
 urlpatterns = [
     path("users/me", views.UserSelfUpdateView.as_view(), name="user-self-update"),

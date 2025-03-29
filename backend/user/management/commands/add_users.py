@@ -17,7 +17,7 @@ class Command(BaseCommand):
             reader = csv.reader(file)
             next(reader)  # Пропускаем заголовок
             for email, username, phone, scores, role in reader:
-                user = User.objects.get_or_create(
+                user, created = User.objects.get_or_create(
                     email=email,
                     defaults={
                         'username': username,
@@ -27,6 +27,7 @@ class Command(BaseCommand):
                         'password': 'defaultpassword'  # Просто заглушка
                     }
                 )
+                # Вызываем set_password на объекте user
                 user.set_password("defaultpassword")
                 user.save()
 
