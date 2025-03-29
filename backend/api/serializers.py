@@ -199,7 +199,6 @@ class DishReadSerializer(serializers.ModelSerializer):
         source='ingredientamount_set'
     )
     is_in_order = serializers.SerializerMethodField()
-    # image = serializers.SerializerMethodField()
 
     class Meta:
         model = Dish
@@ -223,12 +222,6 @@ class DishReadSerializer(serializers.ModelSerializer):
                 and Order.objects.filter(
                     user=request.user, dishes=obj
                 ).exists())
-
-    # def get_image(self, obj):
-    #     if obj.image:
-    #         with obj.image.open('rb') as image_file:
-    #             return image_file.read()
-    #     return None
 
 
 class OrderDishSerializer(serializers.ModelSerializer):
