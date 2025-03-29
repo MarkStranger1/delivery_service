@@ -23,7 +23,6 @@ class UserAdmin(admin.ModelAdmin):
         'role'
     )
     exclude = (
-        'password',
         'last_login',
         'last_name',
         'first_name',

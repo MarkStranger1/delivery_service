@@ -1,6 +1,9 @@
+import { User } from "../DataTypes";
+
 class BaseApi {
 
     private basePath = `http://localhost/api/`;
+    private static userToken = '';
 
     constructor(basePath?: string) {
         if (basePath) this.basePath = basePath
@@ -19,25 +22,30 @@ class BaseApi {
             withCredentials: true,
         }
 
-
+        data && Object.assign(requestBody, { body: JSON.stringify(data) })
 
         if (url.startsWith('/')) url = url.slice(1);
 
-        const requestUrl = new URLSearchParams();
-
-        if (data) {
-            Object.keys(data).forEach(key => {
-                requestUrl.append(key, data[key]);
-            })
+        if (url.includes('auth/token/login/')) {
+            return fetch(this.basePath + url, requestBody)
+                .then(r => {
+                    return r.json().then(j => {
+                        BaseApi.userToken = j.auth_token;
+                        return null;
+                    })
+                })
         }
 
-        return fetch(this.basePath + url + requestUrl.toString(), requestBody)
+        if (url.startsWith('users')) {
+            Object.assign(requestBody.headers, { "Authorization": "Token " + BaseApi.userToken.toString() })
+        }
+
+        return fetch(this.basePath + url, requestBody)
             .then(r => { return r; })
     }
 }
 
 export class MainApi extends BaseApi {
-
     getDishes() {
         return this.sendRequest('GET', 'dishes/')
             .then(r => { return r.json() })
@@ -45,6 +53,18 @@ export class MainApi extends BaseApi {
 
     getTypes() {
         return this.sendRequest('GET', 'types/')
+            .then(r => { return r.json() })
+    }
+}
+
+export class UserApi extends BaseApi {
+    authUser(user: User, pwd: string) {
+        return this.sendRequest('POST', 'auth/token/login/', { email: user.email, password: pwd })
+            .then(r => { return null })
+    }
+
+    getUserInfo() {
+        return this.sendRequest('GET', 'users/me/')
             .then(r => { return r.json() })
     }
 }

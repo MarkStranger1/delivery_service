@@ -31,5 +31,5 @@ export interface User {
     username: string,
     phone: string,
     scores: number,
-    role: string
+    role: "anonim" | "client" | "courier" | "manager"
 } 

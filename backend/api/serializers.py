@@ -4,7 +4,8 @@
     - ...
 """
 
-from dish.models import (Dish, Ingredient, IngredientAmount, Order, OrderDish, Type)
+from dish.models import (
+    Dish, Ingredient, IngredientAmount, Order, OrderDish, Type)
 from django.conf import settings
 from djoser.serializers import UserSerializer
 from drf_extra_fields.fields import Base64ImageField
@@ -198,6 +199,7 @@ class DishReadSerializer(serializers.ModelSerializer):
         source='ingredientamount_set'
     )
     is_in_order = serializers.SerializerMethodField()
+    # image = serializers.SerializerMethodField()
 
     class Meta:
         model = Dish
@@ -222,6 +224,12 @@ class DishReadSerializer(serializers.ModelSerializer):
                     user=request.user, dishes=obj
                 ).exists())
 
+    # def get_image(self, obj):
+    #     if obj.image:
+    #         with obj.image.open('rb') as image_file:
+    #             return image_file.read()
+    #     return None
+
 
 class OrderDishSerializer(serializers.ModelSerializer):
     """Сериализатор для блюд в заказе (название блюда и количество)."""
@@ -237,7 +245,8 @@ class OrderCartSerializer(serializers.ModelSerializer):
     """Сериализатор заказов со статусом 'awaiting_payment'."""
 
     address = serializers.StringRelatedField()  # Отображает текстовый адрес
-    dishes = OrderDishSerializer(source="orderdish_set", many=True)  # Используем вложенный сериализатор
+    # Используем вложенный сериализатор
+    dishes = OrderDishSerializer(source="orderdish_set", many=True)
 
     class Meta:
         model = Order
@@ -288,7 +297,8 @@ class OrderCartUpdateSerializer(serializers.ModelSerializer):
         address_text = validated_data.pop("address", None)
 
         if address_text:
-            address, _ = DeliveryAddress.objects.get_or_create(address=address_text)
+            address, _ = DeliveryAddress.objects.get_or_create(
+                address=address_text)
             instance.address = address
 
         if dishes_data:
@@ -302,9 +312,11 @@ class OrderCartUpdateSerializer(serializers.ModelSerializer):
 
                 dish = Dish.objects.filter(name=dish_name).first()
                 if not dish:
-                    raise serializers.ValidationError({"dish": f"Блюдо '{dish_name}' не найдено"})
+                    raise serializers.ValidationError(
+                        {"dish": f"Блюдо '{dish_name}' не найдено"})
 
-                OrderDish.objects.create(order=instance, dish=dish, quantity=quantity)
+                OrderDish.objects.create(
+                    order=instance, dish=dish, quantity=quantity)
                 total_cost += dish.cost * quantity
                 total_count += quantity
 
@@ -313,21 +325,6 @@ class OrderCartUpdateSerializer(serializers.ModelSerializer):
 
         instance.save()
         return instance
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 class OrderSerializer(serializers.ModelSerializer):

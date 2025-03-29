@@ -31,6 +31,7 @@
     color: #d8d8d8;
     margin-left: 30px;
     font-weight: 600;
+    margin-bottom: 0;
     font-size: 23px;
 }
 
@@ -41,22 +42,44 @@
     background-color: #42759e;
 }
 
-.change-user {
-    cursor: pointer;
-    margin: 20px 7px 0;
+.nav-bar__nav-item {
+    color: #d8d8d8;
+    text-decoration: none;
+    background-color: #567e9f;
+    border-radius: 10px;
+    margin: 8px 5px;
 }
-
 
 .user-page__main-content {
     grid-area: right;
 }
 
-.main-content__create-login-form {
+.main-content__header {
+    margin: 30px auto 30px 30px;
+}
+
+.main-content__forms-container {
+    display: flex;
+    column-gap: 20%;
+    width: 70%;
+    margin: 0 auto;
+}
+
+.forms-container__create-login-form,
+.forms-container__login-form {
+    flex: 1 1;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
     margin: 0 auto;
-    width: 400px;
+    width: 420px;
+    outline: 2px solid #42759e;
+    border-radius: 5px;
+    padding: 10px;
+}
+
+.create-login-form__form-title {
+    text-align: center;
 }
 
 .create-login-form__form-item {
@@ -71,4 +94,20 @@
 
 .create-login-form__input {
     width: 100%;
+}
+
+.forms-container__login-form {
+    flex: 1;
+}
+
+.create-login-form__button-submit,
+.login-form__button-submit {
+    cursor: pointer;
+    display: block;
+    color: #d8d8d8;
+    text-decoration: none;
+    background-color: #567e9f;
+    padding: 7px;
+    border: none;
+    border-radius: 10px;
 }
