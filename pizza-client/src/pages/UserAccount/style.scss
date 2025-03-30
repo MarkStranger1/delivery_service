@@ -35,6 +35,18 @@
     font-size: 23px;
 }
 
+.header__logout {
+    width: 20px;
+    aspect-ratio: 1;
+    background: none;
+    background-image: url("../../shared/icons/logout.svg");
+    background-size: 90%;
+    background-repeat: no-repeat;
+    background-position: center;
+    border: none;
+    margin-left: 7px;
+}
+
 .user-page__nav-bar {
     grid-area: left;
     display: flex;
@@ -66,7 +78,8 @@
 }
 
 .forms-container__create-login-form,
-.forms-container__login-form {
+.forms-container__login-form,
+.main-content__edit-user-info {
     flex: 1 1;
     display: flex;
     flex-direction: column;
@@ -82,17 +95,20 @@
     text-align: center;
 }
 
-.create-login-form__form-item {
+.create-login-form__form-item,
+.edit-user-info__form-item {
     width: 100%;
     margin: 10px 0;
 }
 
-.create-login-form__form-item label {
+.create-login-form__form-item label,
+.edit-user-info__form-item label {
     display: block;
     width: 100%;
 }
 
-.create-login-form__input {
+.create-login-form__input,
+.edit-user-info__input {
     width: 100%;
 }
 
@@ -101,7 +117,10 @@
 }
 
 .create-login-form__button-submit,
-.login-form__button-submit {
+.login-form__button-submit,
+.edit-user-info__button-submit,
+.list-item__add-address-button,
+.addresses-list__list-item button {
     cursor: pointer;
     display: block;
     color: #d8d8d8;
@@ -110,4 +129,85 @@
     padding: 7px;
     border: none;
     border-radius: 10px;
+}
+
+
+.addresses-list__list-item--add-address input {
+    width: 100%;
+}
+
+.addresses-list__list-item button {
+    max-width: fit-content;
+}
+
+.main-content__title {
+    margin: 20px auto 0 30px;
+}
+
+.main-content__sub-title {
+    margin: 10px auto 0 30px;
+}
+
+.main-content__list-container,
+.main-content__addresses-list {
+    display: flex;
+    flex-direction: column;
+    width: 90%;
+    margin: 20px auto 0;
+    height: 80%;
+    background-color: #cfdfed;
+    padding: 13px;
+    border-radius: 10px;
+}
+
+.main-content__addresses-list {
+    height: fit-content;
+    max-height: 40%;
+}
+
+.list-container__list-item,
+.addresses-list__list-item {
+    background-color: #80a6c6;
+    border-radius: 10px;
+    padding: 7px;
+}
+
+.addresses-list__list-item,
+.addresses-list__list-item--add-address {
+    display: grid;
+    grid-template-columns: 200px 300px repeat(2, 90px);
+    height: fit-content;
+    max-height: 40%;
+    justify-items: center;
+    align-items: center;
+}
+
+.addresses-list__list-item--add-address {
+    width: 90%;
+    margin: 20px auto 0;
+    height: fit-content;
+    background-color: #cfdfed;
+    padding: 13px;
+    border-radius: 10px;
+}
+
+.list-container__list-item p,
+.addresses-list__list-item p {
+    margin: 0;
+}
+
+.list-item__dishes-list {
+    display: flex;
+    overflow-x: auto;
+    padding: 4px;
+}
+
+.dishes-list__list-item {
+    display: flex;
+    flex-direction: column;
+    width: max-content;
+    margin-right: 10px;
+    border-radius: 10px;
+    outline: 1px solid #1d4260;
+    padding: 4px;
 }

@@ -32,4 +32,32 @@ export interface User {
     phone: string,
     scores: number,
     role: "anonim" | "client" | "courier" | "manager"
-} 
+}
+
+export interface UserNoId {
+    email: string,
+    username: string,
+    phone: string,
+    scores: number,
+    role: "anonim" | "client" | "courier" | "manager"
+}
+
+export interface Order {
+    id: number,
+    dishes: Array<{
+        dish: string,
+        quantity: number
+    }>,
+    total_cost: number,
+    count_dishes: number,
+    status: string,
+    comment: string,
+    delivery_time: string,
+    address: string
+}
+
+export interface DeliveryAddress {
+    id: number,
+    delivery_address: string,
+    is_default: boolean
+}

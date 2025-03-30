@@ -1,10 +1,10 @@
-import { useEffect, useState } from "react"
+import { useContext, useEffect, useState } from "react"
 import { Link } from "react-router-dom";
-import { User } from "../../shared/DataTypes"
+import { DeliveryAddress, Order, User, UserNoId } from "../../shared/DataTypes"
 
 import "./style.scss"
 import { UserApi } from "../../shared/OpenAPI/Api";
-
+import { UserContainer } from "../../shared/Containers/UserContainer";
 
 export const UserAccountPage = () => {
 
@@ -17,7 +17,17 @@ export const UserAccountPage = () => {
         role: "anonim"
     }
 
-    const api = new UserApi();
+    const convertOrderStatus = {
+        'delivered': 'доставлен'
+    }
+
+    const { user, setUser } = useContext(UserContainer);
+    const [userAddresses, setUserAddresses] = useState<Array<DeliveryAddress> | null>(null);
+    const [newAddress, setNewAddress] = useState<DeliveryAddress | null>(null);
+    const [userOrdersHistory, setUserOrdersHistory] = useState<Array<Order> | null>(null);
+    const [userCurrentOrder, setUserCurrentOrder] = useState<Order | null>(null);
+    const [editUser, setEditUser] = useState<User | null>(null);
+    const userApi = new UserApi();
 
     const [userRegister, setUserRegister] = useState<User>();
     const [userLogin, setUserLogin] = useState<User>();
@@ -28,31 +38,77 @@ export const UserAccountPage = () => {
 
     const [selectedPage, setSelectedPage] = useState<'login' | 'updData' | 'currOrder' | 'allOrders'>('login');
 
-    const changeValue = (key: string, value: string, login: boolean = false) => {
-        const tmp = JSON.parse(JSON.stringify(login ? userLogin : userRegister));
+    const changeValue = (key: string, value: string, state: 'edit' | 'login' | 'register') => {
+        let tmp;
+        switch (state) {
+            case "edit":
+                tmp = JSON.parse(JSON.stringify(editUser));
+                break;
+            case "login":
+                tmp = JSON.parse(JSON.stringify(userLogin));
+                break;
+            case "register":
+                tmp = JSON.parse(JSON.stringify(userRegister));
+                break;
+        }
+
         tmp[key] = value;
-        login ? setUserLogin(tmp) : setUserRegister(tmp);
+        switch (state) {
+            case "edit":
+                setEditUser(tmp);
+                break;
+            case "login":
+                setUserLogin(tmp);
+                break;
+            case "register":
+                setUserRegister(tmp);
+                break;
+        }
     }
 
     useEffect(() => {
-        setUserLogin(defaultUser);
+        userApi.getUserInfo()
+            .then((r) => {
+                if (!r.detail) {
+                    setUserLogin(r);
+                    selectedPage === 'login' && setSelectedPage('updData');
+                }
+            })
+
+        setUserLogin(user ? user : defaultUser);
         setUserRegister(defaultUser);
-
-        const interval = setInterval(async () => {
-            const res = await api.getUserInfo();
-            if (!res.detail) setUserLogin(res);
-        }, 5000);
-
-        return () => clearInterval(interval);
         //eslint-disable-next-line
     }, [])
+
+    useEffect(() => {
+        if (user && user.id !== -1) {
+            !editUser && setEditUser(user);
+            userApi.getOrdersHistory()
+                .then(r => setUserOrdersHistory(r));
+            userApi.getDeliveryAddresses()
+                .then(r => {
+                    setUserAddresses(r)
+                    !newAddress && setNewAddress({
+                        is_default: true,
+                        delivery_address: "",
+                        id: 0
+                    })
+                });
+        }
+        //eslint-disable-next-line
+    }, [user])
 
     return <>
         <div className="user-page">
 
             <div className="user-page__header">
                 <Link to="/" className="header__return">Назад</Link>
-                <p className="header__title">Личный кабинет</p>
+                <p className="header__title">Личный кабинет {user ? user.username : ''}</p>
+                <button className="header__logout" onClick={() => {
+                    setUser(null);
+                    setUserLogin(defaultUser);
+                    document.cookie = `sessionToken=`
+                }} />
             </div>
 
             <div className="user-page__nav-bar">
@@ -103,7 +159,7 @@ export const UserAccountPage = () => {
                                         type="text"
                                         className="create-login-form__input input-login"
                                         value={userRegister.username}
-                                        onChange={(e) => changeValue("username", e.target.value)}
+                                        onChange={(e) => changeValue("username", e.target.value, 'register')}
                                         placeholder="Enter username"
                                     />
                                 </div>
@@ -113,7 +169,7 @@ export const UserAccountPage = () => {
                                         type="email"
                                         className="create-login-form__input input-email"
                                         value={userRegister.email}
-                                        onChange={(e) => changeValue("email", e.target.value)}
+                                        onChange={(e) => changeValue("email", e.target.value, 'register')}
                                         placeholder="Enter email@email.com"
                                     />
                                 </div>
@@ -123,7 +179,7 @@ export const UserAccountPage = () => {
                                         type="text"
                                         className="create-login-form__input input-phone"
                                         value={userRegister.phone}
-                                        onChange={(e) => changeValue("phone", e.target.value)}
+                                        onChange={(e) => changeValue("phone", e.target.value, 'register')}
                                         placeholder="+79998887766"
                                     />
                                 </div>
@@ -163,7 +219,7 @@ export const UserAccountPage = () => {
                                         type="email"
                                         className="create-login-form__input input-email"
                                         value={userLogin.email}
-                                        onChange={(e) => changeValue("email", e.target.value, true)}
+                                        onChange={(e) => changeValue("email", e.target.value, 'login')}
                                         placeholder="Enter email@email.com"
                                     />
                                 </div>
@@ -181,10 +237,11 @@ export const UserAccountPage = () => {
                                     className="login-form__button-submit"
                                     disabled={!userLogin.email || !userLoginPass}
                                     onClick={() => {
-                                        api.authUser(userLogin, userLoginPass)
+                                        userApi.authUser(userLogin, userLoginPass)
                                             .then(async (r) => {
-                                                let res = await api.getUserInfo() as User;
+                                                let res = await userApi.getUserInfo() as User;
                                                 setUserLogin(res);
+                                                setUser(res);
                                                 setSelectedPage('currOrder')
                                             })
                                     }}>
@@ -196,8 +253,212 @@ export const UserAccountPage = () => {
                     :
                     <>
                         {
+                            selectedPage === 'updData'
+                            && <>
+                                <h1 className="main-content__title">Изменить личные данные</h1>
+                                {editUser
+                                    && <>
+                                        <h2 className="main-content__sub-title">Данные аккаунта</h2>
+
+                                        <div className="main-content__edit-user-info">
+                                            <div className="edit-user-info__form-item">
+                                                <label>Username</label>
+                                                <input
+                                                    type="text"
+                                                    className="create-login-form__input input-login"
+                                                    value={editUser.username}
+                                                    onChange={(e) => changeValue("username", e.target.value, 'edit')}
+                                                    placeholder="Enter username"
+                                                />
+                                            </div>
+                                            <div className="edit-user-info__form-item">
+                                                <label>Email</label>
+                                                <input
+                                                    type="email"
+                                                    className="edit-user-info__input input-email"
+                                                    value={editUser.email}
+                                                    onChange={(e) => changeValue("email", e.target.value, 'edit')}
+                                                    placeholder="Enter email@email.com"
+                                                />
+                                            </div>
+                                            <div className="edit-user-info__form-item">
+                                                <label>Phone number</label>
+                                                <input
+                                                    type="text"
+                                                    className="edit-user-info__input input-phone"
+                                                    value={editUser.phone}
+                                                    onChange={(e) => changeValue("phone", e.target.value, 'edit')}
+                                                    placeholder="+79998887766"
+                                                />
+                                            </div>
+                                            <button
+                                                className="edit-user-info__button-submit"
+                                                onClick={() => {
+                                                    if (user) {
+                                                        userApi.editUserInfo(editUser)
+                                                            .then(r => {
+                                                                const tmp = JSON.parse(JSON.stringify(editUser));
+                                                                delete tmp.id;
+                                                                if (Object.keys(tmp).every(key => Object.keys(r).includes(key))) {
+                                                                    alert('Данные успешно обновлены!')
+                                                                }
+                                                                else {
+                                                                    alert(Object.keys(r).map(key => r[key]).join('\n'))
+                                                                }
+                                                            })
+                                                    }
+                                                }}>
+                                                Обновить данные
+                                            </button>
+                                        </div>
+
+                                        <h2 className="main-content__sub-title">Адреса доставки</h2>
+                                        <div className="addresses-list__list-item--add-address">
+                                            <p className="list-item__default-address--void" style={{ margin: 0 }}>Добавить адрес</p>
+                                            <input value={newAddress?.delivery_address} onChange={(e) => {
+                                                const copy = JSON.parse(JSON.stringify(newAddress)) as DeliveryAddress;
+                                                copy.delivery_address = e.target.value;
+                                                setNewAddress(copy);
+                                            }} />
+                                            <button
+                                                className="list-item__add-address-button"
+                                                onClick={() => {
+                                                    if (newAddress && newAddress?.delivery_address !== "") {
+                                                        userApi.addDeliveryAddresses(newAddress)
+                                                            .then(r => {
+                                                                userApi.getDeliveryAddresses()
+                                                                    .then(r => {
+                                                                        setUserAddresses(r)
+                                                                        setNewAddress({
+                                                                            is_default: true,
+                                                                            delivery_address: "",
+                                                                            id: 0
+                                                                        })
+                                                                    })
+                                                            })
+                                                    }
+                                                }}
+                                            >Добавить</button>
+                                            <div className="list-item__delete-button--void" />
+                                        </div>
+                                        <div className="main-content__addresses-list">
+                                            {userAddresses
+                                                ?
+                                                <>
+                                                    {userAddresses.sort((a, b) => (a.is_default === b.is_default) ? 0 : a.is_default ? -1 : 1).map(address => {
+                                                        return <>
+                                                            <div className="addresses-list__list-item">
+                                                                <button
+                                                                    className="list-item__default-address"
+                                                                    onClick={() => {
+                                                                        userApi.editDeliveryAddresses(address.id, !address.is_default)
+                                                                            .then(r => {
+                                                                                userApi.getDeliveryAddresses()
+                                                                                    .then(r => setUserAddresses(r))
+                                                                            });
+                                                                    }}
+                                                                >
+                                                                    {address.is_default ? 'Доставлять сюда' : 'Выбран другой адрес'}
+                                                                </button>
+                                                                <p>{address.delivery_address}</p>
+                                                                <button
+                                                                    className="list-item__delete-button"
+                                                                    onClick={() => {
+                                                                        userApi.deleteDeliveryAddresses(address.id)
+                                                                            .then(r => {
+                                                                                userApi.getDeliveryAddresses()
+                                                                                    .then(r => setUserAddresses(r))
+                                                                            });
+                                                                    }}
+                                                                >Удалить</button>
+                                                            </div>
+                                                        </>
+                                                    })}
+                                                </>
+                                                :
+                                                <>
+                                                    <h2 className="main-content__sub-title">
+                                                        Адреса пока не были добавлены, но никогда не поздно сделатть первый заказ!
+                                                        <div className="addresses-list__list-item--add-address">
+                                                            <div className="list-item__default-address--void" />
+                                                            <input value={newAddress?.delivery_address} onChange={(e) => {
+                                                                const copy = JSON.parse(JSON.stringify(newAddress)) as DeliveryAddress;
+                                                                copy.delivery_address = e.target.value;
+                                                                setNewAddress(copy);
+                                                            }} />
+                                                            <button
+                                                                className="list-item__add-address-button"
+                                                                onClick={() => {
+                                                                    if (newAddress && newAddress?.delivery_address !== "") {
+                                                                        userApi.addDeliveryAddresses(newAddress)
+                                                                            .then(r => {
+                                                                                userApi.getDeliveryAddresses()
+                                                                                    .then(r => setUserAddresses(r))
+                                                                            })
+                                                                    }
+                                                                }}
+                                                            >Добавить</button>
+                                                            <div className="list-item__delete-button--void" />
+                                                        </div>
+                                                    </h2>
+                                                </>
+                                            }
+                                        </div>
+                                    </>
+                                }
+                            </>
+                        }
+                        {
                             selectedPage === 'currOrder' && <>
-                                <h1>Текущий заказ</h1>
+                                <h1 className="main-content__title">Текущий заказ</h1>
+                                {userCurrentOrder
+                                    ?
+                                    <>
+                                    </>
+                                    :
+                                    <>
+                                        <h2 className="main-content__sub-title">Корзина пуста</h2>
+                                    </>
+                                }
+                            </>
+                        }
+                        {
+                            selectedPage === 'allOrders' && <>
+                                <h1 className="main-content__title">История заказов</h1>
+
+                                {userOrdersHistory
+                                    ?
+                                    <>
+                                        <div className="main-content__list-container">
+                                            {userOrdersHistory.map(order => {
+                                                return <>
+                                                    <div className="list-container__list-item">
+                                                        <h4 className="list-item__title">Заказ от {order.delivery_time.split('T').at(0)} - {convertOrderStatus[order.status as keyof typeof convertOrderStatus]}</h4>
+                                                        <p className="list-item__cost"><b>Стоимость:</b> {order.total_cost} руб.</p>
+                                                        <p className="list-item__count-dishes"><b>Кол-во блюд:</b> {order.count_dishes}</p>
+                                                        <p className="list-item__address"><b>Адрес:</b> {order.address}</p>
+                                                        <p className="list-item__comment"><b>Комментарий:</b> {order.comment}</p>
+                                                        <p><b>Блюда в заказе:</b></p>
+                                                        <div className="list-item__dishes-list">
+                                                            {order.dishes.map(dish => {
+                                                                return <>
+                                                                    <div className="dishes-list__list-item">
+                                                                        <p>{dish.dish}</p>
+                                                                        <p>Кол-во: {dish.quantity}</p>
+                                                                    </div>
+                                                                </>
+                                                            })}
+                                                        </div>
+                                                    </div>
+                                                </>
+                                            })}
+                                        </div>
+                                    </>
+                                    :
+                                    <>
+                                        <h2 className="main-content__sub-title">Заказов ещё не было, но никогда не поздно начать!</h2>
+                                    </>
+                                }
                             </>
                         }
                     </>}
