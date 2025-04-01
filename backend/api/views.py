@@ -62,39 +62,42 @@ class UserDeliveryAddressViewSet(viewsets.ModelViewSet):
         if not address_text:
             return Response({"error": "Address is required."}, status=status.HTTP_400_BAD_REQUEST)
 
-        address_obj, created = DeliveryAddress.objects.get_or_create(
-            address=address_text)
+        # Находим или создаем DeliveryAddress по адресу
+        address_obj, _ = DeliveryAddress.objects.get_or_create(address=address_text)
+
+        # Создаем запись UserDeliveryAddress
         user_address, created = UserDeliveryAddress.objects.get_or_create(
             user=user,
             delivery_address=address_obj,
             defaults={"is_default": is_default}
         )
 
-        user_address.save()
+        if not created:
+            user_address.is_default = is_default
+            user_address.save()
 
         return Response(self.get_serializer(user_address).data, status=status.HTTP_201_CREATED)
 
     def destroy(self, request, *args, **kwargs):
         user = request.user
-        address_id = kwargs.get("pk")  # Получаем ID из URL
+        address_id = kwargs.get("pk")
 
         user_address = UserDeliveryAddress.objects.filter(
-            id=address_id, user=user).first()
+            user=user, delivery_address_id=address_id
+        ).first()
+
         if not user_address:
             return Response({"error": "Address not found."}, status=status.HTTP_404_NOT_FOUND)
 
-        # Получаем сам объект DeliveryAddress
         address_obj = user_address.delivery_address
         user_address.delete()
 
-        # Проверяем, остался ли этот адрес у кого-то еще
         if not UserDeliveryAddress.objects.filter(delivery_address=address_obj).exists():
-            address_obj.delete()  # Если адрес больше никому не нужен – удаляем
+            address_obj.delete()
 
         return Response({"message": "Address deleted successfully."}, status=status.HTTP_204_NO_CONTENT)
 
     def partial_update(self, request, *args, **kwargs):
-        """Обновление только поля is_default"""
         user = request.user
         address_id = kwargs.get("pk")
         is_default = request.data.get("is_default")
@@ -103,13 +106,14 @@ class UserDeliveryAddressViewSet(viewsets.ModelViewSet):
             return Response({"error": "Field 'is_default' is required."}, status=status.HTTP_400_BAD_REQUEST)
 
         user_address = UserDeliveryAddress.objects.filter(
-            id=address_id, user=user).first()
+            user=user, delivery_address_id=address_id
+        ).first()
+
         if not user_address:
             return Response({"error": "Address not found."}, status=status.HTTP_404_NOT_FOUND)
 
-        if is_default:  # Если делаем этот адрес основным, снимаем is_default с других
-            UserDeliveryAddress.objects.filter(
-                user=user).update(is_default=False)
+        if is_default:
+            UserDeliveryAddress.objects.filter(user=user).update(is_default=False)
 
         user_address.is_default = is_default
         user_address.save()

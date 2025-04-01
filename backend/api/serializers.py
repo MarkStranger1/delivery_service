@@ -45,6 +45,7 @@ class UserUpdateSerializer(serializers.ModelSerializer):
 
 
 class UserDeliveryAddressSerializer(serializers.ModelSerializer):
+    id = serializers.IntegerField(source="delivery_address.id")
     delivery_address = serializers.CharField(source="delivery_address.address")
 
     class Meta:
