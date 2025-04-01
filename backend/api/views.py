@@ -12,7 +12,6 @@ from dish.models import Dish, Ingredient, Order, Type
 from django_filters.rest_framework import DjangoFilterBackend
 from djoser.views import UserViewSet as DjoserUserViewSet
 from rest_framework import filters, mixins, status, viewsets
-from rest_framework import serializers
 from rest_framework.permissions import IsAdminUser, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.generics import RetrieveUpdateAPIView
@@ -50,7 +49,7 @@ class UserSelfUpdateView(RetrieveUpdateAPIView):
 class UserDeliveryAddressViewSet(viewsets.ModelViewSet):
     serializer_class = UserDeliveryAddressSerializer
     permission_classes = [IsAuthenticated]
-    http_method_names = ['get', 'post', 'put', 'patch', 'delete']  # Добавь 'delete', если его нет
+    http_method_names = ['get', 'post', 'put', 'patch', 'delete']
 
     def get_queryset(self):
         return UserDeliveryAddress.objects.filter(user=self.request.user)
@@ -141,11 +140,13 @@ class IngredientViewSet(ListRetrieveViewSet):
 class DishViewSet(viewsets.ModelViewSet):
     """View-класс реализующий операции модели Dish"""
 
-    queryset = Dish.objects.all()
     permission_classes = [IsAdminOrReadOnly]
     filter_backends = (filters.SearchFilter, DjangoFilterBackend,)
     search_fields = ('name',)
     filterset_class = DishFilter
+
+    def get_queryset(self):
+        return Dish.objects.all().order_by("id")
 
     def get_serializer_class(self):
         if self.request.method == 'GET':
@@ -157,37 +158,19 @@ class OrderCartViewSet(viewsets.ModelViewSet):
 
     serializer_class = OrderCartSerializer
     permission_classes = [IsAuthenticated]
-    http_method_names = ["get", "patch", "put", "delete", "head", "options"]
+    http_method_names = ["get", "post", "patch", "put", "delete", "head", "options"]
 
     def get_queryset(self):
         return Order.objects.filter(user=self.request.user, status=Order.Status.awaiting_payment)
 
     def get_serializer_class(self):
-        if self.action in ["update", "partial_update"]:
+        if self.request.method in ["PATCH", "PUT", "POST"]:
             return OrderCartUpdateSerializer
         return OrderCartSerializer
 
-    def update(self, instance, validated_data):
-        dish_data = validated_data.get("dish")  # Здесь dish_data — это словарь {'name': 'Тайяки'}
-
-        if isinstance(dish_data, dict):
-            dish_name = dish_data.get("name")  # Извлекаем название
-        else:
-            dish_name = dish_data  # Если вдруг пришла строка, используем как есть
-
-        try:
-            dish = Dish.objects.get(name=dish_name)  # Находим блюдо по названию
-        except Dish.DoesNotExist:
-            raise serializers.ValidationError({"dish": f"Блюдо '{dish_name}' не найдено"})
-
-        instance.dish = dish
-        instance.quantity = validated_data.get("quantity", instance.quantity)
-        instance.save()
-        return instance
-
-    def partial_update(self, request, *args, **kwargs):
-        """Обрабатывает частичное обновление"""
-        return self.update(request, *args, partial=True, **kwargs)
+    def perform_create(self, serializer):
+        """Создание нового заказа в корзине."""
+        serializer.save(user=self.request.user, status=Order.Status.awaiting_payment)
 
 
 class OrderHistoryViewSet(viewsets.ModelViewSet):

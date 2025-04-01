@@ -4,8 +4,12 @@
     - ...
 """
 
+<<<<<<< HEAD
 from dish.models import (
     Dish, Ingredient, IngredientAmount, Order, OrderDish, Type)
+=======
+from dish.models import Dish, Ingredient, IngredientAmount, Order, OrderDish, Type
+>>>>>>> 1474a61f635a572a15189517725de5e3fc235b10
 from djoser.serializers import UserSerializer
 from phonenumber_field.serializerfields import PhoneNumberField
 from rest_framework import serializers
@@ -41,7 +45,7 @@ class UserUpdateSerializer(serializers.ModelSerializer):
             "username": {"required": False},
             "phone": {"required": False},
             "scores": {"required": False},
-            "role": {"required": False},
+            "role": {"read_only": True},  # Делаем role только для чтения
         }
 
 
@@ -132,9 +136,19 @@ class DishReadSerializer(serializers.ModelSerializer):
 
 
 class OrderDishSerializer(serializers.ModelSerializer):
-    """Сериализатор для блюд в заказе (название блюда и количество)."""
+    """Сериализатор для блюд в заказе (id блюда, название и количество)."""
 
+    id = serializers.IntegerField(source="dish.id")  # Добавляем ID блюда
     dish = serializers.CharField(source="dish.name")  # Получаем название блюда
+    quantity = serializers.IntegerField()  # Количество блюда
+
+    class Meta:
+        model = OrderDish
+        fields = ["id", "dish", "quantity"]  # Включаем ID в список полей
+
+
+class OrderDishUpdateSerializer(serializers.ModelSerializer):
+    """Сериализатор для обновления блюд в заказе."""
 
     class Meta:
         model = OrderDish
@@ -162,6 +176,7 @@ class OrderCartSerializer(serializers.ModelSerializer):
         ]
 
 
+<<<<<<< HEAD
 class OrderDishUpdateSerializer(serializers.ModelSerializer):
     """Сериализатор для обновления количества блюд в заказе."""
 
@@ -185,20 +200,47 @@ class OrderDishUpdateSerializer(serializers.ModelSerializer):
         return instance
 
 
+=======
+>>>>>>> 1474a61f635a572a15189517725de5e3fc235b10
 class OrderCartUpdateSerializer(serializers.ModelSerializer):
-    """Сериализатор для обновления заказа со статусом 'awaiting_payment'."""
+    """Сериализатор для обновления заказов."""
 
-    address = serializers.CharField(required=False)
-    dishes = OrderDishUpdateSerializer(many=True, required=False)
+    dishes_ordered = OrderDishUpdateSerializer(many=True, write_only=True)  # Позволяет обновлять блюда в заказе
 
     class Meta:
         model = Order
         fields = [
-            "id", "dishes", "total_cost", "count_dishes", "status", "comment", "delivery_time", "address"
+            "status",
+            "comment",
+            "delivery_time",
+            "address",
+            "dishes_ordered",
         ]
-        read_only_fields = ["total_cost", "count_dishes"]
+
+    def create(self, validated_data):
+        dishes_data = validated_data.pop("dishes_ordered", [])
+        validated_data.pop("user", None)  # Удаляем user, если он есть в validated_data
+        validated_data.pop("status", None)
+
+        order = Order.objects.create(
+            user=self.context['request'].user,
+            status=Order.Status.awaiting_payment,
+            **validated_data
+        )
+
+        order_dishes = [
+            OrderDish(order=order, dish=dish_data["dish"], quantity=dish_data["quantity"])
+            for dish_data in dishes_data
+        ]
+        OrderDish.objects.bulk_create(order_dishes)
+
+        order.calculate_total_cost()
+        order.calculate_count_dishes()
+
+        return order
 
     def update(self, instance, validated_data):
+<<<<<<< HEAD
         dishes_data = validated_data.pop("dishes", None)
         address_text = validated_data.pop("address", None)
 
@@ -221,8 +263,17 @@ class OrderCartUpdateSerializer(serializers.ModelSerializer):
 
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
+=======
+        dishes_data = validated_data.pop("dishes_ordered", [])
+        instance = super().update(instance, validated_data)
+        instance.orderdish_set.all().delete()  # Удаляем старые записи
+>>>>>>> 1474a61f635a572a15189517725de5e3fc235b10
 
+        order_dishes = [
+            OrderDish(order=instance, dish=dish["dish"], quantity=dish["quantity"])
+            for dish in dishes_data
+        ]
+        OrderDish.objects.bulk_create(order_dishes)  # Добавляем новые записи
         instance.calculate_total_cost()
         instance.calculate_count_dishes()
-        instance.save()
         return instance
