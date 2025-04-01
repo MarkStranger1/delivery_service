@@ -1,4 +1,4 @@
-import { DeliveryAddress, User } from "../DataTypes";
+import { Cart, DeliveryAddress, User } from "../DataTypes";
 
 class BaseApi {
 
@@ -102,8 +102,21 @@ export class UserApi extends BaseApi {
             .then(r => { return null; })
     }
 
-    getUserCart() {
-        return this.sendRequest('GET', 'orders/cart', null, true)
+    getUserCart(cartId?: number) {
+        return this.sendRequest('GET', `orders/cart/${cartId ? cartId + '/' : ''}`, null, true)
+            .then(r => { return r.json(); });
+    }
+
+    createUserCart(dish: { dish: number, quantity: number }) {
+        return this.sendRequest('POST', 'orders/cart/', { "dishes_ordered": [dish] }, true)
+            .then(r => { return r.json(); });
+    }
+
+    updateUserCart(cart: Cart) {
+        const data = JSON.parse(JSON.stringify(cart));
+        const id = data.id;
+        delete data.id;
+        return this.sendRequest('PATCH', `orders/cart/${id}/`, data, true)
             .then(r => { return r.json(); });
     }
 }

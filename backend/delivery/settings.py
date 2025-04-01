@@ -14,7 +14,8 @@ SECRET_KEY = os.getenv(
 
 DEBUG = True
 
-ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", default=["*", "localhost", "127.0.0.1"])
+ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", default=[
+                          "*", "localhost", "127.0.0.1"])
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -161,3 +162,20 @@ LIMIT_CHAR_200 = 200
 LIMIT_CHAR_500 = 500
 LIMIT_CHAR_7 = 7
 DEFAULT_SCORES = 0
+
+# LOGGING = {
+#     'version': 1,
+#     'disable_existing_loggers': False,
+#     'handlers': {
+#         'console': {
+#             'level': 'DEBUG',
+#             'class': 'logging.StreamHandler',
+#         },
+#     },
+#     'loggers': {
+#         'django.db.backends': {
+#             'handlers': ['console'],
+#             'level': 'DEBUG',
+#         },
+#     },
+# }

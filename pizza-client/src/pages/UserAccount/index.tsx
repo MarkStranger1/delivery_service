@@ -1,6 +1,6 @@
 import { useContext, useEffect, useState } from "react"
 import { Link } from "react-router-dom";
-import { DeliveryAddress, Order, User, UserNoId } from "../../shared/DataTypes"
+import { Cart, DeliveryAddress, Order, User } from "../../shared/DataTypes"
 
 import "./style.scss"
 import { UserApi } from "../../shared/OpenAPI/Api";
@@ -25,7 +25,7 @@ export const UserAccountPage = () => {
     const [userAddresses, setUserAddresses] = useState<Array<DeliveryAddress> | null>(null);
     const [newAddress, setNewAddress] = useState<DeliveryAddress | null>(null);
     const [userOrdersHistory, setUserOrdersHistory] = useState<Array<Order> | null>(null);
-    const [userCurrentOrder, setUserCurrentOrder] = useState<Order | null>(null);
+    const [userCart, setUserCart] = useState<Cart | null>(null);
     const [editUser, setEditUser] = useState<User | null>(null);
     const userApi = new UserApi();
 
@@ -83,17 +83,48 @@ export const UserAccountPage = () => {
     useEffect(() => {
         if (user && user.id !== -1) {
             !editUser && setEditUser(user);
-            userApi.getOrdersHistory()
-                .then(r => setUserOrdersHistory(r));
-            userApi.getDeliveryAddresses()
-                .then(r => {
-                    setUserAddresses(r)
-                    !newAddress && setNewAddress({
-                        is_default: true,
-                        delivery_address: "",
-                        id: 0
-                    })
-                });
+
+            Promise.all([
+                userApi.getOrdersHistory(),
+                userApi.getUserCart(),
+                userApi.getDeliveryAddresses()
+            ]).then(response => {
+                setUserOrdersHistory(response[0]);
+
+                if (response[1].length === 0) {
+                    userApi.createUserCart({ dish: 0, quantity: 0 })
+                        .then((r: any) => {
+                            r && r.id && userApi.getUserCart(r.id)
+                                .then((res: any) => setUserCart(res[0]))
+                        })
+                }
+                else {
+                    if (!response[1][0].address) {
+                        const defaultAddress = response[2].find((address: DeliveryAddress) => address.is_default) as DeliveryAddress;
+                        if (defaultAddress) {
+                            const copy = JSON.parse(JSON.stringify(response[1][0])) as Cart
+                            copy.address = defaultAddress.id ?? "";
+                            userApi.updateUserCart(copy)
+                                .then(res => setUserCart(res[0]))
+                        }
+                        else {
+                            (response[2][0] as DeliveryAddress).is_default = true
+                            const copy = JSON.parse(JSON.stringify(response[1][0])) as Cart
+                            copy.address = response[2][0].id ?? "";
+                            userApi.editDeliveryAddresses(response[2][0].id, true)
+                            userApi.updateUserCart(copy)
+                                .then(res => setUserCart(res[0]))
+                        }
+                    }
+                    else setUserCart(response[1][0])
+                }
+                setUserAddresses(response[2])
+                !newAddress && setNewAddress({
+                    is_default: true,
+                    delivery_address: "",
+                    id: 0
+                })
+            })
         }
         //eslint-disable-next-line
     }, [user])
@@ -313,7 +344,7 @@ export const UserAccountPage = () => {
                                         </div>
 
                                         <h2 className="main-content__sub-title">Адреса доставки</h2>
-                                        <div className="addresses-list__list-item--add-address">
+                                        {userAddresses && <div className="addresses-list__list-item--add-address">
                                             <p className="list-item__default-address--void" style={{ margin: 0 }}>Добавить адрес</p>
                                             <input value={newAddress?.delivery_address} onChange={(e) => {
                                                 const copy = JSON.parse(JSON.stringify(newAddress)) as DeliveryAddress;
@@ -340,7 +371,7 @@ export const UserAccountPage = () => {
                                                 }}
                                             >Добавить</button>
                                             <div className="list-item__delete-button--void" />
-                                        </div>
+                                        </div>}
                                         <div className="main-content__addresses-list">
                                             {userAddresses
                                                 ?
@@ -411,9 +442,28 @@ export const UserAccountPage = () => {
                         {
                             selectedPage === 'currOrder' && <>
                                 <h1 className="main-content__title">Текущий заказ</h1>
-                                {userCurrentOrder
+
+                                {userCart
                                     ?
                                     <>
+                                        <div className="main-content__cart-container">
+                                            Заказ в {userCart.address}
+
+                                            Время доставки:
+                                            <input
+                                                type="datetime-local"
+                                                className="cart-container__input-delvery-time"
+                                                value={userCart.delivery_time}
+                                                onChange={(e) => {
+                                                    const copy = JSON.parse(JSON.stringify(userCart)) as Cart;
+                                                    const defaultAddress = userAddresses?.find((address: DeliveryAddress) => address.is_default) as DeliveryAddress;
+                                                    copy.address = defaultAddress.id ?? "";
+                                                    copy.delivery_time = (new Date(e.target.value)).toISOString().slice(0, -5);
+                                                    userApi.updateUserCart(copy)
+                                                        .then(r => setUserCart(r))
+                                                }}
+                                            />
+                                        </div>
                                     </>
                                     :
                                     <>

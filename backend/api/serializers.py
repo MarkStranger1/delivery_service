@@ -4,12 +4,7 @@
     - ...
 """
 
-<<<<<<< HEAD
-from dish.models import (
-    Dish, Ingredient, IngredientAmount, Order, OrderDish, Type)
-=======
 from dish.models import Dish, Ingredient, IngredientAmount, Order, OrderDish, Type
->>>>>>> 1474a61f635a572a15189517725de5e3fc235b10
 from djoser.serializers import UserSerializer
 from phonenumber_field.serializerfields import PhoneNumberField
 from rest_framework import serializers
@@ -176,40 +171,16 @@ class OrderCartSerializer(serializers.ModelSerializer):
         ]
 
 
-<<<<<<< HEAD
-class OrderDishUpdateSerializer(serializers.ModelSerializer):
-    """Сериализатор для обновления количества блюд в заказе."""
-
-    dish = serializers.CharField(source="dish.name")
-
-    class Meta:
-        model = OrderDish
-        fields = ["dish", "quantity"]
-
-    def update(self, instance, validated_data):
-        dish_name = validated_data.get("dish")
-        try:
-            dish = Dish.objects.get(name=dish_name)
-        except Dish.DoesNotExist:
-            raise serializers.ValidationError(
-                {"dish": "Такого блюда не существует"})
-
-        instance.dish = dish
-        instance.quantity = validated_data.get("quantity", instance.quantity)
-        instance.save()
-        return instance
-
-
-=======
->>>>>>> 1474a61f635a572a15189517725de5e3fc235b10
 class OrderCartUpdateSerializer(serializers.ModelSerializer):
     """Сериализатор для обновления заказов."""
 
-    dishes_ordered = OrderDishUpdateSerializer(many=True, write_only=True)  # Позволяет обновлять блюда в заказе
+    dishes_ordered = OrderDishUpdateSerializer(
+        many=True, write_only=True)  # Позволяет обновлять блюда в заказе
 
     class Meta:
         model = Order
         fields = [
+            "id",
             "status",
             "comment",
             "delivery_time",
@@ -219,7 +190,8 @@ class OrderCartUpdateSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         dishes_data = validated_data.pop("dishes_ordered", [])
-        validated_data.pop("user", None)  # Удаляем user, если он есть в validated_data
+        # Удаляем user, если он есть в validated_data
+        validated_data.pop("user", None)
         validated_data.pop("status", None)
 
         order = Order.objects.create(
@@ -229,7 +201,8 @@ class OrderCartUpdateSerializer(serializers.ModelSerializer):
         )
 
         order_dishes = [
-            OrderDish(order=order, dish=dish_data["dish"], quantity=dish_data["quantity"])
+            OrderDish(
+                order=order, dish=dish_data["dish"], quantity=dish_data["quantity"])
             for dish_data in dishes_data
         ]
         OrderDish.objects.bulk_create(order_dishes)
@@ -240,37 +213,13 @@ class OrderCartUpdateSerializer(serializers.ModelSerializer):
         return order
 
     def update(self, instance, validated_data):
-<<<<<<< HEAD
-        dishes_data = validated_data.pop("dishes", None)
-        address_text = validated_data.pop("address", None)
-
-        if address_text:
-            address, _ = DeliveryAddress.objects.get_or_create(
-                address=address_text)
-            instance.address = address
-
-        if dishes_data:
-            instance.orderdish_set.all().delete()
-            for dish_data in dishes_data:
-                dish_name = dish_data["dish"]
-                quantity = dish_data["quantity"]
-                dish = Dish.objects.filter(name=dish_name).first()
-                if not dish:
-                    raise serializers.ValidationError(
-                        {"dish": f"Блюдо '{dish_name}' не найдено"})
-                OrderDish.objects.create(
-                    order=instance, dish=dish, quantity=quantity)
-
-        for attr, value in validated_data.items():
-            setattr(instance, attr, value)
-=======
         dishes_data = validated_data.pop("dishes_ordered", [])
         instance = super().update(instance, validated_data)
         instance.orderdish_set.all().delete()  # Удаляем старые записи
->>>>>>> 1474a61f635a572a15189517725de5e3fc235b10
 
         order_dishes = [
-            OrderDish(order=instance, dish=dish["dish"], quantity=dish["quantity"])
+            OrderDish(order=instance,
+                      dish=dish["dish"], quantity=dish["quantity"])
             for dish in dishes_data
         ]
         OrderDish.objects.bulk_create(order_dishes)  # Добавляем новые записи

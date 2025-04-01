@@ -99,9 +99,11 @@ class UserDeliveryAddress(models.Model):
     )
 
     def save(self, *args, **kwargs):
+
         if self.is_default:
             # Сбрасываем is_default у всех других адресов этого пользователя
-            UserDeliveryAddress.objects.filter(user=self.user).exclude(id=self.id).update(is_default=False)
+            UserDeliveryAddress.objects.filter(user=self.user).exclude(
+                id=self.id).update(is_default=False)
 
         super().save(*args, **kwargs)
 

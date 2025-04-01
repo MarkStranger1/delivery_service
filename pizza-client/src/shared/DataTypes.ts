@@ -61,3 +61,15 @@ export interface DeliveryAddress {
     delivery_address: string,
     is_default: boolean
 }
+
+export interface Cart {
+    id: number,
+    address: number,
+    status: string,
+    comment: string,
+    delivery_time: string,
+    dishes_ordered: Array<{
+        dish: string,
+        quantity: string
+    }>
+}

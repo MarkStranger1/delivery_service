@@ -62,12 +62,14 @@ class UserDeliveryAddressViewSet(viewsets.ModelViewSet):
         if not address_text:
             return Response({"error": "Address is required."}, status=status.HTTP_400_BAD_REQUEST)
 
-        address_obj, created = DeliveryAddress.objects.get_or_create(address=address_text)
+        address_obj, created = DeliveryAddress.objects.get_or_create(
+            address=address_text)
         user_address, created = UserDeliveryAddress.objects.get_or_create(
             user=user,
             delivery_address=address_obj,
             defaults={"is_default": is_default}
         )
+
         user_address.save()
 
         return Response(self.get_serializer(user_address).data, status=status.HTTP_201_CREATED)
@@ -76,11 +78,13 @@ class UserDeliveryAddressViewSet(viewsets.ModelViewSet):
         user = request.user
         address_id = kwargs.get("pk")  # Получаем ID из URL
 
-        user_address = UserDeliveryAddress.objects.filter(id=address_id, user=user).first()
+        user_address = UserDeliveryAddress.objects.filter(
+            id=address_id, user=user).first()
         if not user_address:
             return Response({"error": "Address not found."}, status=status.HTTP_404_NOT_FOUND)
 
-        address_obj = user_address.delivery_address  # Получаем сам объект DeliveryAddress
+        # Получаем сам объект DeliveryAddress
+        address_obj = user_address.delivery_address
         user_address.delete()
 
         # Проверяем, остался ли этот адрес у кого-то еще
@@ -98,12 +102,14 @@ class UserDeliveryAddressViewSet(viewsets.ModelViewSet):
         if is_default is None:
             return Response({"error": "Field 'is_default' is required."}, status=status.HTTP_400_BAD_REQUEST)
 
-        user_address = UserDeliveryAddress.objects.filter(id=address_id, user=user).first()
+        user_address = UserDeliveryAddress.objects.filter(
+            id=address_id, user=user).first()
         if not user_address:
             return Response({"error": "Address not found."}, status=status.HTTP_404_NOT_FOUND)
 
         if is_default:  # Если делаем этот адрес основным, снимаем is_default с других
-            UserDeliveryAddress.objects.filter(user=user).update(is_default=False)
+            UserDeliveryAddress.objects.filter(
+                user=user).update(is_default=False)
 
         user_address.is_default = is_default
         user_address.save()
@@ -158,7 +164,8 @@ class OrderCartViewSet(viewsets.ModelViewSet):
 
     serializer_class = OrderCartSerializer
     permission_classes = [IsAuthenticated]
-    http_method_names = ["get", "post", "patch", "put", "delete", "head", "options"]
+    http_method_names = ["get", "post", "patch",
+                         "put", "delete", "head", "options"]
 
     def get_queryset(self):
         return Order.objects.filter(user=self.request.user, status=Order.Status.awaiting_payment)
@@ -170,7 +177,8 @@ class OrderCartViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         """Создание нового заказа в корзине."""
-        serializer.save(user=self.request.user, status=Order.Status.awaiting_payment)
+        serializer.save(user=self.request.user,
+                        status=Order.Status.awaiting_payment)
 
 
 class OrderHistoryViewSet(viewsets.ModelViewSet):
