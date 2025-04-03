@@ -218,8 +218,14 @@ export const HomePage = () => {
                                                                     }
                                                                 })
 
-                                                                const defaultAddress = userAddresses?.find((address: DeliveryAddress) => address.is_default) as DeliveryAddress;
-                                                                copy.address = defaultAddress.id ?? "";
+                                                                if (!copy.address) {
+                                                                    const defaultAddress = userAddresses?.find((address: DeliveryAddress) => address.is_default) as DeliveryAddress;
+                                                                    copy.address = defaultAddress.id ?? "";
+                                                                }
+                                                                else {
+                                                                    const address = userAddresses.find((add: DeliveryAddress) => add.delivery_address === copy.address) as DeliveryAddress;
+                                                                    copy.address = address.id
+                                                                }
 
                                                                 userApi.updateUserCart(copy)
                                                                     .then(r => {

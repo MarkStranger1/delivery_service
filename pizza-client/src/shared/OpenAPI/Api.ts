@@ -107,8 +107,8 @@ export class UserApi extends BaseApi {
             .then(r => { return r.json(); });
     }
 
-    createUserCart(dish: { dish: number, quantity: number }) {
-        return this.sendRequest('POST', 'orders/cart/', { "dishes_ordered": [dish] }, true)
+    createUserCart() {
+        return this.sendRequest('POST', 'orders/cart/', { "dishes_ordered": [] }, true)
             .then(r => { return r.json(); });
     }
 

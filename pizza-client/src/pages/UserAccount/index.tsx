@@ -18,6 +18,8 @@ export const UserAccountPage = () => {
     }
 
     const convertOrderStatus = {
+        "awaiting_courier": 'ожидание курьера',
+        'awaiting_payment': 'ожидание оплаты',
         'delivered': 'доставлен'
     }
 
@@ -76,6 +78,70 @@ export const UserAccountPage = () => {
         return 0;
     }
 
+    const removeDishHandler = (dishName: string) => {
+        if (user) {
+            const userApi = new UserApi();
+
+            const copy = JSON.parse(JSON.stringify(userCart));
+            const removedDish = copy.dishes.find((d: any) => d.dish === dishName);
+
+            if (removedDish) {
+                if (removedDish.quantity > 1) {
+                    removedDish.quantity--;
+                }
+                else {
+                    copy.dishes = copy.dishes.filter((d: any) => d.dish !== dishName);
+                }
+
+                Object.assign(copy, { dishes_ordered: copy.dishes });
+                delete copy.dishes;
+
+                if (!copy.address) {
+                    const defaultAddress = userAddresses?.find((address: DeliveryAddress) => address.is_default) as DeliveryAddress;
+                    copy.address = defaultAddress.id ?? "";
+                }
+                else {
+                    const address = userAddresses?.find((add: DeliveryAddress) => add.delivery_address === copy.address) as DeliveryAddress;
+                    copy.address = address.id
+                }
+
+                copy.dishes_ordered.forEach((d: any) => {
+                    if (typeof d.dish === "string" && d.id) {
+                        d.dish = d.id
+                        delete d.id;
+                    }
+                })
+
+                userApi.updateUserCart(copy)
+                    .then(r => {
+                        userApi.getUserCart()
+                            .then(res => {
+                                setUserCart(res[0]);
+                            })
+                    })
+            }
+        }
+    }
+
+    const clearCartHandler = () => {
+        const copy = JSON.parse(JSON.stringify(userCart));
+
+        Object.assign(copy, { dishes_ordered: [] });
+        delete copy.dishes;
+
+        const defaultAddress = userAddresses?.find((address: DeliveryAddress) => address.is_default) as DeliveryAddress;
+        copy.address = defaultAddress.id ?? "";
+
+
+        userApi.updateUserCart(copy)
+            .then(r => {
+                userApi.getUserCart()
+                    .then(res => {
+                        setUserCart(res[0]);
+                    })
+            })
+    }
+
     useEffect(() => {
         userApi.getUserInfo()
             .then((r) => {
@@ -108,12 +174,11 @@ export const UserAccountPage = () => {
                 setUserOrdersHistory(response[0]);
 
                 if (response[1].length === 0) {
-                    userApi.createUserCart({ dish: 0, quantity: 0 })
+                    userApi.createUserCart()
                         .then((r: any) => {
                             r && r.id && userApi.getUserCart(r.id)
                                 .then((res: any) => {
-                                    res[0].delivery_time = res[0].delivery_time.split("T")[0];
-                                    setUserCart(res[0])
+                                    setUserCart(res)
                                 })
                         })
                 }
@@ -125,7 +190,6 @@ export const UserAccountPage = () => {
                             copy.address = defaultAddress.id ?? "";
                             userApi.updateUserCart(copy)
                                 .then(res => {
-                                    res[0].delivery_time = res[0].delivery_time.split("T")[0];
                                     setUserCart(res[0]);
                                 })
                         }
@@ -136,13 +200,11 @@ export const UserAccountPage = () => {
                             userApi.editDeliveryAddresses(response[2][0].id, true)
                             userApi.updateUserCart(copy)
                                 .then(res => {
-                                    res[0].delivery_time = res[0].delivery_time.split("T")[0];
                                     setUserCart(res[0])
                                 })
                         }
                     }
                     else {
-                        response[1][0].delivery_time = response[1][0].delivery_time.split("T")[0];
                         setUserCart(response[1][0])
                     }
                 }
@@ -298,10 +360,13 @@ export const UserAccountPage = () => {
                                     onClick={() => {
                                         userApi.authUser(userLogin, userLoginPass)
                                             .then(async (r) => {
-                                                let res = await userApi.getUserInfo() as User;
-                                                setUserLogin(res);
-                                                setUser(res);
-                                                setSelectedPage('currOrder')
+                                                let res = await userApi.getUserInfo();
+                                                if (!res.detail) {
+                                                    setUserLogin(res as User);
+                                                    setUser(res as User);
+                                                    setSelectedPage('currOrder')
+                                                }
+
                                             })
                                     }}>
                                     Login
@@ -478,22 +543,53 @@ export const UserAccountPage = () => {
 
                                             <div className="cart-container__left-cart">
 
-                                                <p className="left-cart__title"><b>Заказ в</b> {userCart.address}</p>
+                                                <span className="left-cart__title"><b>Заказ в</b>
+                                                    <select
+                                                        className="title__select-address"
+                                                        value={userCart.address}
+                                                        onChange={(e) => {
+                                                            const copy = JSON.parse(JSON.stringify(userCart)) as Cart;
+                                                            const newAddress = userAddresses?.find((address: DeliveryAddress) => e.target.value === address.delivery_address) as DeliveryAddress;
+                                                            copy.address = newAddress.id ?? "";
+                                                            userApi.updateUserCart(copy)
+                                                                .then(r => {
+                                                                    userApi.getUserCart()
+                                                                        .then(res => {
+                                                                            setUserCart(res[0]);
+                                                                        })
+                                                                })
+                                                        }}
+                                                    >
+                                                        {userAddresses && userAddresses.map(addr => {
+                                                            return <option value={addr.delivery_address}>{addr.delivery_address}</option>
+                                                        })}
+                                                    </select>
+                                                    <p className="title__status"><b>Статус: </b>{convertOrderStatus[userCart.status as keyof typeof convertOrderStatus]}</p>
+                                                </span>
                                                 <div className="left-cart__change-time"> <b>Время доставки: </b>
                                                     <input
-                                                        type="date"
+                                                        type="datetime-local"
                                                         className="change-time__input-delvery-time"
                                                         value={userCart.delivery_time}
                                                         onChange={(e) => {
-                                                            const copy = JSON.parse(JSON.stringify(userCart)) as Cart;
-                                                            const defaultAddress = userAddresses?.find((address: DeliveryAddress) => address.is_default) as DeliveryAddress;
-                                                            copy.address = defaultAddress.id ?? "";
-                                                            copy.delivery_time = (new Date(e.target.value)).toISOString().slice(0, -5);
+                                                            const copy = JSON.parse(JSON.stringify(userCart));
+
+                                                            if (!copy.address) {
+                                                                const defaultAddress = userAddresses?.find((address: DeliveryAddress) => address.is_default) as DeliveryAddress;
+                                                                copy.address = defaultAddress.id ?? "";
+                                                            }
+                                                            else {
+                                                                const address = userAddresses?.find((add: DeliveryAddress) => add.delivery_address === copy.address) as DeliveryAddress;
+                                                                copy.address = address.id
+                                                            }
+
+                                                            copy.delivery_time = e.target.value;
                                                             userApi.updateUserCart(copy)
                                                                 .then(r => {
-                                                                    const newCart = JSON.parse(JSON.stringify(userCart)) as Cart;
-                                                                    newCart.delivery_time = r.delivery_time.split("T")[0];
-                                                                    setUserCart(newCart);
+                                                                    userApi.getUserCart()
+                                                                        .then(r => {
+                                                                            setUserCart(r[0]);
+                                                                        })
                                                                 })
                                                         }}
                                                     />
@@ -508,12 +604,22 @@ export const UserAccountPage = () => {
                                                         {userCart.dishes && userCart.dishes.length > 0 && userCart.dishes.map(dish => {
                                                             return <>
                                                                 <p className="dishes-list__dish-item">
-                                                                    <button className="dish-item__remove-item" />
+                                                                    <button
+                                                                        className="dish-item__remove-item"
+                                                                        onClick={() => removeDishHandler(dish.dish)}
+                                                                    />
                                                                     {dish.dish} - {dish.quantity} шт. ({getDishTotalCostById(dish.id, dish.quantity)} руб.)
                                                                 </p>
                                                             </>
                                                         })}
                                                     </div>
+                                                </div>
+
+                                                <div className="left-cart__divider" />
+
+                                                <div className="left-cart__buttons-container">
+                                                    <button className="buttons-container__button" onClick={() => window.open("https://vk.com/mark_stranger", "_blank")}>Оплатить</button>
+                                                    <button className="buttons-container__button" onClick={clearCartHandler}>Очистить</button>
                                                 </div>
 
                                             </div>

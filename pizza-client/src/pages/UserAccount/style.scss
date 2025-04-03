@@ -237,8 +237,9 @@
 }
 
 .left-cart__title {
+    display: block;
     margin: 0;
-    margin-bottom: 10px;
+    margin-bottom: 20px;
     font-size: 26px;
 }
 
@@ -272,4 +273,33 @@
 
 .dish-item__remove-item:hover {
     background-color: #f09e98;
+}
+
+.title__select-address {
+    padding: 3px;
+    border: none;
+    border-radius: 5px;
+    outline: 1px solid #1d4260;
+    background-color: inherit;
+    margin-left: 10px;
+}
+
+
+.left-cart__divider {
+    border: 2px solid #1d4260;
+    margin: 10px auto;
+}
+
+.left-cart__buttons-container {
+    display: flex;
+    justify-content: space-around;
+}
+
+.buttons-container__button {
+    min-width: 200px;
+    color: #d8d8d8;
+    text-decoration: none;
+    background-color: #567e9f;
+    border-radius: 10px;
+    margin: 8px 5px;
 }
