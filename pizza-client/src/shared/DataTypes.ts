@@ -67,9 +67,12 @@ export interface Cart {
     address: number,
     status: string,
     comment: string,
+    count_dishes: number,
+    total_cost: number,
     delivery_time: string,
-    dishes_ordered: Array<{
+    dishes: Array<{
+        id: number,
         dish: string,
-        quantity: string
+        quantity: number
     }>
 }

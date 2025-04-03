@@ -1,9 +1,9 @@
 import { useContext, useEffect, useState } from "react"
 import { Link } from "react-router-dom";
-import { Cart, DeliveryAddress, Order, User } from "../../shared/DataTypes"
+import { Cart, DeliveryAddress, Dish, Order, User } from "../../shared/DataTypes"
 
 import "./style.scss"
-import { UserApi } from "../../shared/OpenAPI/Api";
+import { MainApi, UserApi } from "../../shared/OpenAPI/Api";
 import { UserContainer } from "../../shared/Containers/UserContainer";
 
 export const UserAccountPage = () => {
@@ -35,6 +35,7 @@ export const UserAccountPage = () => {
     const [userRegisterPass, setUserRegisterPass] = useState<string>("");
     const [userLoginPass, setUserLoginPass] = useState<string>("");
     const [tmpPass, setTmpPass] = useState<string>("");
+    const [allDishes, setAllDishes] = useState<Array<Dish> | null>(null);
 
     const [selectedPage, setSelectedPage] = useState<'login' | 'updData' | 'currOrder' | 'allOrders'>('login');
 
@@ -66,6 +67,15 @@ export const UserAccountPage = () => {
         }
     }
 
+    const getDishTotalCostById = (dishId: number, count: number): number => {
+        if (allDishes) {
+            const finded = allDishes.find(dish => dish.id === dishId);
+            if (finded)
+                return finded.cost * count;
+        }
+        return 0;
+    }
+
     useEffect(() => {
         userApi.getUserInfo()
             .then((r) => {
@@ -73,6 +83,12 @@ export const UserAccountPage = () => {
                     setUserLogin(r);
                     selectedPage === 'login' && setSelectedPage('updData');
                 }
+            })
+
+        const mainApi = new MainApi();
+        mainApi.getDishes()
+            .then(r => {
+                !allDishes && setAllDishes(r);
             })
 
         setUserLogin(user ? user : defaultUser);
@@ -95,7 +111,10 @@ export const UserAccountPage = () => {
                     userApi.createUserCart({ dish: 0, quantity: 0 })
                         .then((r: any) => {
                             r && r.id && userApi.getUserCart(r.id)
-                                .then((res: any) => setUserCart(res[0]))
+                                .then((res: any) => {
+                                    res[0].delivery_time = res[0].delivery_time.split("T")[0];
+                                    setUserCart(res[0])
+                                })
                         })
                 }
                 else {
@@ -105,7 +124,10 @@ export const UserAccountPage = () => {
                             const copy = JSON.parse(JSON.stringify(response[1][0])) as Cart
                             copy.address = defaultAddress.id ?? "";
                             userApi.updateUserCart(copy)
-                                .then(res => setUserCart(res[0]))
+                                .then(res => {
+                                    res[0].delivery_time = res[0].delivery_time.split("T")[0];
+                                    setUserCart(res[0]);
+                                })
                         }
                         else {
                             (response[2][0] as DeliveryAddress).is_default = true
@@ -113,10 +135,16 @@ export const UserAccountPage = () => {
                             copy.address = response[2][0].id ?? "";
                             userApi.editDeliveryAddresses(response[2][0].id, true)
                             userApi.updateUserCart(copy)
-                                .then(res => setUserCart(res[0]))
+                                .then(res => {
+                                    res[0].delivery_time = res[0].delivery_time.split("T")[0];
+                                    setUserCart(res[0])
+                                })
                         }
                     }
-                    else setUserCart(response[1][0])
+                    else {
+                        response[1][0].delivery_time = response[1][0].delivery_time.split("T")[0];
+                        setUserCart(response[1][0])
+                    }
                 }
                 setUserAddresses(response[2])
                 !newAddress && setNewAddress({
@@ -447,22 +475,52 @@ export const UserAccountPage = () => {
                                     ?
                                     <>
                                         <div className="main-content__cart-container">
-                                            Заказ в {userCart.address}
 
-                                            Время доставки:
-                                            <input
-                                                type="datetime-local"
-                                                className="cart-container__input-delvery-time"
-                                                value={userCart.delivery_time}
-                                                onChange={(e) => {
-                                                    const copy = JSON.parse(JSON.stringify(userCart)) as Cart;
-                                                    const defaultAddress = userAddresses?.find((address: DeliveryAddress) => address.is_default) as DeliveryAddress;
-                                                    copy.address = defaultAddress.id ?? "";
-                                                    copy.delivery_time = (new Date(e.target.value)).toISOString().slice(0, -5);
-                                                    userApi.updateUserCart(copy)
-                                                        .then(r => setUserCart(r))
-                                                }}
-                                            />
+                                            <div className="cart-container__left-cart">
+
+                                                <p className="left-cart__title"><b>Заказ в</b> {userCart.address}</p>
+                                                <div className="left-cart__change-time"> <b>Время доставки: </b>
+                                                    <input
+                                                        type="date"
+                                                        className="change-time__input-delvery-time"
+                                                        value={userCart.delivery_time}
+                                                        onChange={(e) => {
+                                                            const copy = JSON.parse(JSON.stringify(userCart)) as Cart;
+                                                            const defaultAddress = userAddresses?.find((address: DeliveryAddress) => address.is_default) as DeliveryAddress;
+                                                            copy.address = defaultAddress.id ?? "";
+                                                            copy.delivery_time = (new Date(e.target.value)).toISOString().slice(0, -5);
+                                                            userApi.updateUserCart(copy)
+                                                                .then(r => {
+                                                                    const newCart = JSON.parse(JSON.stringify(userCart)) as Cart;
+                                                                    newCart.delivery_time = r.delivery_time.split("T")[0];
+                                                                    setUserCart(newCart);
+                                                                })
+                                                        }}
+                                                    />
+                                                </div>
+
+                                                <div className="left-cart__dishes-container">
+
+                                                    <b>Стоимость заказа: </b> {userCart.total_cost} руб.
+
+                                                    <div className="dishes-container__dishes-list">
+                                                        <b>Содержимое:</b><br />
+                                                        {userCart.dishes && userCart.dishes.length > 0 && userCart.dishes.map(dish => {
+                                                            return <>
+                                                                <p className="dishes-list__dish-item">
+                                                                    <button className="dish-item__remove-item" />
+                                                                    {dish.dish} - {dish.quantity} шт. ({getDishTotalCostById(dish.id, dish.quantity)} руб.)
+                                                                </p>
+                                                            </>
+                                                        })}
+                                                    </div>
+                                                </div>
+
+                                            </div>
+
+                                            <div className="cart-container__right-cart">
+
+                                            </div>
                                         </div>
                                     </>
                                     :

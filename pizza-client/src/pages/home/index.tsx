@@ -1,12 +1,14 @@
-import { useEffect, useRef, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import { Header } from "../../components/Header"
-import { Dish, TypeOfDish } from "../../shared/DataTypes";
+import { Cart as CartType, DeliveryAddress, Dish, TypeOfDish } from "../../shared/DataTypes";
 import Spinner from 'react-bootstrap/Spinner';
 //@ts-ignore
 import PizzaImg from "../../shared/assets/pizza/p1avif.avif"
-import { MainApi } from "../../shared/OpenAPI/Api";
+import { MainApi, UserApi } from "../../shared/OpenAPI/Api";
 
 import "./style.scss"
+import { UserContainer } from "../../shared/Containers/UserContainer";
+import Cart from "../../components/Cart";
 
 export const HomePage = () => {
 
@@ -22,6 +24,11 @@ export const HomePage = () => {
 
     const [modalData, setModalData] = useState<Dish | null>(null);
     const [changeData, setChangeData] = useState<-1 | 1>(1);
+
+    const [userCart, setUserCart] = useState<CartType | null>(null);
+    const [userAddresses, setUserAddresses] = useState<Array<DeliveryAddress> | null>(null);
+
+    const { user } = useContext(UserContainer);
 
     const applyFilter = (data: Array<Dish>) => {
         enum cuisineConvert {
@@ -62,8 +69,17 @@ export const HomePage = () => {
             setDishesData(results[0]);
             setProductsType(results[1]);
         })
-
     }, [])
+
+    useEffect(() => {
+        if (user) {
+            const userApi = new UserApi();
+            userApi.getUserCart()
+                .then(res => setUserCart(res[0]));
+            userApi.getDeliveryAddresses()
+                .then(res => setUserAddresses(res));
+        }
+    }, [user])
 
     useEffect(() => {
         if (!selectedProdType && productsType)
@@ -141,6 +157,22 @@ export const HomePage = () => {
                             })}
                         </div>
 
+                        {user
+                            && userCart
+                            && userAddresses
+                            && <>
+                                <Cart
+                                    userCart={userCart}
+                                    userAddresses={userAddresses}
+                                    allDishes={dishesData}
+                                    forceUpdCart={() => {
+                                        const userApi = new UserApi();
+                                        userApi.getUserCart()
+                                            .then(res => setUserCart(res[0]))
+                                    }}
+                                />
+                            </>}
+
                         <div
                             className={"dishes-container " + (changeData === 1 ? 'fade-in' : changeData === -1 ? 'fade-out' : '')}
                             style={changeData === 1 ? { opacity: 100 } : changeData === -1 ? { opacity: 100 } : {}}
@@ -153,6 +185,52 @@ export const HomePage = () => {
                                             <p className="dish-item__title">{dish.name}</p>
                                             <span className="dish-item__desc">{dish.description}</span>
                                             <p className="dish-item__about-text" onClick={() => setModalData(dish)}>Подробнее</p>
+                                            {user && <div className="dish-item__cart-interaction">
+                                                <p className="cart-interaction__cost">{dish.cost}руб.</p>
+                                                <button
+                                                    className="cart-interaction__add-to-cart-button"
+                                                    onClick={() => {
+                                                        if (userCart && userAddresses) {
+                                                            const userApi = new UserApi();
+
+                                                            const copy = JSON.parse(JSON.stringify(userCart));
+
+                                                            const findedDish = dishesData.find(d => d.id === dish.id);
+
+                                                            if (findedDish) {
+                                                                const existInList = copy.dishes.find((d: any) => d.id === findedDish.id);
+                                                                if (existInList) {
+                                                                    existInList.quantity++;
+                                                                }
+                                                                else {
+                                                                    copy.dishes.push({
+                                                                        dish: dish.id,
+                                                                        quantity: 1
+                                                                    })
+                                                                }
+                                                                Object.assign(copy, { dishes_ordered: copy.dishes });
+                                                                delete copy.dishes;
+
+                                                                copy.dishes_ordered.forEach((d: any) => {
+                                                                    if (typeof d.dish === "string" && d.id) {
+                                                                        d.dish = d.id
+                                                                        delete d.id;
+                                                                    }
+                                                                })
+
+                                                                const defaultAddress = userAddresses?.find((address: DeliveryAddress) => address.is_default) as DeliveryAddress;
+                                                                copy.address = defaultAddress.id ?? "";
+
+                                                                userApi.updateUserCart(copy)
+                                                                    .then(r => {
+                                                                        userApi.getUserCart()
+                                                                            .then(res => setUserCart(res[0]))
+                                                                    })
+                                                            }
+
+                                                        }
+                                                    }} />
+                                            </div>}
                                         </div>
                                     </>
                                 })}

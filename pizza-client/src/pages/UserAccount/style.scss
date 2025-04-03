@@ -158,6 +158,7 @@
     background-color: #cfdfed;
     padding: 13px;
     border-radius: 10px;
+    gap: 10px;
 }
 
 .main-content__addresses-list {
@@ -210,4 +211,65 @@
     border-radius: 10px;
     outline: 1px solid #1d4260;
     padding: 4px;
+}
+
+.main-content__cart-container {
+    display: flex;
+}
+
+.cart-container__left-cart,
+.cart-container__right-cart {
+    flex: 1 1;
+    margin: 50px 99px auto;
+    font-size: 1.3rem;
+    border-radius: 5px;
+    outline: 1px solid #1d4260;
+    padding: 7px;
+    background-color: #cfdfed;
+}
+
+.change-time__input-delvery-time {
+    padding: 3px;
+    border: none;
+    border-radius: 5px;
+    outline: 1px solid #1d4260;
+    background-color: inherit;
+}
+
+.left-cart__title {
+    margin: 0;
+    margin-bottom: 10px;
+    font-size: 26px;
+}
+
+.addresses-list__list-item>.list-item__delete-button {
+    background-image: none;
+    width: fit-content;
+    aspect-ratio: initial;
+}
+
+.dishes-list__dish-item {
+    display: flex;
+    align-items: center;
+    margin: 10px auto;
+    margin-left: 15px;
+}
+
+.dish-item__remove-item {
+    margin-right: 5px;
+    background-image: url("../../shared/icons/removeButton.svg");
+    background-position: center;
+    width: 15px;
+    aspect-ratio: 1;
+    border: none;
+    background-repeat: no-repeat;
+    background-size: 70%;
+    background-color: #cad7e2;
+    padding: 15px;
+    border-radius: 10px;
+    transition: all 0.3s ease-in-out;
+}
+
+.dish-item__remove-item:hover {
+    background-color: #f09e98;
 }

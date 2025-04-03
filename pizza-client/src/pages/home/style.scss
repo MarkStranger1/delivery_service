@@ -193,6 +193,34 @@ dialog:-internal-dialog-in-top-layer::backdrop {
     text-decoration: underline;
 }
 
+.dish-item__cart-interaction {
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+}
+
+.cart-interaction__cost {
+    margin: 0;
+}
+
+.cart-interaction__add-to-cart-button {
+    background-image: url('../../shared/icons/basket.png');
+    background-position: center;
+    width: 39px;
+    aspect-ratio: 1;
+    border: none;
+    background-repeat: no-repeat;
+    background-size: 70%;
+    background-color: #cad7e2;
+    padding: 15px;
+    border-radius: 10px;
+    transition: all .3s ease-in-out;
+}
+
+.cart-interaction__add-to-cart-button:hover {
+    background-color: #96b3ca;
+}
+
 .modal-container {
     display: grid;
     grid-template-areas:

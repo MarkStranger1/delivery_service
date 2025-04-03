@@ -15,6 +15,11 @@ const App = () => {
   const userApi = new UserApi();
 
   useEffect(() => {
+    userApi.getUserInfo()
+      .then(res => {
+        if (!res.detail) setUser(res);
+      })
+
     const interval = setInterval(async () => {
       const res = await userApi.getUserInfo();
       if (!res.detail) setUser(res);
