@@ -186,8 +186,18 @@ export const UserAccountPage = () => {
                     if (!response[1][0].address) {
                         const defaultAddress = response[2].find((address: DeliveryAddress) => address.is_default) as DeliveryAddress;
                         if (defaultAddress) {
-                            const copy = JSON.parse(JSON.stringify(response[1][0])) as Cart
+                            const copy = JSON.parse(JSON.stringify(response[1][0]))
                             copy.address = defaultAddress.id ?? "";
+
+                            Object.assign(copy, { dishes_ordered: copy.dishes });
+                            delete copy.dishes;
+                            copy.dishes_ordered.forEach((d: any) => {
+                                if (typeof d.dish === "string" && d.id) {
+                                    d.dish = d.id
+                                    delete d.id;
+                                }
+                            })
+
                             userApi.updateUserCart(copy)
                                 .then(res => {
                                     setUserCart(res[0]);
@@ -195,8 +205,18 @@ export const UserAccountPage = () => {
                         }
                         else {
                             (response[2][0] as DeliveryAddress).is_default = true
-                            const copy = JSON.parse(JSON.stringify(response[1][0])) as Cart
+                            const copy = JSON.parse(JSON.stringify(response[1][0]))
                             copy.address = response[2][0].id ?? "";
+
+                            Object.assign(copy, { dishes_ordered: copy.dishes });
+                            delete copy.dishes;
+                            copy.dishes_ordered.forEach((d: any) => {
+                                if (typeof d.dish === "string" && d.id) {
+                                    d.dish = d.id
+                                    delete d.id;
+                                }
+                            })
+
                             userApi.editDeliveryAddresses(response[2][0].id, true)
                             userApi.updateUserCart(copy)
                                 .then(res => {
@@ -548,9 +568,20 @@ export const UserAccountPage = () => {
                                                         className="title__select-address"
                                                         value={userCart.address}
                                                         onChange={(e) => {
-                                                            const copy = JSON.parse(JSON.stringify(userCart)) as Cart;
+                                                            const copy = JSON.parse(JSON.stringify(userCart));
                                                             const newAddress = userAddresses?.find((address: DeliveryAddress) => e.target.value === address.delivery_address) as DeliveryAddress;
                                                             copy.address = newAddress.id ?? "";
+
+
+                                                            Object.assign(copy, { dishes_ordered: copy.dishes });
+                                                            delete copy.dishes;
+                                                            copy.dishes_ordered.forEach((d: any) => {
+                                                                if (typeof d.dish === "string" && d.id) {
+                                                                    d.dish = d.id
+                                                                    delete d.id;
+                                                                }
+                                                            })
+
                                                             userApi.updateUserCart(copy)
                                                                 .then(r => {
                                                                     userApi.getUserCart()
@@ -584,6 +615,17 @@ export const UserAccountPage = () => {
                                                             }
 
                                                             copy.delivery_time = e.target.value;
+
+
+                                                            Object.assign(copy, { dishes_ordered: copy.dishes });
+                                                            delete copy.dishes;
+                                                            copy.dishes_ordered.forEach((d: any) => {
+                                                                if (typeof d.dish === "string" && d.id) {
+                                                                    d.dish = d.id
+                                                                    delete d.id;
+                                                                }
+                                                            })
+
                                                             userApi.updateUserCart(copy)
                                                                 .then(r => {
                                                                     userApi.getUserCart()
