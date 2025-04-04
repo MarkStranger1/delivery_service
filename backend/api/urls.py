@@ -21,6 +21,7 @@ router.register('types', views.TypeViewSet, basename='types')
 router.register('dishes', views.DishViewSet, basename='dishes')
 router.register(r'orders/cart', views.OrderCartViewSet, basename='orders-cart')
 router.register(r'orders/history', views.OrderHistoryViewSet, basename='history')
+router.register(r'orders/active', views.OrderActiveViewSet, basename='active')
 router.register(r'deliveryaddress', views.UserDeliveryAddressViewSet, basename="deliveryaddress")
 
 urlpatterns = [

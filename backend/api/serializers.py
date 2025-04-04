@@ -227,3 +227,21 @@ class OrderCartUpdateSerializer(serializers.ModelSerializer):
         instance.calculate_total_cost()
         instance.calculate_count_dishes()
         return instance
+
+
+class OrderActiveUpdateSerializer(serializers.ModelSerializer):
+    """Сериализатор для обновления заказов."""
+
+    dishes_ordered = OrderDishUpdateSerializer(
+        many=True, write_only=True)  # Позволяет обновлять блюда в заказе
+
+    class Meta:
+        model = Order
+        fields = [
+            "id",
+            "status",
+            "comment",
+            "delivery_time",
+            "address",
+            "dishes_ordered",
+        ]

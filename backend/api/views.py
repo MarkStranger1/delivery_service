@@ -19,11 +19,11 @@ from user.models import User, DeliveryAddress, UserDeliveryAddress
 
 from .filters import DishFilter, IngredientFilter
 from .permissions import IsAdminOrReadOnly
-from .serializers import (DishReadSerializer,
-                          IngredientSerializer,
+from .serializers import (DishReadSerializer, IngredientSerializer,
                           TypeSerializer, UserReadSerializer,
                           UserUpdateSerializer, OrderCartSerializer,
-                          OrderCartUpdateSerializer, UserDeliveryAddressSerializer)
+                          OrderCartUpdateSerializer, UserDeliveryAddressSerializer,
+                          OrderActiveUpdateSerializer)
 
 
 class UserViewSet(DjoserUserViewSet):
@@ -193,4 +193,27 @@ class OrderHistoryViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         """Выбираем только заказы текущего пользователя у которых любой статус, кроме 'awaiting_payment'."""
-        return Order.objects.filter(user=self.request.user).exclude(status=Order.Status.awaiting_payment)
+        return Order.objects.filter(
+            user=self.request.user,
+            status__in=[Order.Status.delivered, Order.Status.deliver, Order.Status.cancelled]
+        )
+
+
+class OrderActiveViewSet(viewsets.ModelViewSet):
+    """ViewSet для управления заказами в корзине (ожидание оплаты)."""
+
+    serializer_class = OrderCartSerializer
+    permission_classes = [IsAuthenticated]
+    http_method_names = ["get", "post", "patch",
+                         "put", "delete", "head", "options"]
+
+    def get_queryset(self):
+        return Order.objects.filter(
+            user=self.request.user,
+            status__in=[Order.Status.awaiting_courier, Order.Status.deliver, Order.Status.awaiting_payment]
+        )
+
+    def get_serializer_class(self):
+        if self.request.method in ["PATCH", "PUT", "POST"]:
+            return OrderActiveUpdateSerializer
+        return OrderCartSerializer
