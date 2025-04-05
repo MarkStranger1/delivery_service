@@ -60,6 +60,18 @@ export const HomePage = () => {
 
     }
 
+    const getDishImg = (url: string) => {
+        return PizzaImg;
+        // try {
+        //     fetch(url)
+        //         .catch(e => { })
+        //     return url;
+        // }
+        // catch (error) {
+        //     return PizzaImg;
+        // }
+    }
+
     useEffect(() => {
         const api = new MainApi();
         Promise.all([
@@ -104,7 +116,7 @@ export const HomePage = () => {
                         {modalData && <>
                             <dialog className="modal-container" ref={dialogRef}>
                                 <div className="modal-container__left-content">
-                                    <h1 className="left-content__title">{modalData.name}</h1>
+                                    <div className="left-content__title"><h1>{modalData.name}</h1> <p>{modalData.cost}руб.</p></div>
                                     <h5 className="left-content__subtitle">{modalData.type.name}</h5>
                                     <p className="left-content__food-value">Пищевая ценность:<br />{modalData.weight} г. - {modalData.ccal} Ккал</p>
                                     <p className="left-content__desc">{modalData.description}</p><br />
@@ -181,7 +193,7 @@ export const HomePage = () => {
                                 && applyFilter(dishesData).map(dish => {
                                     return <>
                                         <div className="dishes-container__dish-item" key={`${dish.id}${dish.name}__${dish.type.slug}`}>
-                                            <img src={PizzaImg} alt="" className="dish-item__img" />
+                                            <img src={getDishImg(dish.image)} alt="" className="dish-item__img" />
                                             <p className="dish-item__title">{dish.name}</p>
                                             <span className="dish-item__desc">{dish.description}</span>
                                             <p className="dish-item__about-text" onClick={() => setModalData(dish)}>Подробнее</p>

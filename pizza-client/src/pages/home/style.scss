@@ -106,11 +106,12 @@ dialog:-internal-dialog-in-top-layer::backdrop {
 .dishes-container {
     display: grid;
     grid-template-columns: repeat(4, 300px);
-    column-gap: 5px;
+    grid-template-rows: 580px;
+    gap: 5px;
     width: fit-content;
     margin: 60px auto 0;
     opacity: 100;
-    transition: all .4s ease-in-out;
+    transition: all 0.4s ease-in-out;
 }
 
 .fade-in {
@@ -146,6 +147,7 @@ dialog:-internal-dialog-in-top-layer::backdrop {
 .dishes-container__dish-item {
     max-width: 300px;
     min-height: 500px;
+    height: 100%;
     margin-bottom: 20px;
     background-color: rgb(255, 255, 255);
     border-width: 2px;
@@ -238,7 +240,13 @@ dialog:-internal-dialog-in-top-layer::backdrop {
 }
 
 .left-content__title {
+    display: flex;
     margin: 0;
+    align-items: flex-end;
+}
+
+.left-content__title p {
+    margin: 0 0 0.6rem 10px;
 }
 
 .left-content__subtitle {

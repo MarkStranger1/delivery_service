@@ -18,9 +18,11 @@ export const UserAccountPage = () => {
     }
 
     const convertOrderStatus = {
-        "awaiting_courier": 'ожидание курьера',
         'awaiting_payment': 'ожидание оплаты',
-        'delivered': 'доставлен'
+        "awaiting_courier": 'ожидание курьера',
+        'deliver': "доставляем",
+        'delivered': 'доставлен',
+        "cancelled": "отменен"
     }
 
     const { user, setUser } = useContext(UserContainer);
@@ -76,6 +78,46 @@ export const UserAccountPage = () => {
                 return finded.cost * count;
         }
         return 0;
+    }
+
+    const addDishHandler = (dishName: string) => {
+        if (user) {
+            const userApi = new UserApi();
+
+            const copy = JSON.parse(JSON.stringify(userCart));
+            const incDish = copy.dishes.find((d: any) => d.dish === dishName);
+
+            if (incDish) {
+                incDish.quantity++;
+
+                Object.assign(copy, { dishes_ordered: copy.dishes });
+                delete copy.dishes;
+
+                if (!copy.address) {
+                    const defaultAddress = userAddresses?.find((address: DeliveryAddress) => address.is_default) as DeliveryAddress;
+                    copy.address = defaultAddress.id ?? "";
+                }
+                else {
+                    const address = userAddresses?.find((add: DeliveryAddress) => add.delivery_address === copy.address) as DeliveryAddress;
+                    copy.address = address.id
+                }
+
+                copy.dishes_ordered.forEach((d: any) => {
+                    if (typeof d.dish === "string" && d.id) {
+                        d.dish = d.id
+                        delete d.id;
+                    }
+                })
+
+                userApi.updateUserCart(copy)
+                    .then(r => {
+                        userApi.getUserCart()
+                            .then(res => {
+                                setUserCart(res[0]);
+                            })
+                    })
+            }
+        }
     }
 
     const removeDishHandler = (dishName: string) => {
@@ -650,6 +692,10 @@ export const UserAccountPage = () => {
                                                                         className="dish-item__remove-item"
                                                                         onClick={() => removeDishHandler(dish.dish)}
                                                                     />
+                                                                    <button
+                                                                        className="dish-item__inc-item"
+                                                                        onClick={() => addDishHandler(dish.dish)}
+                                                                    />
                                                                     {dish.dish} - {dish.quantity} шт. ({getDishTotalCostById(dish.id, dish.quantity)} руб.)
                                                                 </p>
                                                             </>
@@ -660,7 +706,32 @@ export const UserAccountPage = () => {
                                                 <div className="left-cart__divider" />
 
                                                 <div className="left-cart__buttons-container">
-                                                    <button className="buttons-container__button" onClick={() => window.open("https://vk.com/mark_stranger", "_blank")}>Оплатить</button>
+                                                    <button className="buttons-container__button" onClick={() => {
+                                                        window.open("https://vk.com/mark_stranger", "_blank")
+                                                        const copy = JSON.parse(JSON.stringify(userCart));
+                                                        copy.status = "awaiting_courier";
+
+                                                        const address = userAddresses?.find((add: DeliveryAddress) => add.delivery_address === copy.address) as DeliveryAddress;
+                                                        copy.address = address.id
+
+                                                        Object.assign(copy, { dishes_ordered: copy.dishes });
+                                                        delete copy.dishes;
+                                                        copy.dishes_ordered.forEach((d: any) => {
+                                                            if (typeof d.dish === "string" && d.id) {
+                                                                d.dish = d.id
+                                                                delete d.id;
+                                                            }
+                                                        })
+
+                                                        userApi.updateUserCart(copy)
+                                                            .then(r => {
+                                                                userApi.getUserCart()
+                                                                    .then(r => {
+                                                                        setUserCart(r[0]);
+                                                                    })
+                                                            })
+
+                                                    }}>Оплатить</button>
                                                     <button className="buttons-container__button" onClick={clearCartHandler}>Очистить</button>
                                                 </div>
 

@@ -256,7 +256,8 @@
     margin-left: 15px;
 }
 
-.dish-item__remove-item {
+.dish-item__remove-item,
+.dish-item__inc-item {
     margin-right: 5px;
     background-image: url("../../shared/icons/removeButton.svg");
     background-position: center;
@@ -269,6 +270,15 @@
     padding: 15px;
     border-radius: 10px;
     transition: all 0.3s ease-in-out;
+}
+
+.dish-item__inc-item {
+    background-image: url("../../shared/icons/incButton.svg");
+    background-size: 50%;
+}
+
+.dish-item__inc-item:hover {
+    background-color: #cef098;
 }
 
 .dish-item__remove-item:hover {
