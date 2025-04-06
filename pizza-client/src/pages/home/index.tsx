@@ -10,6 +10,7 @@ import "./style.scss"
 import { UserContainer } from "../../shared/Containers/UserContainer";
 import Cart from "../../components/Cart";
 import { Footer } from "../../components/Footer";
+import { DishImg } from "../../components/DishImg";
 
 export const HomePage = () => {
 
@@ -59,18 +60,6 @@ export const HomePage = () => {
             }, 500);
         }
 
-    }
-
-    const getDishImg = (url: string) => {
-        return PizzaImg;
-        // try {
-        //     fetch(url)
-        //         .catch(e => { })
-        //     return url;
-        // }
-        // catch (error) {
-        //     return PizzaImg;
-        // }
     }
 
     useEffect(() => {
@@ -194,7 +183,7 @@ export const HomePage = () => {
                                 && applyFilter(dishesData).map(dish => {
                                     return <>
                                         <div className="dishes-container__dish-item" key={`${dish.id}${dish.name}__${dish.type.slug}`}>
-                                            <img src={getDishImg(dish.image)} alt="" className="dish-item__img" />
+                                            <DishImg img={dish.image} />
                                             <p className="dish-item__title">{dish.name}</p>
                                             <span className="dish-item__desc">{dish.description}</span>
                                             <p className="dish-item__about-text" onClick={() => setModalData(dish)}>Подробнее</p>
