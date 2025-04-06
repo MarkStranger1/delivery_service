@@ -20,4 +20,5 @@ export const DishImg = (props: { img: string }) => {
             alt="dish-img"
             className="dish-item__img" />
     </>
+
 }
