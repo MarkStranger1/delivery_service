@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import './App.css';
-import { HomePage } from './pages/Home';
+import { HomePage } from './pages/home';
 import { UserAccountPage } from './pages/UserAccount';
 import { NotFoundPage } from './pages/NotFound/Index';
 import { UserContainer } from './shared/Containers/UserContainer';
