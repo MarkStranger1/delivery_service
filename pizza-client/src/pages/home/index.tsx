@@ -9,6 +9,7 @@ import { MainApi, UserApi } from "../../shared/OpenAPI/Api";
 import "./style.scss"
 import { UserContainer } from "../../shared/Containers/UserContainer";
 import Cart from "../../components/Cart";
+import { Footer } from "../../components/Footer";
 
 export const HomePage = () => {
 
@@ -105,7 +106,7 @@ export const HomePage = () => {
 
 
     return <>
-        <Header />
+        <Header user={user} />
         <div className="main-content">
 
             {
@@ -265,5 +266,6 @@ export const HomePage = () => {
 
 
         </div >
+        <Footer />
     </>
 }

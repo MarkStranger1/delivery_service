@@ -18,6 +18,7 @@ dialog:-internal-dialog-in-top-layer::backdrop {
     width: 100%;
     background-size: 1.5%;
     background-image: url('../../shared/assets/background.svg');
+    padding-bottom: 30px;
 }
 
 .main-content:has(div.spinner-border) {
@@ -145,6 +146,8 @@ dialog:-internal-dialog-in-top-layer::backdrop {
 }
 
 .dishes-container__dish-item {
+    display: flex;
+    flex-direction: column;
     max-width: 300px;
     min-height: 500px;
     height: 100%;
@@ -159,6 +162,7 @@ dialog:-internal-dialog-in-top-layer::backdrop {
 }
 
 .dish-item__img {
+    flex: 5;
     display: block;
     max-width: 100%;
     height: 200px;
@@ -166,6 +170,7 @@ dialog:-internal-dialog-in-top-layer::backdrop {
 }
 
 .dish-item__title {
+    flex: 1;
     margin-top: 20px;
     text-align: center;
     color: rgb(13, 13, 13);
@@ -174,16 +179,20 @@ dialog:-internal-dialog-in-top-layer::backdrop {
 }
 
 .dish-item__desc {
+    flex: 3;
     display: block;
     margin-top: 16px;
     font-weight: 300;
     font-size: 14px;
     color: rgb(13, 13, 13);
     text-align: center;
-    height: 35%;
+    min-height: 147px;
+    max-height: 147px;
+    overflow: auto;
 }
 
 .dish-item__about-text {
+    flex: 1;
     cursor: pointer;
     display: block;
     margin-top: 17px;
@@ -196,6 +205,7 @@ dialog:-internal-dialog-in-top-layer::backdrop {
 }
 
 .dish-item__cart-interaction {
+    flex: 2;
     display: flex;
     align-items: center;
     justify-content: space-around;

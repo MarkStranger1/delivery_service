@@ -1,0 +1,34 @@
+.footer {
+    display: flex;
+    justify-content: space-between;
+    height: 200px;
+    background-color: rgb(255, 255, 255);
+    padding: 30px 20%;
+}
+
+.footer a,
+.footer p {
+    margin: 0;
+    text-decoration: none;
+    color: var(--bs-heading-color);
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.footer__left-content,
+.footer__right-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.footer__right-content {
+    align-items: flex-end;
+}
+
+.left-content__img,
+.right-content__img {
+    width: 70px;
+    min-width: initial;
+    aspect-ratio: 1;
+}
