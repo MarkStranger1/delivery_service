@@ -1,8 +1,9 @@
 // import * as Reactangle1 from "../../shared/icons/Rectangle1.png";
 
+import { User } from "../../shared/DataTypes"
 import "./style.scss"
 
-export const Header = () => {
+export const Header = (props: { user: User | null }) => {
     return <>
         <header className="header">
             <a href="#" className="header__logo">
@@ -15,7 +16,7 @@ export const Header = () => {
             </div>
 
             <div className="header__contacts">
-                <a href="tel:+79083807057" className="header__phone">+7 (908) 380-70-57 </a>
+                <p className="header__userName">{props.user ? props.user.username : "Войдите в аккаунт"}</p>
                 <a href="/lk" className="button_for_head">Личный кабинет</a>
             </div>
         </header>

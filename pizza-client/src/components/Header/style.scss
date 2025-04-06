@@ -42,13 +42,16 @@
         background-color: red;
     }
 
-    &__phone {
+    &__userName {
         font-weight: 700;
         font-size: 18px;
         color: #fff;
         display: block;
+        margin: 0;
+        transition: all .25s ease-in-out;
 
         &:hover {
+            cursor: default;
             color: #476499;
             text-decoration: none;
         }

@@ -30,6 +30,7 @@ export const UserAccountPage = () => {
     const [newAddress, setNewAddress] = useState<DeliveryAddress | null>(null);
     const [userOrdersHistory, setUserOrdersHistory] = useState<Array<Order> | null>(null);
     const [userCart, setUserCart] = useState<Cart | null>(null);
+    const [activeUserCarts, setActiveUserCarts] = useState<Array<Cart> | null>(null);
     const [editUser, setEditUser] = useState<User | null>(null);
     const userApi = new UserApi();
 
@@ -211,9 +212,13 @@ export const UserAccountPage = () => {
             Promise.all([
                 userApi.getOrdersHistory(),
                 userApi.getUserCart(),
-                userApi.getDeliveryAddresses()
+                userApi.getDeliveryAddresses(),
+                userApi.getActiveCart(),
             ]).then(response => {
-                setUserOrdersHistory(response[0]);
+                if (response[0] && response[0].length) {
+                    const newHistory = response[0].filter((cart: any) => cart.status === "delivered" || cart.status === "cancelled")
+                    setUserOrdersHistory(newHistory);
+                }
 
                 if (response[1].length === 0) {
                     userApi.createUserCart()
@@ -276,6 +281,11 @@ export const UserAccountPage = () => {
                     delivery_address: "",
                     id: 0
                 })
+
+                if (response[3] && response[3].length > 0) {
+                    const activeCarts = response[3].filter((cart: any) => cart.status !== "awaiting_payment");
+                    setActiveUserCarts(activeCarts);
+                }
             })
         }
         //eslint-disable-next-line
@@ -730,16 +740,69 @@ export const UserAccountPage = () => {
                                                                         setUserCart(r[0]);
                                                                     })
                                                             })
-
                                                     }}>Оплатить</button>
                                                     <button className="buttons-container__button" onClick={clearCartHandler}>Очистить</button>
                                                 </div>
 
                                             </div>
 
-                                            <div className="cart-container__right-cart">
 
-                                            </div>
+                                            {activeUserCarts
+                                                &&
+                                                <>
+                                                    <div className="cart-container__right-cart-container">
+                                                        {activeUserCarts.map(activeCart => {
+                                                            return <>
+                                                                <div className="cart-container__right-cart">
+                                                                    <span className="right-cart__title">
+                                                                        <p className="title__select-address"><b>Заказ в</b> {activeCart.address}</p>
+                                                                        <p className="title__status"><b>Статус: </b>{convertOrderStatus[activeCart.status as keyof typeof convertOrderStatus]}</p>
+                                                                    </span>
+                                                                    <div className="right-cart__change-time"> <b>Время доставки: </b>
+                                                                        <p className="change-time__text">{activeCart.delivery_time.split("T")[0]} {activeCart.delivery_time.split("T")[1].slice(0, 5)}</p>
+                                                                    </div>
+
+                                                                    <div className="right-cart__dishes-container">
+
+                                                                        <b>Стоимость заказа: </b> {activeCart.total_cost} руб.
+
+                                                                        <div className="dishes-container__dishes-list">
+                                                                            <b>Содержимое:</b><br />
+                                                                            {activeCart.dishes && activeCart.dishes.length > 0 && activeCart.dishes.map(dish => {
+                                                                                return <>
+                                                                                    <p className="dishes-list__dish-item">
+                                                                                        {dish.dish} - {dish.quantity} шт. ({getDishTotalCostById(dish.id, dish.quantity)} руб.)
+                                                                                    </p>
+                                                                                </>
+                                                                            })}
+                                                                        </div>
+                                                                    </div>
+
+                                                                    <div className="right-cart__divider" />
+
+                                                                    <div className="right-cart__buttons-container">
+                                                                        <button className="buttons-container__button" onClick={() => {
+                                                                            userApi.updateActiveCart(activeCart.id)
+                                                                                .then(r => {
+                                                                                    userApi.getActiveCart()
+                                                                                        .then(r => {
+                                                                                            setActiveUserCarts(r);
+                                                                                        })
+
+                                                                                    userApi.getOrdersHistory()
+                                                                                        .then(r => {
+                                                                                            setUserOrdersHistory(r);
+                                                                                        })
+                                                                                })
+
+                                                                        }}>Отменить</button>
+                                                                    </div>
+                                                                </div>
+                                                            </>
+                                                        })}
+                                                    </div>
+                                                </>
+                                            }
                                         </div>
                                     </>
                                     :

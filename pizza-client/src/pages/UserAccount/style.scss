@@ -159,11 +159,12 @@
     padding: 13px;
     border-radius: 10px;
     gap: 10px;
+    overflow: auto;
 }
 
 .main-content__addresses-list {
     height: fit-content;
-    max-height: 40%;
+    max-height: 25%;
 }
 
 .list-container__list-item,
@@ -215,17 +216,42 @@
 
 .main-content__cart-container {
     display: flex;
+    justify-content: center;
 }
 
 .cart-container__left-cart,
 .cart-container__right-cart {
     flex: 1 1;
-    margin: 50px 99px auto;
+    margin: 50px 60px 0;
     font-size: 1.3rem;
     border-radius: 5px;
     outline: 1px solid #1d4260;
     padding: 7px;
     background-color: #cfdfed;
+    height: fit-content;
+    max-width: 535px;
+}
+
+.cart-container__right-cart {
+    margin: 0 10px 0;
+}
+
+.cart-container__right-cart-container {
+    flex: 1 1;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    overflow-y: auto;
+    margin-top: 40px;
+    height: fit-content;
+    max-height: 635px;
+    max-width: 559px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+}
+
+.cart-container__right-cart p {
+    margin: 0;
 }
 
 .change-time__input-delvery-time {
@@ -236,11 +262,21 @@
     background-color: inherit;
 }
 
-.left-cart__title {
+.right-cart__change-time:has(.change-time__text) {
+    display: flex;
+    gap: 10px;
+}
+
+.left-cart__title,
+.right-cart__title {
     display: block;
     margin: 0;
     margin-bottom: 20px;
     font-size: 26px;
+}
+
+.right-cart__title>.title__select-address {
+    outline: none;
 }
 
 .addresses-list__list-item>.list-item__delete-button {
@@ -295,12 +331,14 @@
 }
 
 
-.left-cart__divider {
+.left-cart__divider,
+.right-cart__divider {
     border: 2px solid #1d4260;
     margin: 10px auto;
 }
 
-.left-cart__buttons-container {
+.left-cart__buttons-container,
+.right-cart__buttons-container {
     display: flex;
     justify-content: space-around;
 }

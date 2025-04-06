@@ -7,6 +7,7 @@ import { NotFoundPage } from './pages/NotFound/Index';
 import { UserContainer } from './shared/Containers/UserContainer';
 import { User } from './shared/DataTypes';
 import { UserApi } from './shared/OpenAPI/Api';
+import { AboutAppPage } from './pages/AboutApp';
 
 const App = () => {
 
@@ -35,6 +36,7 @@ const App = () => {
       <Routes>
         <Route path="/" element={<HomePage />}></Route>
         <Route path="/lk" element={<UserAccountPage />}></Route>
+        <Route path="/about-app" element={<AboutAppPage />}></Route>
         <Route path="/*" element={<NotFoundPage />}></Route>
       </Routes>
     </UserContainer.Provider >
