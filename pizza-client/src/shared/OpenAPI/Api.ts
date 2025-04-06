@@ -107,6 +107,17 @@ export class UserApi extends BaseApi {
             .then(r => { return r.json(); });
     }
 
+    getActiveCart() {
+        return this.sendRequest('GET', 'orders/active/', null, true)
+            .then(r => { return r.json(); });
+    }
+
+    updateActiveCart(cartId?: number) {
+        return this.sendRequest('PATCH', `orders/active/${cartId ? cartId + '/' : ''}`, { status: "cancelled" }, true)
+            .then(r => { return r.json(); });
+    }
+
+
     createUserCart() {
         return this.sendRequest('POST', 'orders/cart/', { "dishes_ordered": [] }, true)
             .then(r => { return r.json(); });
