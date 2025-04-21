@@ -1,46 +1,75 @@
-# Getting Started with Create React App
+# Коротко о том как оно вообще работает
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+![alt text](image-1.png)
 
-## Available Scripts
+*Черные стрелки - это, грубо говоря, родитель -> ребёнок*
 
-In the project directory, you can run:
+*Красные стрелки - это то куда делается запрос из разряда "дай мне вот это", у `App.tsx` ещё есть стрелка с 'user' - это значит она через `Api.ts` получает данные пользователя, потом их записывает в `UserContainer`*
 
-### `npm start`
+*Зеленые стрелки - это значит, что вот сюда -> вот сюда берутся данные, но не через АПИ как в случае красных стрелок, а как просто из переменной*
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+# `index.tsx`
 
-### `npm test`
+Это главный файл или же просто "точка входа в программу", тут идёт привязка всего приложения к элементу с id `root`. Также инициализируется `BrowserRouter` необходимый для маршрутизации.
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+# `Api.ts`
 
-### `npm run build`
+Файл с описаным базовым классом `BaseApi`, выполняющий запрос по необходимому URL.
+Также реализованы классы наследники от базового, каждый из которых предназначен для получения/изменения данных сугубо в их "области полномочий" `MainApi` для получениях общедоступных данных, `UserApi` - данные связанные с пользователем (личные данные, корзина и тд)
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+# `App.tsx`
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+Этот модуль притягивает к `index.tsx` в нём по сути располагается наша логика приложения. В нём происходит:
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+- Создание интервала для получения данных пользователя каждые 5 секунд
+- Контейнера с данными пользователя
+- Инициализация возможных маршрутов с помощью `react-router`
 
-### `npm run eject`
+Обо всём по порядку
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+1) Интервал вызывает функцию, которая создаёт экземпляр класса UserApi и выполняет получение данных пользователя с последующей записью в контейнер `UserContainer`.
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+2) Контейнер `UserContainer` - глобальное хранилище доступное из любой точки программы, служит для более простого взаимодействия внутри прочих компонент с данными пользователя (в большистве случаев выяснить как минимум аноним или авторизированный пользователь)
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+3) С помощью `react-router` инициализиурем маршруты:
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+    ### Главная страцица (`HomePage.tsx` [на самом деле там `index.tsx`, просто для простоты обозначения написал так, но по сути там `./HomePage/index.tsx`])
+    - /
+    ### Личный кабинет (`UserAccountPage.tsx`)
+    - /lk
+    ### Страница "О сервисе" (`AboutAppPage.tsx`)
+    - /about-app
+    ### Страница 404 (`NotFound.tsx`)
+    - /*          
 
-## Learn More
+За счёт данной инициализации при переходе на соответствующие URL (к примеру `https:\\domain\lk`) React будет понимать что именно нужно отображать и какие скрипты запускать
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+# `HomePage.tsx`
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+Главная страница - она получает данные о пользовател из контейнера и отдаёт эти данные `Cart`, а также сама следит за этим, потому что в случае, если пользователь авторизован, то становится доступен некоторый функционал.
+
+Также она получает данные о товарах, категориях и прочем, для дальнейшего отображения их. 
+
+# `UserAccountPage.tsx`
+
+Предназначено для:
+
+- Взаимодействия пользователя со своими личными данными
+- Оформлением / изменением / отменой заказа
+
+Также получает данные о пользователе из `UserContainer`
+
+# `AboutAppPage.tsx`
+
+*Тут опиши сам это как раз та страница "о сервисе", которую ты сам хотел сделать*
+
+# `Cart.tsx`
+
+Корзина пользователя на главной странице. Это один из компонентов, которые чуть более необычно взаимодействуют со всем остальным. Он используется внутри `HomePage` и только в случае, если в `UserContainer` данные есть, в противном случае она банально не будет отображаться и логика внутри также ограничена.
+
+Также в случае каких-то изменений в корзине, то через компоненту `HomePage` идёт взаимодействие с АПИ.
+
+# Прочие компоненты
+
+Имеется ввиду некоторые другие компоненты, которые не обозначены здесь, но также используются в приложении. Они просто нужны для инкапсуляции отдельных участков вёрстки или небольшой логики. Ну и также уменьшают объём кода в одном файле.
