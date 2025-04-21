@@ -13,6 +13,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from djoser.views import UserViewSet as DjoserUserViewSet
 from rest_framework import filters, mixins, status, viewsets
 from rest_framework.permissions import IsAdminUser, IsAuthenticated
+from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
 from rest_framework.generics import RetrieveUpdateAPIView
 from user.models import User, DeliveryAddress, UserDeliveryAddress
@@ -23,7 +24,8 @@ from .serializers import (DishReadSerializer, IngredientSerializer,
                           TypeSerializer, UserReadSerializer,
                           UserUpdateSerializer, OrderCartSerializer,
                           OrderCartUpdateSerializer, UserDeliveryAddressSerializer,
-                          OrderActiveUpdateSerializer)
+                          OrderActiveUpdateSerializer, OrderSerializer,
+                          OrderUpdateSerializer, CourierSerializer)
 
 
 class UserViewSet(DjoserUserViewSet):
@@ -217,3 +219,36 @@ class OrderActiveViewSet(viewsets.ModelViewSet):
         if self.request.method in ["PATCH", "PUT", "POST"]:
             return OrderActiveUpdateSerializer
         return OrderCartSerializer
+
+
+class OrderViewSet(viewsets.ModelViewSet):
+    """ViewSet для заказов: просмотр и частичное обновление."""
+
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        if user.role != User.Role.manager:
+            raise PermissionDenied("Только менеджер может просматривать курьеров.")
+        allowed_statuses = [
+            Order.Status.awaiting_courier,
+            Order.Status.deliver,
+            Order.Status.delivered
+        ]
+        return Order.objects.filter(status__in=allowed_statuses)
+
+    def get_serializer_class(self):
+        if self.action in ["partial_update", "update"]:
+            return OrderUpdateSerializer
+        return OrderSerializer
+
+
+class CourierViewSet(viewsets.ReadOnlyModelViewSet):
+    serializer_class = CourierSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        if user.role != User.Role.manager:
+            raise PermissionDenied("Только менеджер может просматривать курьеров.")
+        return User.objects.filter(role=User.Role.courier)

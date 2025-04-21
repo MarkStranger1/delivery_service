@@ -32,16 +32,36 @@ class UserReadSerializer(UserSerializer):
 
 
 class UserUpdateSerializer(serializers.ModelSerializer):
+    old_password = serializers.CharField(write_only=True, required=False)
+    new_password = serializers.CharField(write_only=True, required=False)
+
     class Meta:
         model = User
-        fields = ["email", "username", "phone", "scores", "role"]
+        fields = ["email", "username", "phone", "scores", "role", "old_password", "new_password"]
         extra_kwargs = {
             "email": {"required": False},
             "username": {"required": False},
             "phone": {"required": False},
             "scores": {"required": False},
-            "role": {"read_only": True},  # Делаем role только для чтения
+            "role": {"read_only": True},
         }
+
+    def update(self, instance, validated_data):
+        old_password = validated_data.pop("old_password", None)
+        new_password = validated_data.pop("new_password", None)
+
+        # Обновление остальных полей
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+
+        # Проверка и установка нового пароля
+        if old_password and new_password:
+            if not instance.check_password(old_password):
+                raise serializers.ValidationError({"old_password": "Старый пароль указан неверно."})
+            instance.set_password(new_password)
+
+        instance.save()
+        return instance
 
 
 class UserDeliveryAddressSerializer(serializers.ModelSerializer):
@@ -245,3 +265,77 @@ class OrderActiveUpdateSerializer(serializers.ModelSerializer):
             "address",
             "dishes_ordered",
         ]
+
+
+class UserOrderSerializer(serializers.ModelSerializer):
+    """Сериализатор для пользователя: имя, телефон и почта."""
+
+    class Meta:
+        model = User
+        fields = ["username", "email", "phone"]
+
+
+class CourierSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = User
+        fields = ["id", "username", "email", "phone"]
+
+
+class OrderSerializer(serializers.ModelSerializer):
+    """Сериализатор для модели Order со всеми полями и блюдами в заказе."""
+
+    user = UserOrderSerializer(read_only=True)
+    courier = CourierSerializer(read_only=True)
+    address = serializers.StringRelatedField()    # строковое представление адреса
+    orderdish_set = OrderDishSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Order
+        fields = [
+            "id",
+            "user",
+            "courier",
+            "orderdish_set",  # используется OrderDishSerializer
+            "total_cost",
+            "count_dishes",
+            "status",
+            "comment",
+            "delivery_time",
+            "address"
+        ]
+
+
+class OrderUpdateSerializer(serializers.ModelSerializer):
+    """Сериализатор для обновления заказа."""
+
+    orderdish_set = OrderDishUpdateSerializer(many=True)
+
+    class Meta:
+        model = Order
+        fields = [
+            "courier",
+            "status",
+            "comment",
+            "delivery_time",
+            "address",
+            "orderdish_set"
+        ]
+
+    def update(self, instance, validated_data):
+        # Обновление связанных OrderDish
+        orderdishes_data = validated_data.pop("orderdish_set", [])
+
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+
+        # Перепривязываем блюда в заказе: удалим старые и создадим новые
+        instance.orderdish_set.all().delete()
+        for od_data in orderdishes_data:
+            OrderDish.objects.create(order=instance, **od_data)
+
+        instance.calculate_total_cost()
+        instance.calculate_count_dishes()
+
+        return instance
