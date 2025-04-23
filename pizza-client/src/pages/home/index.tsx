@@ -4,7 +4,7 @@ import { Cart as CartType, DeliveryAddress, Dish, TypeOfDish } from "../../share
 import Spinner from 'react-bootstrap/Spinner';
 //@ts-ignore
 import PizzaImg from "../../shared/assets/pizza/p1avif.avif"
-import { MainApi, UserApi } from "../../shared/OpenAPI/Api";
+import { MainApi, ClientApi } from "../../shared/OpenAPI/Api";
 
 import "./style.scss"
 import { UserContainer } from "../../shared/Containers/UserContainer";
@@ -75,7 +75,7 @@ export const HomePage = () => {
 
     useEffect(() => {
         if (user) {
-            const userApi = new UserApi();
+            const userApi = new ClientApi();
             userApi.getUserCart()
                 .then(res => setUserCart(res[0]));
             userApi.getDeliveryAddresses()
@@ -168,7 +168,7 @@ export const HomePage = () => {
                                     userAddresses={userAddresses}
                                     allDishes={dishesData}
                                     forceUpdCart={() => {
-                                        const userApi = new UserApi();
+                                        const userApi = new ClientApi();
                                         userApi.getUserCart()
                                             .then(res => setUserCart(res[0]))
                                     }}
@@ -193,7 +193,7 @@ export const HomePage = () => {
                                                     className="cart-interaction__add-to-cart-button"
                                                     onClick={() => {
                                                         if (userCart && userAddresses) {
-                                                            const userApi = new UserApi();
+                                                            const userApi = new ClientApi();
 
                                                             const copy = JSON.parse(JSON.stringify(userCart));
 

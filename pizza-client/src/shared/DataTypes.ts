@@ -76,3 +76,40 @@ export interface Cart {
         quantity: number
     }>
 }
+
+export interface OrderForManager {
+    id: number,
+    orderdish_set: Array<{
+        id: number,
+        dish: string,
+        quantity: number
+    }>,
+    total_cost: number,
+    count_dishes: number,
+    status: string,
+    comment: string,
+    delivery_time: string,
+    address: {
+        id: number,
+        address: string
+    },
+    courier: {
+        id: number,
+        username: string,
+        phone: string,
+        email: string,
+    },
+    user: {
+        id: number,
+        username: string,
+        phone: string,
+        email: string,
+    }
+}
+
+export interface CourierForManager {
+    id: number,
+    username: string,
+    email: string,
+    phone: string
+}

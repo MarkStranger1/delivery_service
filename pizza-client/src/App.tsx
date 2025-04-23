@@ -1,28 +1,30 @@
 import React, { useEffect, useState } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import './App.css';
-import { HomePage } from './pages/home';
+import { HomePage } from './pages/Home';
 import { UserAccountPage } from './pages/UserAccount';
 import { NotFoundPage } from './pages/NotFound/Index';
 import { UserContainer } from './shared/Containers/UserContainer';
 import { User } from './shared/DataTypes';
-import { UserApi } from './shared/OpenAPI/Api';
+import { MainApi, ClientApi } from './shared/OpenAPI/Api';
 import { AboutAppPage } from './pages/AboutApp';
 
 const App = () => {
 
   const [user, setUser] = useState<User | null>(null);
 
-  const userApi = new UserApi();
+  const userApi = new ClientApi();
 
   useEffect(() => {
-    userApi.getUserInfo()
+    const mainApi = new MainApi();
+    mainApi.getUserInfo()
       .then(res => {
         if (!res.detail) setUser(res);
       })
 
     const interval = setInterval(async () => {
-      const res = await userApi.getUserInfo();
+      const mainApi = new MainApi();
+      const res = await mainApi.getUserInfo();
       if (!res.detail) setUser(res);
     }, 5000);
 

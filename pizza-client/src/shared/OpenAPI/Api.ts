@@ -1,4 +1,4 @@
-import { Cart, DeliveryAddress, User } from "../DataTypes";
+import { Cart, DeliveryAddress, OrderForManager, User } from "../DataTypes";
 
 class BaseApi {
 
@@ -55,9 +55,7 @@ export class MainApi extends BaseApi {
         return this.sendRequest('GET', 'types/')
             .then(r => { return r.json(); })
     }
-}
 
-export class UserApi extends BaseApi {
     authUser(user: User, pwd: string) {
         return this.sendRequest('POST', 'auth/token/login/', { email: user.email, password: pwd })
             .then(r => { return null; })
@@ -74,6 +72,9 @@ export class UserApi extends BaseApi {
         return this.sendRequest('PATCH', 'users/me', data, true)
             .then(r => { return r.json(); })
     }
+}
+
+export class ClientApi extends BaseApi {
 
     getOrdersHistory() {
         return this.sendRequest('GET', 'orders/history/', null, true)
@@ -129,5 +130,35 @@ export class UserApi extends BaseApi {
         delete data.id;
         return this.sendRequest('PATCH', `orders/cart/${id}/`, data, true)
             .then(r => { return r.json(); });
+    }
+}
+
+export class ManagerApi extends BaseApi {
+    getAllOrders() {
+        return this.sendRequest('GET', 'orders/', null, true)
+            .then(r => { return r.json(); })
+    }
+
+    editOrder(order: OrderForManager) {
+        const data = JSON.parse(JSON.stringify(order));
+        const id = data.id;
+        delete data.id;
+        delete data.user;
+        delete data.total_cost;
+        delete data.count_dishes;
+
+
+        data.courier = order.courier.id
+        data.address = order.address.id
+
+        data.orderdish_set = order.orderdish_set.map(e => { return { dish: e.id, quantity: e.quantity } })
+
+        return this.sendRequest('PATCH', `orders/${id}/`, data, true)
+            .then(r => { return r.json(); })
+    }
+
+    getAllCouriers() {
+        return this.sendRequest('GET', 'couriers/', null, true)
+            .then(r => { return r.json(); })
     }
 }

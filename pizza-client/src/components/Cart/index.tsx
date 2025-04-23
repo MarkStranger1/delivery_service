@@ -3,7 +3,7 @@ import { Cart as CartType, DeliveryAddress, Dish } from "../../shared/DataTypes"
 
 import "./style.css"
 import { UserContainer } from "../../shared/Containers/UserContainer";
-import { UserApi } from "../../shared/OpenAPI/Api";
+import { ClientApi } from "../../shared/OpenAPI/Api";
 
 const Cart = (props: {
     userCart: CartType,
@@ -18,7 +18,7 @@ const Cart = (props: {
 
     const removeDishHandler = (dishName: string) => {
         if (user) {
-            const userApi = new UserApi();
+            const userApi = new ClientApi();
 
             const copy = JSON.parse(JSON.stringify(props.userCart));
             const removedDish = copy.dishes.find((d: any) => d.dish === dishName);

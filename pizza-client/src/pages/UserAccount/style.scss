@@ -64,6 +64,7 @@
 
 .user-page__main-content {
     grid-area: right;
+    height: calc(100vh - 85px);
 }
 
 .main-content__header {
@@ -196,6 +197,21 @@
 .list-container__list-item p,
 .addresses-list__list-item p {
     margin: 0;
+}
+
+.list-item__about-courier {
+    margin-bottom: 10px !important;
+    display: flex;
+    align-items: center;
+    column-gap: 7px;
+}
+
+.list-item__about-courier>select {
+    width: max-content;
+    border-radius: 10px;
+    outline: 1px solid #1d4260;
+    padding: 0 4px;
+    background-color: transparent;
 }
 
 .list-item__dishes-list {

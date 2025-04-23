@@ -1,10 +1,14 @@
 import { useContext, useEffect, useState } from "react"
 import { Link } from "react-router-dom";
-import { Cart, DeliveryAddress, Dish, Order, User } from "../../shared/DataTypes"
+import { Cart, CourierForManager, DeliveryAddress, Dish, Order, OrderForManager, User } from "../../shared/DataTypes"
+
+import { MainApi, ClientApi, ManagerApi } from "../../shared/OpenAPI/Api";
+import { UserContainer } from "../../shared/Containers/UserContainer";
+
+//@ts-ignore
+import AttentionIcon from "../../shared/assets/attention.svg"
 
 import "./style.scss"
-import { MainApi, UserApi } from "../../shared/OpenAPI/Api";
-import { UserContainer } from "../../shared/Containers/UserContainer";
 
 export const UserAccountPage = () => {
 
@@ -25,14 +29,18 @@ export const UserAccountPage = () => {
         "cancelled": "отменен"
     }
 
+    const clientApi = new ClientApi();
+    const managerApi = new ManagerApi();
+
+
     const { user, setUser } = useContext(UserContainer);
+
     const [userAddresses, setUserAddresses] = useState<Array<DeliveryAddress> | null>(null);
     const [newAddress, setNewAddress] = useState<DeliveryAddress | null>(null);
     const [userOrdersHistory, setUserOrdersHistory] = useState<Array<Order> | null>(null);
     const [userCart, setUserCart] = useState<Cart | null>(null);
     const [activeUserCarts, setActiveUserCarts] = useState<Array<Cart> | null>(null);
     const [editUser, setEditUser] = useState<User | null>(null);
-    const userApi = new UserApi();
 
     const [userRegister, setUserRegister] = useState<User>();
     const [userLogin, setUserLogin] = useState<User>();
@@ -42,7 +50,16 @@ export const UserAccountPage = () => {
     const [tmpPass, setTmpPass] = useState<string>("");
     const [allDishes, setAllDishes] = useState<Array<Dish> | null>(null);
 
-    const [selectedPage, setSelectedPage] = useState<'login' | 'updData' | 'currOrder' | 'allOrders'>('login');
+
+    ///////////////////////////////////FOR MANAGER STATE
+
+    const [allOrders, setAllOrders] = useState<Array<OrderForManager> | null>(null);
+    const [allCouriers, setAllCouriers] = useState<Array<CourierForManager> | null>(null);
+
+    ////////////////////////////////////////////////////
+
+
+    const [selectedPage, setSelectedPage] = useState<'login' | 'updData' | 'currOrder' | 'allOrders' | 'allCouriers'>('login');
 
     const changeValue = (key: string, value: string, state: 'edit' | 'login' | 'register') => {
         let tmp;
@@ -83,7 +100,7 @@ export const UserAccountPage = () => {
 
     const addDishHandler = (dishName: string) => {
         if (user) {
-            const userApi = new UserApi();
+            const clientApi = new ClientApi();
 
             const copy = JSON.parse(JSON.stringify(userCart));
             const incDish = copy.dishes.find((d: any) => d.dish === dishName);
@@ -110,9 +127,9 @@ export const UserAccountPage = () => {
                     }
                 })
 
-                userApi.updateUserCart(copy)
+                clientApi.updateUserCart(copy)
                     .then(r => {
-                        userApi.getUserCart()
+                        clientApi.getUserCart()
                             .then(res => {
                                 setUserCart(res[0]);
                             })
@@ -123,7 +140,7 @@ export const UserAccountPage = () => {
 
     const removeDishHandler = (dishName: string) => {
         if (user) {
-            const userApi = new UserApi();
+            const clientApi = new ClientApi();
 
             const copy = JSON.parse(JSON.stringify(userCart));
             const removedDish = copy.dishes.find((d: any) => d.dish === dishName);
@@ -155,9 +172,9 @@ export const UserAccountPage = () => {
                     }
                 })
 
-                userApi.updateUserCart(copy)
+                clientApi.updateUserCart(copy)
                     .then(r => {
-                        userApi.getUserCart()
+                        clientApi.getUserCart()
                             .then(res => {
                                 setUserCart(res[0]);
                             })
@@ -176,17 +193,20 @@ export const UserAccountPage = () => {
         copy.address = defaultAddress.id ?? "";
 
 
-        userApi.updateUserCart(copy)
+        clientApi.updateUserCart(copy)
             .then(r => {
-                userApi.getUserCart()
+                clientApi.getUserCart()
                     .then(res => {
                         setUserCart(res[0]);
                     })
             })
     }
 
+    const sortByDeliveryTime = (a: OrderForManager, b: OrderForManager) => Date.parse(a.delivery_time) - Date.parse(b.delivery_time)
+
     useEffect(() => {
-        userApi.getUserInfo()
+        const mainApi = new MainApi();
+        mainApi.getUserInfo()
             .then((r) => {
                 if (!r.detail) {
                     setUserLogin(r);
@@ -194,7 +214,6 @@ export const UserAccountPage = () => {
                 }
             })
 
-        const mainApi = new MainApi();
         mainApi.getDishes()
             .then(r => {
                 !allDishes && setAllDishes(r);
@@ -209,87 +228,657 @@ export const UserAccountPage = () => {
         if (user && user.id !== -1) {
             !editUser && setEditUser(user);
 
-            Promise.all([
-                userApi.getOrdersHistory(),
-                userApi.getUserCart(),
-                userApi.getDeliveryAddresses(),
-                userApi.getActiveCart(),
-            ]).then(response => {
-                if (response[0] && response[0].length) {
-                    const newHistory = response[0].filter((cart: any) => cart.status === "delivered" || cart.status === "cancelled")
-                    setUserOrdersHistory(newHistory);
-                }
 
-                if (response[1].length === 0) {
-                    userApi.createUserCart()
-                        .then((r: any) => {
-                            r && r.id && userApi.getUserCart(r.id)
-                                .then((res: any) => {
-                                    setUserCart(res)
-                                })
-                        })
-                }
-                else {
-                    if (!response[1][0].address) {
-                        const defaultAddress = response[2].find((address: DeliveryAddress) => address.is_default) as DeliveryAddress;
-                        if (defaultAddress) {
-                            const copy = JSON.parse(JSON.stringify(response[1][0]))
-                            copy.address = defaultAddress.id ?? "";
+            if (user.role === 'client') {
+                Promise.all([
+                    clientApi.getOrdersHistory(),
+                    clientApi.getUserCart(),
+                    clientApi.getDeliveryAddresses(),
+                    clientApi.getActiveCart(),
+                ]).then(response => {
+                    if (response[0] && response[0].length) {
+                        const newHistory = response[0].filter((cart: any) => cart.status === "delivered" || cart.status === "cancelled").sort(sortByDeliveryTime)
+                        setUserOrdersHistory(newHistory);
+                    }
 
-                            Object.assign(copy, { dishes_ordered: copy.dishes });
-                            delete copy.dishes;
-                            copy.dishes_ordered.forEach((d: any) => {
-                                if (typeof d.dish === "string" && d.id) {
-                                    d.dish = d.id
-                                    delete d.id;
-                                }
+                    if (response[1].length === 0) {
+                        clientApi.createUserCart()
+                            .then((r: any) => {
+                                r && r.id && clientApi.getUserCart(r.id)
+                                    .then((res: any) => {
+                                        setUserCart(res)
+                                    })
                             })
-
-                            userApi.updateUserCart(copy)
-                                .then(res => {
-                                    setUserCart(res[0]);
-                                })
-                        }
-                        else {
-                            (response[2][0] as DeliveryAddress).is_default = true
-                            const copy = JSON.parse(JSON.stringify(response[1][0]))
-                            copy.address = response[2][0].id ?? "";
-
-                            Object.assign(copy, { dishes_ordered: copy.dishes });
-                            delete copy.dishes;
-                            copy.dishes_ordered.forEach((d: any) => {
-                                if (typeof d.dish === "string" && d.id) {
-                                    d.dish = d.id
-                                    delete d.id;
-                                }
-                            })
-
-                            userApi.editDeliveryAddresses(response[2][0].id, true)
-                            userApi.updateUserCart(copy)
-                                .then(res => {
-                                    setUserCart(res[0])
-                                })
-                        }
                     }
                     else {
-                        setUserCart(response[1][0])
-                    }
-                }
-                setUserAddresses(response[2])
-                !newAddress && setNewAddress({
-                    is_default: true,
-                    delivery_address: "",
-                    id: 0
-                })
+                        if (!response[1][0].address) {
+                            const defaultAddress = response[2].find((address: DeliveryAddress) => address.is_default) as DeliveryAddress;
+                            if (defaultAddress) {
+                                const copy = JSON.parse(JSON.stringify(response[1][0]))
+                                copy.address = defaultAddress.id ?? "";
 
-                if (response[3] && response[3].length > 0) {
-                    const activeCarts = response[3].filter((cart: any) => cart.status !== "awaiting_payment");
-                    setActiveUserCarts(activeCarts);
-                }
-            })
+                                Object.assign(copy, { dishes_ordered: copy.dishes });
+                                delete copy.dishes;
+                                copy.dishes_ordered.forEach((d: any) => {
+                                    if (typeof d.dish === "string" && d.id) {
+                                        d.dish = d.id
+                                        delete d.id;
+                                    }
+                                })
+
+                                clientApi.updateUserCart(copy)
+                                    .then(res => {
+                                        setUserCart(res[0]);
+                                    })
+                            }
+                            else {
+                                (response[2][0] as DeliveryAddress).is_default = true
+                                const copy = JSON.parse(JSON.stringify(response[1][0]))
+                                copy.address = response[2][0].id ?? "";
+
+                                Object.assign(copy, { dishes_ordered: copy.dishes });
+                                delete copy.dishes;
+                                copy.dishes_ordered.forEach((d: any) => {
+                                    if (typeof d.dish === "string" && d.id) {
+                                        d.dish = d.id
+                                        delete d.id;
+                                    }
+                                })
+
+                                clientApi.editDeliveryAddresses(response[2][0].id, true)
+                                clientApi.updateUserCart(copy)
+                                    .then(res => {
+                                        setUserCart(res[0])
+                                    })
+                            }
+                        }
+                        else {
+                            setUserCart(response[1][0])
+                        }
+                    }
+                    setUserAddresses(response[2])
+                    !newAddress && setNewAddress({
+                        is_default: true,
+                        delivery_address: "",
+                        id: 0
+                    })
+
+                    if (response[3] && response[3].length > 0) {
+                        const activeCarts = response[3].filter((cart: any) => cart.status !== "awaiting_payment");
+                        setActiveUserCarts(activeCarts);
+                    }
+                })
+            }
+            if (user.role === 'manager') {
+                Promise.all([
+                    managerApi.getAllOrders(),
+                    managerApi.getAllCouriers()
+                ])
+                    .then(responses => {
+                        if (responses && responses.length) {
+                            setAllOrders(responses[0].sort(sortByDeliveryTime));
+                            setAllCouriers(responses[1]);
+                        }
+                    })
+            }
+
+
         }
         //eslint-disable-next-line
     }, [user])
+
+
+    const renderClientPages = () => {
+        if (selectedPage === 'updData') return <>
+            <h1 className="main-content__title">Изменить личные данные</h1>
+            {editUser
+                && <>
+                    <h2 className="main-content__sub-title">Данные аккаунта</h2>
+
+                    <div className="main-content__edit-user-info">
+                        <div className="edit-user-info__form-item">
+                            <label>Username</label>
+                            <input
+                                type="text"
+                                className="create-login-form__input input-login"
+                                value={editUser.username}
+                                onChange={(e) => changeValue("username", e.target.value, 'edit')}
+                                placeholder="Enter username"
+                            />
+                        </div>
+                        <div className="edit-user-info__form-item">
+                            <label>Email</label>
+                            <input
+                                type="email"
+                                className="edit-user-info__input input-email"
+                                value={editUser.email}
+                                onChange={(e) => changeValue("email", e.target.value, 'edit')}
+                                placeholder="Enter email@email.com"
+                            />
+                        </div>
+                        <div className="edit-user-info__form-item">
+                            <label>Phone number</label>
+                            <input
+                                type="text"
+                                className="edit-user-info__input input-phone"
+                                value={editUser.phone}
+                                onChange={(e) => changeValue("phone", e.target.value, 'edit')}
+                                placeholder="+79998887766"
+                            />
+                        </div>
+                        <button
+                            className="edit-user-info__button-submit"
+                            onClick={() => {
+                                if (user) {
+                                    const mainApi = new MainApi();
+                                    mainApi.editUserInfo(editUser)
+                                        .then(r => {
+                                            const tmp = JSON.parse(JSON.stringify(editUser));
+                                            delete tmp.id;
+                                            if (Object.keys(tmp).every(key => Object.keys(r).includes(key))) {
+                                                alert('Данные успешно обновлены!')
+                                            }
+                                            else {
+                                                alert(Object.keys(r).map(key => r[key]).join('\n'))
+                                            }
+                                        })
+                                }
+                            }}>
+                            Обновить данные
+                        </button>
+                    </div>
+
+                    <h2 className="main-content__sub-title">Адреса доставки</h2>
+                    {userAddresses && <div className="addresses-list__list-item--add-address">
+                        <p className="list-item__default-address--void" style={{ margin: 0 }}>Добавить адрес</p>
+                        <input value={newAddress?.delivery_address} onChange={(e) => {
+                            const copy = JSON.parse(JSON.stringify(newAddress)) as DeliveryAddress;
+                            copy.delivery_address = e.target.value;
+                            setNewAddress(copy);
+                        }} />
+                        <button
+                            className="list-item__add-address-button"
+                            onClick={() => {
+                                if (newAddress && newAddress?.delivery_address !== "") {
+                                    clientApi.addDeliveryAddresses(newAddress)
+                                        .then(r => {
+                                            clientApi.getDeliveryAddresses()
+                                                .then(r => {
+                                                    setUserAddresses(r)
+                                                    setNewAddress({
+                                                        is_default: true,
+                                                        delivery_address: "",
+                                                        id: 0
+                                                    })
+                                                })
+                                        })
+                                }
+                            }}
+                        >Добавить</button>
+                        <div className="list-item__delete-button--void" />
+                    </div>}
+                    <div className="main-content__addresses-list">
+                        {userAddresses
+                            ?
+                            <>
+                                {userAddresses.sort((a, b) => (a.is_default === b.is_default) ? 0 : a.is_default ? -1 : 1).map(address => {
+                                    return <>
+                                        <div className="addresses-list__list-item">
+                                            <button
+                                                className="list-item__default-address"
+                                                onClick={() => {
+                                                    clientApi.editDeliveryAddresses(address.id, !address.is_default)
+                                                        .then(r => {
+                                                            clientApi.getDeliveryAddresses()
+                                                                .then(r => setUserAddresses(r))
+                                                        });
+                                                }}
+                                            >
+                                                {address.is_default ? 'Доставлять сюда' : 'Выбран другой адрес'}
+                                            </button>
+                                            <p>{address.delivery_address}</p>
+                                            <button
+                                                className="list-item__delete-button"
+                                                onClick={() => {
+                                                    clientApi.deleteDeliveryAddresses(address.id)
+                                                        .then(r => {
+                                                            clientApi.getDeliveryAddresses()
+                                                                .then(r => setUserAddresses(r))
+                                                        });
+                                                }}
+                                            >Удалить</button>
+                                        </div>
+                                    </>
+                                })}
+                            </>
+                            :
+                            <>
+                                <h2 className="main-content__sub-title">
+                                    Адреса пока не были добавлены, но никогда не поздно сделать первый заказ!
+                                    <div className="addresses-list__list-item--add-address">
+                                        <div className="list-item__default-address--void" />
+                                        <input value={newAddress?.delivery_address} onChange={(e) => {
+                                            const copy = JSON.parse(JSON.stringify(newAddress)) as DeliveryAddress;
+                                            copy.delivery_address = e.target.value;
+                                            setNewAddress(copy);
+                                        }} />
+                                        <button
+                                            className="list-item__add-address-button"
+                                            onClick={() => {
+                                                if (newAddress && newAddress?.delivery_address !== "") {
+                                                    clientApi.addDeliveryAddresses(newAddress)
+                                                        .then(r => {
+                                                            clientApi.getDeliveryAddresses()
+                                                                .then(r => setUserAddresses(r))
+                                                        })
+                                                }
+                                            }}
+                                        >Добавить</button>
+                                        <div className="list-item__delete-button--void" />
+                                    </div>
+                                </h2>
+                            </>
+                        }
+                    </div>
+                </>
+            }
+        </>
+        if (selectedPage === 'currOrder') return <>
+            <h1 className="main-content__title">Текущий заказ</h1>
+
+            {userCart
+                ?
+                <>
+                    <div className="main-content__cart-container">
+
+                        <div className="cart-container__left-cart">
+
+                            <span className="left-cart__title"><b>Заказ в</b>
+                                <select
+                                    className="title__select-address"
+                                    value={userCart.address}
+                                    onChange={(e) => {
+                                        const copy = JSON.parse(JSON.stringify(userCart));
+                                        const newAddress = userAddresses?.find((address: DeliveryAddress) => e.target.value === address.delivery_address) as DeliveryAddress;
+                                        copy.address = newAddress.id ?? "";
+
+
+                                        Object.assign(copy, { dishes_ordered: copy.dishes });
+                                        delete copy.dishes;
+                                        copy.dishes_ordered.forEach((d: any) => {
+                                            if (typeof d.dish === "string" && d.id) {
+                                                d.dish = d.id
+                                                delete d.id;
+                                            }
+                                        })
+
+                                        clientApi.updateUserCart(copy)
+                                            .then(r => {
+                                                clientApi.getUserCart()
+                                                    .then(res => {
+                                                        setUserCart(res[0]);
+                                                    })
+                                            })
+                                    }}
+                                >
+                                    {userAddresses && userAddresses.map(addr => {
+                                        return <option value={addr.delivery_address}>{addr.delivery_address}</option>
+                                    })}
+                                </select>
+                                <p className="title__status"><b>Статус: </b>{convertOrderStatus[userCart.status as keyof typeof convertOrderStatus]}</p>
+                            </span>
+                            <div className="left-cart__change-time"> <b>Время доставки: </b>
+                                <input
+                                    type="datetime-local"
+                                    className="change-time__input-delvery-time"
+                                    value={userCart.delivery_time}
+                                    onChange={(e) => {
+                                        const copy = JSON.parse(JSON.stringify(userCart));
+
+                                        if (!copy.address) {
+                                            const defaultAddress = userAddresses?.find((address: DeliveryAddress) => address.is_default) as DeliveryAddress;
+                                            copy.address = defaultAddress.id ?? "";
+                                        }
+                                        else {
+                                            const address = userAddresses?.find((add: DeliveryAddress) => add.delivery_address === copy.address) as DeliveryAddress;
+                                            copy.address = address.id
+                                        }
+
+                                        copy.delivery_time = e.target.value;
+
+
+                                        Object.assign(copy, { dishes_ordered: copy.dishes });
+                                        delete copy.dishes;
+                                        copy.dishes_ordered.forEach((d: any) => {
+                                            if (typeof d.dish === "string" && d.id) {
+                                                d.dish = d.id
+                                                delete d.id;
+                                            }
+                                        })
+
+                                        clientApi.updateUserCart(copy)
+                                            .then(r => {
+                                                clientApi.getUserCart()
+                                                    .then(r => {
+                                                        setUserCart(r[0]);
+                                                    })
+                                            })
+                                    }}
+                                />
+                            </div>
+
+                            <div className="left-cart__dishes-container">
+
+                                <b>Стоимость заказа: </b> {userCart.total_cost} руб.
+
+                                <div className="dishes-container__dishes-list">
+                                    <b>Содержимое:</b><br />
+                                    {userCart.dishes && userCart.dishes.length > 0 && userCart.dishes.map(dish => {
+                                        return <>
+                                            <p className="dishes-list__dish-item">
+                                                <button
+                                                    className="dish-item__remove-item"
+                                                    onClick={() => removeDishHandler(dish.dish)}
+                                                />
+                                                <button
+                                                    className="dish-item__inc-item"
+                                                    onClick={() => addDishHandler(dish.dish)}
+                                                />
+                                                {dish.dish} - {dish.quantity} шт. ({getDishTotalCostById(dish.id, dish.quantity)} руб.)
+                                            </p>
+                                        </>
+                                    })}
+                                </div>
+                            </div>
+
+                            <div className="left-cart__divider" />
+
+                            <div className="left-cart__buttons-container">
+                                <button className="buttons-container__button" onClick={() => {
+                                    window.open("https://vk.com/mark_stranger", "_blank")
+                                    const copy = JSON.parse(JSON.stringify(userCart));
+                                    copy.status = "awaiting_courier";
+
+                                    const address = userAddresses?.find((add: DeliveryAddress) => add.delivery_address === copy.address) as DeliveryAddress;
+                                    copy.address = address.id
+
+                                    Object.assign(copy, { dishes_ordered: copy.dishes });
+                                    delete copy.dishes;
+                                    copy.dishes_ordered.forEach((d: any) => {
+                                        if (typeof d.dish === "string" && d.id) {
+                                            d.dish = d.id
+                                            delete d.id;
+                                        }
+                                    })
+
+                                    clientApi.updateUserCart(copy)
+                                        .then(r => {
+                                            clientApi.getUserCart()
+                                                .then(r => {
+                                                    setUserCart(r[0]);
+                                                })
+                                        })
+                                }}>Оплатить</button>
+                                <button className="buttons-container__button" onClick={clearCartHandler}>Очистить</button>
+                            </div>
+
+                        </div>
+
+
+                        {activeUserCarts
+                            &&
+                            <>
+                                <div className="cart-container__right-cart-container">
+                                    {activeUserCarts.map(activeCart => {
+                                        return <>
+                                            <div className="cart-container__right-cart">
+                                                <span className="right-cart__title">
+                                                    <p className="title__select-address"><b>Заказ в</b> {activeCart.address}</p>
+                                                    <p className="title__status"><b>Статус: </b>{convertOrderStatus[activeCart.status as keyof typeof convertOrderStatus]}</p>
+                                                </span>
+                                                <div className="right-cart__change-time"> <b>Время доставки: </b>
+                                                    <p className="change-time__text">{activeCart.delivery_time.split("T")[0]} {activeCart.delivery_time.split("T")[1].slice(0, 5)}</p>
+                                                </div>
+
+                                                <div className="right-cart__dishes-container">
+
+                                                    <b>Стоимость заказа: </b> {activeCart.total_cost} руб.
+
+                                                    <div className="dishes-container__dishes-list">
+                                                        <b>Содержимое:</b><br />
+                                                        {activeCart.dishes && activeCart.dishes.length > 0 && activeCart.dishes.map(dish => {
+                                                            return <>
+                                                                <p className="dishes-list__dish-item">
+                                                                    {dish.dish} - {dish.quantity} шт. ({getDishTotalCostById(dish.id, dish.quantity)} руб.)
+                                                                </p>
+                                                            </>
+                                                        })}
+                                                    </div>
+                                                </div>
+
+                                                <div className="right-cart__divider" />
+
+                                                <div className="right-cart__buttons-container">
+                                                    <button className="buttons-container__button" onClick={() => {
+                                                        clientApi.updateActiveCart(activeCart.id)
+                                                            .then(r => {
+                                                                clientApi.getActiveCart()
+                                                                    .then(r => {
+                                                                        setActiveUserCarts(r);
+                                                                    })
+
+                                                                clientApi.getOrdersHistory()
+                                                                    .then(r => {
+                                                                        setUserOrdersHistory(r);
+                                                                    })
+                                                            })
+
+                                                    }}>Отменить</button>
+                                                </div>
+                                            </div>
+                                        </>
+                                    })}
+                                </div>
+                            </>
+                        }
+                    </div>
+                </>
+                :
+                <>
+                    <h2 className="main-content__sub-title">Корзина пуста</h2>
+                </>
+            }
+        </>
+        if (selectedPage === 'allOrders') return <>
+            <h1 className="main-content__title">История заказов</h1>
+
+            {userOrdersHistory
+                ?
+                <>
+                    <div className="main-content__list-container">
+                        {userOrdersHistory.map(order => {
+                            return <>
+                                <div className="list-container__list-item">
+                                    <h4 className="list-item__title">Заказ от {order.delivery_time.split('T').at(0)} - {convertOrderStatus[order.status as keyof typeof convertOrderStatus]}</h4>
+                                    <p className="list-item__cost"><b>Стоимость:</b> {order.total_cost} руб.</p>
+                                    <p className="list-item__count-dishes"><b>Кол-во блюд:</b> {order.count_dishes}</p>
+                                    <p className="list-item__address"><b>Адрес:</b> {order.address}</p>
+                                    <p className="list-item__comment"><b>Комментарий:</b> {order.comment}</p>
+                                    <p><b>Блюда в заказе:</b></p>
+                                    <div className="list-item__dishes-list">
+                                        {order.dishes.map(dish => {
+                                            return <>
+                                                <div className="dishes-list__list-item">
+                                                    <p>{dish.dish}</p>
+                                                    <p>Кол-во: {dish.quantity}</p>
+                                                </div>
+                                            </>
+                                        })}
+                                    </div>
+                                </div>
+                            </>
+                        })}
+                    </div>
+                </>
+                :
+                <>
+                    <h2 className="main-content__sub-title">Заказов ещё не было, но никогда не поздно начать!</h2>
+                </>
+            }
+        </>
+    }
+
+    const renderManagerPages = () => {
+        if (selectedPage === 'updData') return <>
+            <h1 className="main-content__title">Изменить личные данные</h1>
+            {editUser
+                && <>
+                    <h2 className="main-content__sub-title">Данные аккаунта</h2>
+
+                    <div className="main-content__edit-user-info">
+                        <div className="edit-user-info__form-item">
+                            <label>Username</label>
+                            <input
+                                type="text"
+                                className="create-login-form__input input-login"
+                                value={editUser.username}
+                                onChange={(e) => changeValue("username", e.target.value, 'edit')}
+                                placeholder="Enter username"
+                            />
+                        </div>
+                        <div className="edit-user-info__form-item">
+                            <label>Email</label>
+                            <input
+                                type="email"
+                                className="edit-user-info__input input-email"
+                                value={editUser.email}
+                                onChange={(e) => changeValue("email", e.target.value, 'edit')}
+                                placeholder="Enter email@email.com"
+                            />
+                        </div>
+                        <div className="edit-user-info__form-item">
+                            <label>Phone number</label>
+                            <input
+                                type="text"
+                                className="edit-user-info__input input-phone"
+                                value={editUser.phone}
+                                onChange={(e) => changeValue("phone", e.target.value, 'edit')}
+                                placeholder="+79998887766"
+                            />
+                        </div>
+                        <button
+                            className="edit-user-info__button-submit"
+                            onClick={() => {
+                                if (user) {
+                                    const mainApi = new MainApi();
+                                    mainApi.editUserInfo(editUser)
+                                        .then(r => {
+                                            const tmp = JSON.parse(JSON.stringify(editUser));
+                                            delete tmp.id;
+                                            if (Object.keys(tmp).every(key => Object.keys(r).includes(key))) {
+                                                alert('Данные успешно обновлены!')
+                                            }
+                                            else {
+                                                alert(Object.keys(r).map(key => r[key]).join('\n'))
+                                            }
+                                        })
+                                }
+                            }}>
+                            Обновить данные
+                        </button>
+                    </div>
+                </>
+            }
+        </>
+        if (selectedPage === 'allOrders') return <>
+            <div className="main-content__list-container">
+                {allOrders && allOrders.map(order => {
+                    return <>
+                        <div className="list-container__list-item">
+                            <h4 className="list-item__title">Заказ от {order.delivery_time.split('T').at(0)} - {convertOrderStatus[order.status as keyof typeof convertOrderStatus]}</h4>
+                            <p className="list-item__about-client">
+                                <b>Клиент:</b> {order.user.username} | {order.user.phone} | {order.user.email}
+                            </p>
+                            <p className="list-item__about-courier">
+                                <b>Курьер:</b> <select
+                                    className=""
+                                    value={order.courier ? `${order.courier.id} - ${order.courier.username}` : ''}
+                                    onChange={(e) => {
+                                        const courierId = e.target.value.split(' - ').at(0);
+                                        if (courierId && allCouriers) {
+                                            const courier = allCouriers.find(c => c.id === Number.parseInt(courierId))
+                                            if (courier) {
+                                                const copy = JSON.parse(JSON.stringify(order)) as OrderForManager;
+                                                copy.courier = courier;
+                                                managerApi.editOrder(copy)
+                                                    .then(r => {
+                                                        managerApi.getAllOrders()
+                                                            .then(res => setAllOrders(res.sort(sortByDeliveryTime)))
+                                                    })
+                                            }
+                                        }
+                                    }}
+                                >
+                                    {allCouriers && allCouriers.map((courier) => {
+                                        return <>
+                                            <option>{courier.id} - {courier.username}</option>
+                                        </>
+                                    })}
+                                </select>
+                                {!order.courier && <img src={AttentionIcon} alt="attention" style={{ maxHeight: "25px", aspectRatio: "1" }} />}
+                            </p>
+                            <p className="list-item__cost"><b>Стоимость:</b> {order.total_cost} руб.</p>
+                            <p className="list-item__count-dishes"><b>Кол-во блюд:</b> {order.count_dishes}</p>
+                            <p className="list-item__address"><b>Адрес:</b> {order.address ? order.address.address : ''}</p>
+                            <p className="list-item__comment"><b>Комментарий:</b> {order.comment}</p>
+                            <p><b>Блюда в заказе:</b></p>
+                            <div className="list-item__dishes-list">
+                                {order.orderdish_set.map(dish => {
+                                    return <>
+                                        <div className="dishes-list__list-item">
+                                            <p>{dish.dish}</p>
+                                            <p>Кол-во: {dish.quantity}</p>
+                                        </div>
+                                    </>
+                                })}
+                            </div>
+                        </div>
+                    </>
+                })}
+            </div>
+        </>
+        if (selectedPage === 'allCouriers') return <>
+            <div className="main-content__list-container">
+                {allCouriers && allCouriers.map(courier => {
+
+                    const courierOrders = allOrders ? allOrders?.filter(order => order.courier && order.courier.id === courier.id) : []
+
+                    return <>
+                        <div className="list-container__list-item">
+                            <h4 className="list-item__title">Курьер: {courier.username}</h4>
+                            <p className="list-item__email"><b>Email:</b> {courier.email}</p>
+                            <p className="list-item__phone"><b>Номер телефона:</b> {courier.phone}</p>
+                            {courierOrders
+                                && courierOrders.length
+                                ? <>
+                                    <p><b>Активные заказы ({courierOrders.length}):</b></p>
+                                    <div className="list-item__dishes-list">
+                                        {courierOrders.map(order => {
+                                            return <>
+                                                <div className="dishes-list__list-item">
+                                                    <p>Время: {order.delivery_time.split('T').join(' ')}</p>
+                                                    <p>Место: {order.address ? order.address.address : ''}</p>
+                                                </div>
+                                            </>
+                                        })}
+                                    </div>
+                                </> : <>Нет активных заказов</>}
+                        </div>
+                    </>
+                })}
+            </div>
+        </>
+    }
 
     return <>
         <div className="user-page">
@@ -330,7 +919,9 @@ export const UserAccountPage = () => {
                         {userLogin?.role === 'manager'
                             &&
                             <>
-                                <button className="nav-bar__nav-item" onClick={() => setSelectedPage('allOrders')}>Список заказов всех пользователей</button>
+                                <button className="nav-bar__nav-item" onClick={() => setSelectedPage('updData')}>Изменить личные данные</button>
+                                <button className="nav-bar__nav-item" onClick={() => setSelectedPage('allOrders')}>Список всех заказов</button>
+                                <button className="nav-bar__nav-item" onClick={() => setSelectedPage('allCouriers')}>Список всех курьеров</button>
                             </>
                         }
                     </>}
@@ -430,9 +1021,10 @@ export const UserAccountPage = () => {
                                     className="login-form__button-submit"
                                     disabled={!userLogin.email || !userLoginPass}
                                     onClick={() => {
-                                        userApi.authUser(userLogin, userLoginPass)
+                                        const mainApi = new MainApi();
+                                        mainApi.authUser(userLogin, userLoginPass)
                                             .then(async (r) => {
-                                                let res = await userApi.getUserInfo();
+                                                let res = await mainApi.getUserInfo();
                                                 if (!res.detail) {
                                                     setUserLogin(res as User);
                                                     setUser(res as User);
@@ -448,409 +1040,8 @@ export const UserAccountPage = () => {
                     </>
                     :
                     <>
-                        {
-                            selectedPage === 'updData'
-                            && <>
-                                <h1 className="main-content__title">Изменить личные данные</h1>
-                                {editUser
-                                    && <>
-                                        <h2 className="main-content__sub-title">Данные аккаунта</h2>
-
-                                        <div className="main-content__edit-user-info">
-                                            <div className="edit-user-info__form-item">
-                                                <label>Username</label>
-                                                <input
-                                                    type="text"
-                                                    className="create-login-form__input input-login"
-                                                    value={editUser.username}
-                                                    onChange={(e) => changeValue("username", e.target.value, 'edit')}
-                                                    placeholder="Enter username"
-                                                />
-                                            </div>
-                                            <div className="edit-user-info__form-item">
-                                                <label>Email</label>
-                                                <input
-                                                    type="email"
-                                                    className="edit-user-info__input input-email"
-                                                    value={editUser.email}
-                                                    onChange={(e) => changeValue("email", e.target.value, 'edit')}
-                                                    placeholder="Enter email@email.com"
-                                                />
-                                            </div>
-                                            <div className="edit-user-info__form-item">
-                                                <label>Phone number</label>
-                                                <input
-                                                    type="text"
-                                                    className="edit-user-info__input input-phone"
-                                                    value={editUser.phone}
-                                                    onChange={(e) => changeValue("phone", e.target.value, 'edit')}
-                                                    placeholder="+79998887766"
-                                                />
-                                            </div>
-                                            <button
-                                                className="edit-user-info__button-submit"
-                                                onClick={() => {
-                                                    if (user) {
-                                                        userApi.editUserInfo(editUser)
-                                                            .then(r => {
-                                                                const tmp = JSON.parse(JSON.stringify(editUser));
-                                                                delete tmp.id;
-                                                                if (Object.keys(tmp).every(key => Object.keys(r).includes(key))) {
-                                                                    alert('Данные успешно обновлены!')
-                                                                }
-                                                                else {
-                                                                    alert(Object.keys(r).map(key => r[key]).join('\n'))
-                                                                }
-                                                            })
-                                                    }
-                                                }}>
-                                                Обновить данные
-                                            </button>
-                                        </div>
-
-                                        <h2 className="main-content__sub-title">Адреса доставки</h2>
-                                        {userAddresses && <div className="addresses-list__list-item--add-address">
-                                            <p className="list-item__default-address--void" style={{ margin: 0 }}>Добавить адрес</p>
-                                            <input value={newAddress?.delivery_address} onChange={(e) => {
-                                                const copy = JSON.parse(JSON.stringify(newAddress)) as DeliveryAddress;
-                                                copy.delivery_address = e.target.value;
-                                                setNewAddress(copy);
-                                            }} />
-                                            <button
-                                                className="list-item__add-address-button"
-                                                onClick={() => {
-                                                    if (newAddress && newAddress?.delivery_address !== "") {
-                                                        userApi.addDeliveryAddresses(newAddress)
-                                                            .then(r => {
-                                                                userApi.getDeliveryAddresses()
-                                                                    .then(r => {
-                                                                        setUserAddresses(r)
-                                                                        setNewAddress({
-                                                                            is_default: true,
-                                                                            delivery_address: "",
-                                                                            id: 0
-                                                                        })
-                                                                    })
-                                                            })
-                                                    }
-                                                }}
-                                            >Добавить</button>
-                                            <div className="list-item__delete-button--void" />
-                                        </div>}
-                                        <div className="main-content__addresses-list">
-                                            {userAddresses
-                                                ?
-                                                <>
-                                                    {userAddresses.sort((a, b) => (a.is_default === b.is_default) ? 0 : a.is_default ? -1 : 1).map(address => {
-                                                        return <>
-                                                            <div className="addresses-list__list-item">
-                                                                <button
-                                                                    className="list-item__default-address"
-                                                                    onClick={() => {
-                                                                        userApi.editDeliveryAddresses(address.id, !address.is_default)
-                                                                            .then(r => {
-                                                                                userApi.getDeliveryAddresses()
-                                                                                    .then(r => setUserAddresses(r))
-                                                                            });
-                                                                    }}
-                                                                >
-                                                                    {address.is_default ? 'Доставлять сюда' : 'Выбран другой адрес'}
-                                                                </button>
-                                                                <p>{address.delivery_address}</p>
-                                                                <button
-                                                                    className="list-item__delete-button"
-                                                                    onClick={() => {
-                                                                        userApi.deleteDeliveryAddresses(address.id)
-                                                                            .then(r => {
-                                                                                userApi.getDeliveryAddresses()
-                                                                                    .then(r => setUserAddresses(r))
-                                                                            });
-                                                                    }}
-                                                                >Удалить</button>
-                                                            </div>
-                                                        </>
-                                                    })}
-                                                </>
-                                                :
-                                                <>
-                                                    <h2 className="main-content__sub-title">
-                                                        Адреса пока не были добавлены, но никогда не поздно сделатть первый заказ!
-                                                        <div className="addresses-list__list-item--add-address">
-                                                            <div className="list-item__default-address--void" />
-                                                            <input value={newAddress?.delivery_address} onChange={(e) => {
-                                                                const copy = JSON.parse(JSON.stringify(newAddress)) as DeliveryAddress;
-                                                                copy.delivery_address = e.target.value;
-                                                                setNewAddress(copy);
-                                                            }} />
-                                                            <button
-                                                                className="list-item__add-address-button"
-                                                                onClick={() => {
-                                                                    if (newAddress && newAddress?.delivery_address !== "") {
-                                                                        userApi.addDeliveryAddresses(newAddress)
-                                                                            .then(r => {
-                                                                                userApi.getDeliveryAddresses()
-                                                                                    .then(r => setUserAddresses(r))
-                                                                            })
-                                                                    }
-                                                                }}
-                                                            >Добавить</button>
-                                                            <div className="list-item__delete-button--void" />
-                                                        </div>
-                                                    </h2>
-                                                </>
-                                            }
-                                        </div>
-                                    </>
-                                }
-                            </>
-                        }
-                        {
-                            selectedPage === 'currOrder' && <>
-                                <h1 className="main-content__title">Текущий заказ</h1>
-
-                                {userCart
-                                    ?
-                                    <>
-                                        <div className="main-content__cart-container">
-
-                                            <div className="cart-container__left-cart">
-
-                                                <span className="left-cart__title"><b>Заказ в</b>
-                                                    <select
-                                                        className="title__select-address"
-                                                        value={userCart.address}
-                                                        onChange={(e) => {
-                                                            const copy = JSON.parse(JSON.stringify(userCart));
-                                                            const newAddress = userAddresses?.find((address: DeliveryAddress) => e.target.value === address.delivery_address) as DeliveryAddress;
-                                                            copy.address = newAddress.id ?? "";
-
-
-                                                            Object.assign(copy, { dishes_ordered: copy.dishes });
-                                                            delete copy.dishes;
-                                                            copy.dishes_ordered.forEach((d: any) => {
-                                                                if (typeof d.dish === "string" && d.id) {
-                                                                    d.dish = d.id
-                                                                    delete d.id;
-                                                                }
-                                                            })
-
-                                                            userApi.updateUserCart(copy)
-                                                                .then(r => {
-                                                                    userApi.getUserCart()
-                                                                        .then(res => {
-                                                                            setUserCart(res[0]);
-                                                                        })
-                                                                })
-                                                        }}
-                                                    >
-                                                        {userAddresses && userAddresses.map(addr => {
-                                                            return <option value={addr.delivery_address}>{addr.delivery_address}</option>
-                                                        })}
-                                                    </select>
-                                                    <p className="title__status"><b>Статус: </b>{convertOrderStatus[userCart.status as keyof typeof convertOrderStatus]}</p>
-                                                </span>
-                                                <div className="left-cart__change-time"> <b>Время доставки: </b>
-                                                    <input
-                                                        type="datetime-local"
-                                                        className="change-time__input-delvery-time"
-                                                        value={userCart.delivery_time}
-                                                        onChange={(e) => {
-                                                            const copy = JSON.parse(JSON.stringify(userCart));
-
-                                                            if (!copy.address) {
-                                                                const defaultAddress = userAddresses?.find((address: DeliveryAddress) => address.is_default) as DeliveryAddress;
-                                                                copy.address = defaultAddress.id ?? "";
-                                                            }
-                                                            else {
-                                                                const address = userAddresses?.find((add: DeliveryAddress) => add.delivery_address === copy.address) as DeliveryAddress;
-                                                                copy.address = address.id
-                                                            }
-
-                                                            copy.delivery_time = e.target.value;
-
-
-                                                            Object.assign(copy, { dishes_ordered: copy.dishes });
-                                                            delete copy.dishes;
-                                                            copy.dishes_ordered.forEach((d: any) => {
-                                                                if (typeof d.dish === "string" && d.id) {
-                                                                    d.dish = d.id
-                                                                    delete d.id;
-                                                                }
-                                                            })
-
-                                                            userApi.updateUserCart(copy)
-                                                                .then(r => {
-                                                                    userApi.getUserCart()
-                                                                        .then(r => {
-                                                                            setUserCart(r[0]);
-                                                                        })
-                                                                })
-                                                        }}
-                                                    />
-                                                </div>
-
-                                                <div className="left-cart__dishes-container">
-
-                                                    <b>Стоимость заказа: </b> {userCart.total_cost} руб.
-
-                                                    <div className="dishes-container__dishes-list">
-                                                        <b>Содержимое:</b><br />
-                                                        {userCart.dishes && userCart.dishes.length > 0 && userCart.dishes.map(dish => {
-                                                            return <>
-                                                                <p className="dishes-list__dish-item">
-                                                                    <button
-                                                                        className="dish-item__remove-item"
-                                                                        onClick={() => removeDishHandler(dish.dish)}
-                                                                    />
-                                                                    <button
-                                                                        className="dish-item__inc-item"
-                                                                        onClick={() => addDishHandler(dish.dish)}
-                                                                    />
-                                                                    {dish.dish} - {dish.quantity} шт. ({getDishTotalCostById(dish.id, dish.quantity)} руб.)
-                                                                </p>
-                                                            </>
-                                                        })}
-                                                    </div>
-                                                </div>
-
-                                                <div className="left-cart__divider" />
-
-                                                <div className="left-cart__buttons-container">
-                                                    <button className="buttons-container__button" onClick={() => {
-                                                        window.open("https://vk.com/mark_stranger", "_blank")
-                                                        const copy = JSON.parse(JSON.stringify(userCart));
-                                                        copy.status = "awaiting_courier";
-
-                                                        const address = userAddresses?.find((add: DeliveryAddress) => add.delivery_address === copy.address) as DeliveryAddress;
-                                                        copy.address = address.id
-
-                                                        Object.assign(copy, { dishes_ordered: copy.dishes });
-                                                        delete copy.dishes;
-                                                        copy.dishes_ordered.forEach((d: any) => {
-                                                            if (typeof d.dish === "string" && d.id) {
-                                                                d.dish = d.id
-                                                                delete d.id;
-                                                            }
-                                                        })
-
-                                                        userApi.updateUserCart(copy)
-                                                            .then(r => {
-                                                                userApi.getUserCart()
-                                                                    .then(r => {
-                                                                        setUserCart(r[0]);
-                                                                    })
-                                                            })
-                                                    }}>Оплатить</button>
-                                                    <button className="buttons-container__button" onClick={clearCartHandler}>Очистить</button>
-                                                </div>
-
-                                            </div>
-
-
-                                            {activeUserCarts
-                                                &&
-                                                <>
-                                                    <div className="cart-container__right-cart-container">
-                                                        {activeUserCarts.map(activeCart => {
-                                                            return <>
-                                                                <div className="cart-container__right-cart">
-                                                                    <span className="right-cart__title">
-                                                                        <p className="title__select-address"><b>Заказ в</b> {activeCart.address}</p>
-                                                                        <p className="title__status"><b>Статус: </b>{convertOrderStatus[activeCart.status as keyof typeof convertOrderStatus]}</p>
-                                                                    </span>
-                                                                    <div className="right-cart__change-time"> <b>Время доставки: </b>
-                                                                        <p className="change-time__text">{activeCart.delivery_time.split("T")[0]} {activeCart.delivery_time.split("T")[1].slice(0, 5)}</p>
-                                                                    </div>
-
-                                                                    <div className="right-cart__dishes-container">
-
-                                                                        <b>Стоимость заказа: </b> {activeCart.total_cost} руб.
-
-                                                                        <div className="dishes-container__dishes-list">
-                                                                            <b>Содержимое:</b><br />
-                                                                            {activeCart.dishes && activeCart.dishes.length > 0 && activeCart.dishes.map(dish => {
-                                                                                return <>
-                                                                                    <p className="dishes-list__dish-item">
-                                                                                        {dish.dish} - {dish.quantity} шт. ({getDishTotalCostById(dish.id, dish.quantity)} руб.)
-                                                                                    </p>
-                                                                                </>
-                                                                            })}
-                                                                        </div>
-                                                                    </div>
-
-                                                                    <div className="right-cart__divider" />
-
-                                                                    <div className="right-cart__buttons-container">
-                                                                        <button className="buttons-container__button" onClick={() => {
-                                                                            userApi.updateActiveCart(activeCart.id)
-                                                                                .then(r => {
-                                                                                    userApi.getActiveCart()
-                                                                                        .then(r => {
-                                                                                            setActiveUserCarts(r);
-                                                                                        })
-
-                                                                                    userApi.getOrdersHistory()
-                                                                                        .then(r => {
-                                                                                            setUserOrdersHistory(r);
-                                                                                        })
-                                                                                })
-
-                                                                        }}>Отменить</button>
-                                                                    </div>
-                                                                </div>
-                                                            </>
-                                                        })}
-                                                    </div>
-                                                </>
-                                            }
-                                        </div>
-                                    </>
-                                    :
-                                    <>
-                                        <h2 className="main-content__sub-title">Корзина пуста</h2>
-                                    </>
-                                }
-                            </>
-                        }
-                        {
-                            selectedPage === 'allOrders' && <>
-                                <h1 className="main-content__title">История заказов</h1>
-
-                                {userOrdersHistory
-                                    ?
-                                    <>
-                                        <div className="main-content__list-container">
-                                            {userOrdersHistory.map(order => {
-                                                return <>
-                                                    <div className="list-container__list-item">
-                                                        <h4 className="list-item__title">Заказ от {order.delivery_time.split('T').at(0)} - {convertOrderStatus[order.status as keyof typeof convertOrderStatus]}</h4>
-                                                        <p className="list-item__cost"><b>Стоимость:</b> {order.total_cost} руб.</p>
-                                                        <p className="list-item__count-dishes"><b>Кол-во блюд:</b> {order.count_dishes}</p>
-                                                        <p className="list-item__address"><b>Адрес:</b> {order.address}</p>
-                                                        <p className="list-item__comment"><b>Комментарий:</b> {order.comment}</p>
-                                                        <p><b>Блюда в заказе:</b></p>
-                                                        <div className="list-item__dishes-list">
-                                                            {order.dishes.map(dish => {
-                                                                return <>
-                                                                    <div className="dishes-list__list-item">
-                                                                        <p>{dish.dish}</p>
-                                                                        <p>Кол-во: {dish.quantity}</p>
-                                                                    </div>
-                                                                </>
-                                                            })}
-                                                        </div>
-                                                    </div>
-                                                </>
-                                            })}
-                                        </div>
-                                    </>
-                                    :
-                                    <>
-                                        <h2 className="main-content__sub-title">Заказов ещё не было, но никогда не поздно начать!</h2>
-                                    </>
-                                }
-                            </>
-                        }
+                        {userLogin?.role === 'client' && renderClientPages()}
+                        {userLogin?.role === 'manager' && renderManagerPages()}
                     </>}
             </div>
         </div >

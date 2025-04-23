@@ -37,7 +37,8 @@ class UserUpdateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ["email", "username", "phone", "scores", "role", "old_password", "new_password"]
+        fields = ["email", "username", "phone", "scores",
+                  "role", "old_password", "new_password"]
         extra_kwargs = {
             "email": {"required": False},
             "username": {"required": False},
@@ -57,7 +58,8 @@ class UserUpdateSerializer(serializers.ModelSerializer):
         # Проверка и установка нового пароля
         if old_password and new_password:
             if not instance.check_password(old_password):
-                raise serializers.ValidationError({"old_password": "Старый пароль указан неверно."})
+                raise serializers.ValidationError(
+                    {"old_password": "Старый пароль указан неверно."})
             instance.set_password(new_password)
 
         instance.save()
@@ -272,7 +274,7 @@ class UserOrderSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ["username", "email", "phone"]
+        fields = ["id", "username", "email", "phone"]
 
 
 class CourierSerializer(serializers.ModelSerializer):
@@ -282,12 +284,19 @@ class CourierSerializer(serializers.ModelSerializer):
         fields = ["id", "username", "email", "phone"]
 
 
+class AddressSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = DeliveryAddress
+        fields = ["id", "address"]
+
+
 class OrderSerializer(serializers.ModelSerializer):
     """Сериализатор для модели Order со всеми полями и блюдами в заказе."""
 
     user = UserOrderSerializer(read_only=True)
     courier = CourierSerializer(read_only=True)
-    address = serializers.StringRelatedField()    # строковое представление адреса
+    address = AddressSerializer(read_only=True)
     orderdish_set = OrderDishSerializer(many=True, read_only=True)
 
     class Meta:
