@@ -28,6 +28,9 @@ router.register(r'deliveryaddress', views.UserDeliveryAddressViewSet, basename="
 router.register(r'orders', views.OrderViewSet, basename='order')
 router.register(r'couriers', views.CourierViewSet, basename='couriers')
 
+router.register(r'orders/courier/active', views.ActiveOrdersForCourierViewSet, basename='active-for-courier')
+router.register(r'orders/courier/history', views.HistoryOrdersForCourierViewSet, basename='history-for-courier')
+
 urlpatterns = [
     path("users/me", views.UserSelfUpdateView.as_view(), name="user-self-update"),
     path("", include(router.urls)),

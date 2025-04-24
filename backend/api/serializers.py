@@ -272,7 +272,7 @@ class UserOrderSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ["username", "email", "phone"]
+        fields = ["id", "username", "email", "phone"]
 
 
 class CourierSerializer(serializers.ModelSerializer):
@@ -282,12 +282,18 @@ class CourierSerializer(serializers.ModelSerializer):
         fields = ["id", "username", "email", "phone"]
 
 
+class AddressSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = DeliveryAddress
+        fields = ["id", "address"]
+
+
 class OrderSerializer(serializers.ModelSerializer):
     """Сериализатор для модели Order со всеми полями и блюдами в заказе."""
 
     user = UserOrderSerializer(read_only=True)
     courier = CourierSerializer(read_only=True)
-    address = serializers.StringRelatedField()    # строковое представление адреса
+    address = AddressSerializer(read_only=True)
     orderdish_set = OrderDishSerializer(many=True, read_only=True)
 
     class Meta:
@@ -323,9 +329,15 @@ class OrderUpdateSerializer(serializers.ModelSerializer):
         ]
 
     def update(self, instance, validated_data):
-        # Обновление связанных OrderDish
         orderdishes_data = validated_data.pop("orderdish_set", [])
 
+        # Проверка, был ли назначен курьер
+        new_courier = validated_data.get("courier", instance.courier)
+        if instance.courier is None and new_courier is not None:
+            # Автоматически устанавливаем статус 'deliver', если курьер был назначен впервые
+            validated_data["status"] = Order.Status.deliver
+
+        # Обновление полей заказа
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
         instance.save()
