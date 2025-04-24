@@ -252,3 +252,43 @@ class CourierViewSet(viewsets.ReadOnlyModelViewSet):
         if user.role != User.Role.manager:
             raise PermissionDenied("Только менеджер может просматривать курьеров.")
         return User.objects.filter(role=User.Role.courier)
+
+
+class ActiveOrdersForCourierViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    ViewSet для курьеров: просмотр только своих заказов
+    со статусом 'deliver'.
+    """
+
+    permission_classes = [IsAuthenticated]
+    serializer_class = OrderSerializer  # или другой, если у тебя есть отдельный
+
+    def get_queryset(self):
+        user = self.request.user
+        if user.role != User.Role.courier:
+            raise PermissionDenied("Только курьер может просматривать свои заказы.")
+
+        return Order.objects.filter(
+            status=Order.Status.deliver,
+            courier=user
+        )
+
+
+class HistoryOrdersForCourierViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    ViewSet для курьеров: просмотр только своих заказов
+    со статусом 'deliver'.
+    """
+
+    permission_classes = [IsAuthenticated]
+    serializer_class = OrderSerializer  # или другой, если у тебя есть отдельный
+
+    def get_queryset(self):
+        user = self.request.user
+        if user.role != User.Role.courier:
+            raise PermissionDenied("Только курьер может просматривать свои заказы.")
+
+        return Order.objects.filter(
+            status=Order.Status.delivered,
+            courier=user
+        )
