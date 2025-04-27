@@ -77,7 +77,7 @@ export interface Cart {
     }>
 }
 
-export interface OrderForManager {
+export interface OrderForWorker {
     id: number,
     orderdish_set: Array<{
         id: number,

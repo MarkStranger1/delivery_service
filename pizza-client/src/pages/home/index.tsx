@@ -160,6 +160,7 @@ export const HomePage = () => {
                         </div>
 
                         {user
+                            && user.role === 'client'
                             && userCart
                             && userAddresses
                             && <>
@@ -187,7 +188,7 @@ export const HomePage = () => {
                                             <p className="dish-item__title">{dish.name}</p>
                                             <span className="dish-item__desc">{dish.description}</span>
                                             <p className="dish-item__about-text" onClick={() => setModalData(dish)}>Подробнее</p>
-                                            {user && <div className="dish-item__cart-interaction">
+                                            {user && user.role === "client" && <div className="dish-item__cart-interaction">
                                                 <p className="cart-interaction__cost">{dish.cost}руб.</p>
                                                 <button
                                                     className="cart-interaction__add-to-cart-button"

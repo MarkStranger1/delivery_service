@@ -1,4 +1,4 @@
-import { Cart, DeliveryAddress, OrderForManager, User } from "../DataTypes";
+import { Cart, DeliveryAddress, OrderForWorker, User } from "../DataTypes";
 
 class BaseApi {
 
@@ -133,13 +133,25 @@ export class ClientApi extends BaseApi {
     }
 }
 
+export class CourierApi extends BaseApi {
+    getActiveOrders() {
+        return this.sendRequest('GET', 'orders/courier/active/', null, true)
+            .then(r => { return r.json(); })
+    }
+
+    getOrdersHistory() {
+        return this.sendRequest('GET', 'orders/courier/history/', null, true)
+            .then(r => { return r.json(); })
+    }
+}
+
 export class ManagerApi extends BaseApi {
     getAllOrders() {
         return this.sendRequest('GET', 'orders/', null, true)
             .then(r => { return r.json(); })
     }
 
-    editOrder(order: OrderForManager) {
+    editOrder(order: OrderForWorker) {
         const data = JSON.parse(JSON.stringify(order));
         const id = data.id;
         delete data.id;
@@ -148,8 +160,8 @@ export class ManagerApi extends BaseApi {
         delete data.count_dishes;
 
 
-        data.courier = order.courier.id
-        data.address = order.address.id
+        data.courier = order.courier ? order.courier.id : null
+        data.address = order.address ? order.address.id : null
 
         data.orderdish_set = order.orderdish_set.map(e => { return { dish: e.id, quantity: e.quantity } })
 
