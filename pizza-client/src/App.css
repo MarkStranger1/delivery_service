@@ -32,7 +32,19 @@
   from {
     transform: rotate(0deg);
   }
+
   to {
     transform: rotate(360deg);
   }
+}
+
+.approve-modal__buttons-container {
+  display: flex;
+  width: 100%;
+  column-gap: 20px;
+}
+
+.buttons-container__resolve,
+.buttons-container__reject {
+  flex: 1;
 }

@@ -50,7 +50,7 @@ export interface Order {
     }>,
     total_cost: number,
     count_dishes: number,
-    status: string,
+    status: "awaiting_payment" | "awaiting_courier" | "deliver" | "delivered" | "cancelled",
     comment: string,
     delivery_time: string,
     address: string
@@ -65,7 +65,7 @@ export interface DeliveryAddress {
 export interface Cart {
     id: number,
     address: number,
-    status: string,
+    status: "awaiting_payment" | "awaiting_courier" | "deliver" | "delivered" | "cancelled",
     comment: string,
     count_dishes: number,
     total_cost: number,
@@ -86,7 +86,7 @@ export interface OrderForWorker {
     }>,
     total_cost: number,
     count_dishes: number,
-    status: string,
+    status: "awaiting_payment" | "awaiting_courier" | "deliver" | "delivered" | "cancelled",
     comment: string,
     delivery_time: string,
     address: {

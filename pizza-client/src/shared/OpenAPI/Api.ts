@@ -113,8 +113,8 @@ export class ClientApi extends BaseApi {
             .then(r => { return r.json(); });
     }
 
-    updateActiveCart(cartId?: number) {
-        return this.sendRequest('PATCH', `orders/active/${cartId ? cartId + '/' : ''}`, { status: "cancelled" }, true)
+    updateActiveCart(cartId: number, status: "delivered" | "cancelled") {
+        return this.sendRequest('PATCH', `orders/active/${cartId ? cartId + '/' : ''}`, { status: status }, true)
             .then(r => { return r.json(); });
     }
 
