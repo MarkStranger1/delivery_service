@@ -48,3 +48,7 @@
 .buttons-container__reject {
   flex: 1;
 }
+
+button:disabled {
+  cursor: not-allowed;
+}

@@ -14,6 +14,7 @@ import QRCode from "../../shared/assets/qrCode.svg"
 
 import "./style.scss"
 import { ApproveContainer } from "../../shared/Containers/ApproveModal";
+import { convertDateTime, validateData } from "../../shared/utils/HelpFunctions";
 
 export const UserAccountPage = () => {
 
@@ -74,6 +75,7 @@ export const UserAccountPage = () => {
     const [allCouriers, setAllCouriers] = useState<Array<CourierForManager> | null>(null);
     const [editedOrder, setEditedOrder] = useState<OrderForWorker | null>(null);
     const [sortByStatus, setSortByStatus] = useState<-1 | 0 | 1>(0);
+    const [sortByCount, setSortByCount] = useState<-1 | 0 | 1>(0);
     const editOrderRef = useRef<HTMLDialogElement>(null);
 
     const convertStatusForSort = {
@@ -234,6 +236,20 @@ export const UserAccountPage = () => {
         if (sortByStatus === 1) return convertStatusForSort[a.status as keyof typeof convertStatusForSort] - convertStatusForSort[b.status as keyof typeof convertStatusForSort];
         if (sortByStatus === -1) return convertStatusForSort[b.status as keyof typeof convertStatusForSort] - convertStatusForSort[a.status as keyof typeof convertStatusForSort];
         return 0;
+    }
+
+    const sortByCountFoo = (a: CourierForManager, b: CourierForManager) => {
+        const courierAOrders = allOrders ? allOrders?.filter(order => order.courier && order.courier.id === a.id) : []
+        const courierBOrders = allOrders ? allOrders?.filter(order => order.courier && order.courier.id === b.id) : []
+        if (sortByCount === 1) return courierAOrders.length - courierBOrders.length;
+        if (sortByCount === -1) return courierBOrders.length - courierAOrders.length;
+        return 0;
+    }
+
+    const validateForm = (formData: User): boolean => {
+        return validateData(formData.username, "username")
+            && validateData(formData.email, "email")
+            && validateData(formData.phone, "phone")
     }
 
     useEffect(() => {
@@ -440,7 +456,14 @@ export const UserAccountPage = () => {
                         </div>
 
                         <button
-                            disabled={userRegisterPass.length === 0 || userLoginPass.length === 0 || userLoginPass !== tmpPass}
+                            disabled={
+                                userRegisterPass.length === 0
+                                || userLoginPass.length === 0
+                                || userLoginPass !== tmpPass
+                                || !validateForm(editUser)
+                                || !validateData(userRegisterPass, "password")
+                                || !validateData(userLoginPass, "password")
+                            }
                             className="edit-user-info__button-submit"
                             onClick={() => {
                                 if (editUser) {
@@ -687,7 +710,7 @@ export const UserAccountPage = () => {
                                         return <option value={addr.delivery_address}>{addr.delivery_address}</option>
                                     })}
                                 </select>
-                                <p className="title__status"><b>Статус: </b>{convertOrderStatus[userCart.status as keyof typeof convertOrderStatus]}</p>
+                                {/* <p className="title__status"><b>Статус: </b>{convertOrderStatus[userCart.status as keyof typeof convertOrderStatus]}</p> */}
                             </span>
                             <div className="left-cart__change-time"> <b>Время доставки: </b>
                                 <input
@@ -706,7 +729,9 @@ export const UserAccountPage = () => {
                                             copy.address = address.id
                                         }
 
-                                        copy.delivery_time = e.target.value;
+                                        if (validateData(e.target.value, "datetime")) {
+                                            copy.delivery_time = e.target.value;
+                                        }
 
 
                                         Object.assign(copy, { dishes_ordered: copy.dishes });
@@ -879,9 +904,9 @@ export const UserAccountPage = () => {
                         {userOrdersHistory.map(order => {
                             return <>
                                 <div className="list-container__list-item">
-                                    <h4 className="list-item__title">Заказ от {order.delivery_time.split('T').at(0)} - {convertOrderStatus[order.status as keyof typeof convertOrderStatus]}</h4>
+                                    <h4 className="list-item__title">Заказ от {convertDateTime(order.delivery_time)} - {convertOrderStatus[order.status as keyof typeof convertOrderStatus]}</h4>
                                     <p className="list-item__cost"><b>Стоимость:</b> {order.total_cost} руб.</p>
-                                    <p className="list-item__count-dishes"><b>Кол-во блюд:</b> {order.count_dishes}</p>
+                                    <p className="list-item__count-dishes"><b>Количество блюд:</b> {order.count_dishes}</p>
                                     <p className="list-item__address"><b>Адрес:</b> {order.address}</p>
                                     <p className="list-item__comment"><b>Комментарий:</b> {order.comment}</p>
                                     <p><b>Блюда в заказе:</b></p>
@@ -889,8 +914,7 @@ export const UserAccountPage = () => {
                                         {order.dishes.map(dish => {
                                             return <>
                                                 <div className="dishes-list__list-item">
-                                                    <p>{dish.dish}</p>
-                                                    <p>Кол-во: {dish.quantity}</p>
+                                                    <p>{dish.dish} - {dish.quantity} шт.</p>
                                                 </div>
                                             </>
                                         })}
@@ -975,7 +999,14 @@ export const UserAccountPage = () => {
                         </div>
 
                         <button
-                            disabled={userRegisterPass.length === 0 || userLoginPass.length === 0 || userLoginPass !== tmpPass}
+                            disabled={
+                                userRegisterPass.length === 0
+                                || userLoginPass.length === 0
+                                || userLoginPass !== tmpPass
+                                || !validateForm(editUser)
+                                || !validateData(userRegisterPass, "password")
+                                || !validateData(userLoginPass, "password")
+                            }
                             className="edit-user-info__button-submit"
                             onClick={() => {
                                 if (editUser) {
@@ -1150,7 +1181,14 @@ export const UserAccountPage = () => {
                         </div>
 
                         <button
-                            disabled={userRegisterPass.length === 0 || userLoginPass.length === 0 || userLoginPass !== tmpPass}
+                            disabled={
+                                userRegisterPass.length === 0
+                                || userLoginPass.length === 0
+                                || userLoginPass !== tmpPass
+                                || !validateForm(editUser)
+                                || !validateData(userRegisterPass, "password")
+                                || !validateData(userLoginPass, "password")
+                            }
                             className="edit-user-info__button-submit"
                             onClick={() => {
                                 if (editUser) {
@@ -1203,9 +1241,11 @@ export const UserAccountPage = () => {
                                     className="title__change-date"
                                     value={editedOrder.delivery_time}
                                     onChange={(e) => {
-                                        const copy = JSON.parse(JSON.stringify(editedOrder)) as OrderForWorker;
-                                        copy.delivery_time = e.target.value;
-                                        setEditedOrder(copy);
+                                        if (validateData(e.target.value, "datetime")) {
+                                            const copy = JSON.parse(JSON.stringify(editedOrder)) as OrderForWorker;
+                                            copy.delivery_time = e.target.value;
+                                            setEditedOrder(copy);
+                                        }
                                     }} />
                                 - {convertOrderStatus[editedOrder.status as keyof typeof convertOrderStatus]}
                             </h4>
@@ -1242,7 +1282,7 @@ export const UserAccountPage = () => {
                                 {!editedOrder.courier && <img src={AttentionIcon} alt="attention" style={{ maxHeight: "25px", aspectRatio: "1" }} />}
                             </p>
                             <p className="list-item__cost"><b>Стоимость:</b> {editedOrder.total_cost} руб.</p>
-                            <p className="list-item__count-dishes"><b>Кол-во блюд:</b> {editedOrder.count_dishes}</p>
+                            <p className="list-item__count-dishes"><b>Количество блюд:</b> {editedOrder.count_dishes}</p>
                             <p className="list-item__address"><b>Адрес:</b> {editedOrder.address ? editedOrder.address.address : ''}</p>
                             <b>Комментарий:</b><input className="list-item__comment" value={editedOrder.comment} onChange={(e) => {
                                 const copy = JSON.parse(JSON.stringify(editedOrder)) as OrderForWorker;
@@ -1282,7 +1322,9 @@ export const UserAccountPage = () => {
                             editedOrder && managerApi.editOrder(editedOrder)
                                 .then(r => {
                                     managerApi.getAllOrders()
-                                        .then(res => setAllOrders(res.sort(sortByDeliveryTimeFoo)))
+                                        .then(res => {
+                                            setAllOrders(res.sort(sortByDeliveryTimeFoo))
+                                        })
                                 })
                         }}>Выйти и сохранить</button>
                     </dialog>
@@ -1300,12 +1342,12 @@ export const UserAccountPage = () => {
                                                 setEditedOrder(order);
                                             }}
                                         />
-                                        <p className="list-item__title">Заказ от {order.delivery_time.split('T').at(0)} - {convertOrderStatus[order.status as keyof typeof convertOrderStatus]}</p>
+                                        <p className="list-item__title">Заказ от {convertDateTime(order.delivery_time)} - {convertOrderStatus[order.status as keyof typeof convertOrderStatus]}</p>
                                         <p className="list-item__about-client"><b>Клиент:</b> {order.user.username}</p>
                                         <p className="list-item__about-courier"><b>Курьер:</b> {order.courier ? order.courier.username : ''}</p>
                                     </>
                                     : <>
-                                        <h4 className="list-item__title">Заказ от {order.delivery_time.split('T').at(0)} - {convertOrderStatus[order.status as keyof typeof convertOrderStatus]}</h4>
+                                        <h4 className="list-item__title">Заказ от {convertDateTime(order.delivery_time)} - {convertOrderStatus[order.status as keyof typeof convertOrderStatus]}</h4>
                                         <p className="list-item__about-client">
                                             <b>Клиент:</b> {order.user.username} | {order.user.phone} | {order.user.email}
                                         </p>
@@ -1338,7 +1380,7 @@ export const UserAccountPage = () => {
                                             {!order.courier && <img src={AttentionIcon} alt="attention" style={{ maxHeight: "25px", aspectRatio: "1" }} />}
                                         </p>
                                         <p className="list-item__cost"><b>Стоимость:</b> {order.total_cost} руб.</p>
-                                        <p className="list-item__count-dishes"><b>Кол-во блюд:</b> {order.count_dishes}</p>
+                                        <p className="list-item__count-dishes"><b>Количество блюд:</b> {order.count_dishes}</p>
                                         <p className="list-item__address"><b>Адрес:</b> {order.address ? order.address.address : ''}</p>
                                         <p className="list-item__comment"><b>Комментарий:</b> {order.comment}</p>
                                         <p><b>Блюда в заказе:</b></p>
@@ -1346,8 +1388,7 @@ export const UserAccountPage = () => {
                                             {order.orderdish_set.map(dish => {
                                                 return <>
                                                     <div className="dishes-list__list-item">
-                                                        <p>{dish.dish}</p>
-                                                        <p>Кол-во: {dish.quantity}</p>
+                                                        <p>{dish.dish} - {dish.quantity} шт.</p>
                                                     </div>
                                                 </>
                                             })}
@@ -1359,37 +1400,51 @@ export const UserAccountPage = () => {
                 </div>
             </>
         }
-        if (selectedPage === 'allCouriers') return <>
-            <div className="main-content__list-container">
-                {allCouriers && allCouriers.map(courier => {
+        if (selectedPage === 'allCouriers' && allCouriers) {
+            const orders2Show = sortByCount !== 0 ? allCouriers.sort(sortByCountFoo) : allCouriers;
 
-                    const courierOrders = allOrders ? allOrders?.filter(order => order.courier && order.courier.id === courier.id) : []
+            return <>
+                <div className="list-container__sort-panel">
+                    <div className="sort-panel__item--void" />
+                    <button className="sort-panel__button" onClick={() => {
+                        if (sortByCount === -1) setSortByCount(0);
+                        else if (sortByCount === 0) setSortByCount(1);
+                        else if (sortByCount === 1) setSortByCount(-1);
+                    }}>Сортировать {sortByCount === -1 ? "↓" : (sortByCount === 1 ? "↑" : '')}</button>
+                    <div className="sort-panel__item--void" />
+                    <div className="sort-panel__item--void" />
+                </div>
+                <div className="main-content__list-container">
+                    {orders2Show.map(courier => {
 
-                    return <>
-                        <div className="list-container__list-item">
-                            <h4 className="list-item__title">Курьер: {courier.username}</h4>
-                            <p className="list-item__email"><b>Email:</b> {courier.email}</p>
-                            <p className="list-item__phone"><b>Номер телефона:</b> {courier.phone}</p>
-                            {courierOrders
-                                && courierOrders.length
-                                ? <>
-                                    <p><b>Активные заказы ({courierOrders.length}):</b></p>
-                                    <div className="list-item__dishes-list">
-                                        {courierOrders.map(order => {
-                                            return <>
-                                                <div className="dishes-list__list-item">
-                                                    <p>Время: {order.delivery_time.split('T').join(' ')}</p>
-                                                    <p>Место: {order.address ? order.address.address : ''}</p>
-                                                </div>
-                                            </>
-                                        })}
-                                    </div>
-                                </> : <>Нет активных заказов</>}
-                        </div>
-                    </>
-                })}
-            </div>
-        </>
+                        const courierOrders = allOrders ? allOrders?.filter(order => order.courier && order.courier.id === courier.id) : []
+
+                        return <>
+                            <div className="list-container__list-item">
+                                <h4 className="list-item__title">Курьер: {courier.username}</h4>
+                                <p className="list-item__email"><b>Email:</b> {courier.email}</p>
+                                <p className="list-item__phone"><b>Номер телефона:</b> {courier.phone}</p>
+                                {courierOrders
+                                    && courierOrders.length
+                                    ? <>
+                                        <p><b>Активные заказы ({courierOrders.length}):</b></p>
+                                        <div className="list-item__dishes-list">
+                                            {courierOrders.map(order => {
+                                                return <>
+                                                    <div className="dishes-list__list-item">
+                                                        <p>Время: {convertDateTime(order.delivery_time)} {order.delivery_time.split('T').at(-1)?.slice(0, -3)}</p>
+                                                        <p>Место: {order.address ? order.address.address : ''}</p>
+                                                    </div>
+                                                </>
+                                            })}
+                                        </div>
+                                    </> : <>Нет активных заказов</>}
+                            </div>
+                        </>
+                    })}
+                </div>
+            </>
+        }
     }
 
     return <>
@@ -1397,12 +1452,14 @@ export const UserAccountPage = () => {
 
             <div className="user-page__header">
                 <Link to="/" className="header__return">Назад</Link>
-                <p className="header__title">Личный кабинет {user ? user.username : ''} ({user ? user.scores : ''} баллов)</p>
-                <button className="header__logout" onClick={() => {
-                    setUser(null);
-                    setUserLogin(defaultUser);
-                    document.cookie = `sessionToken=`
-                }} />
+                <p className="header__title">Личный кабинет {user ? user.username : ''}{user && user.role === 'client' ? ` (${user.scores} баллов)` : ''}</p>
+                {user
+                    && user.id !== -1
+                    && <button className="header__logout" onClick={() => {
+                        setUser(null);
+                        setUserLogin(defaultUser);
+                        document.cookie = `sessionToken=`
+                    }} />}
             </div>
 
             <div className="user-page__nav-bar">
@@ -1501,9 +1558,27 @@ export const UserAccountPage = () => {
                                 </div>
                                 <button
                                     className="create-login-form__button-submit"
-                                    disabled={!userRegister.email || !userRegisterPass}
-                                    onClick={() => console.log(userRegister, { userPass: userRegisterPass })}>
-                                    Create Login
+                                    disabled={
+                                        !userRegister.email
+                                        || !userRegisterPass
+                                        || !validateForm(userRegister)
+                                        || !validateData(userRegisterPass, "password")
+                                    }
+                                    onClick={() => {
+                                        const mainApi = new MainApi();
+                                        mainApi.createUser(userRegister, userRegisterPass)
+                                            .then(async (r) => {
+                                                let res = await mainApi.getUserInfo();
+                                                if (!res.detail) {
+                                                    setUserLogin(res as User);
+                                                    setUser(res as User);
+                                                    setUserLoginPass("");
+                                                    setSelectedPage('currOrder')
+                                                    setUserRegister(defaultUser);
+                                                }
+                                            })
+                                    }}>
+                                    зарегистрироваться
                                 </button>
                             </div>
 
@@ -1543,7 +1618,6 @@ export const UserAccountPage = () => {
                                                     setUserLoginPass("");
                                                     setSelectedPage('currOrder')
                                                 }
-
                                             })
                                     }}>
                                     Login

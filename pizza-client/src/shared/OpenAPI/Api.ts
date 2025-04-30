@@ -56,6 +56,21 @@ export class MainApi extends BaseApi {
             .then(r => { return r.json(); })
     }
 
+    createUser(user: User, pwd: string) {
+
+        const data = JSON.parse(JSON.stringify(user))
+
+        delete data.id;
+        delete data.role;
+        delete data.scores;
+        delete data.phone;
+
+        Object.assign(data, { password: pwd })
+
+        return this.sendRequest('POST', "users/", data)
+            .then(r => { return r.json(); })
+    }
+
     authUser(user: User, pwd: string) {
         return this.sendRequest('POST', 'auth/token/login/', { email: user.email, password: pwd })
             .then(r => { return null; })
@@ -118,7 +133,6 @@ export class ClientApi extends BaseApi {
             .then(r => { return r.json(); });
     }
 
-
     createUserCart() {
         return this.sendRequest('POST', 'orders/cart/', { "dishes_ordered": [] }, true)
             .then(r => { return r.json(); });
@@ -158,6 +172,7 @@ export class ManagerApi extends BaseApi {
         delete data.user;
         delete data.total_cost;
         delete data.count_dishes;
+        delete data.status;
 
 
         data.courier = order.courier ? order.courier.id : null
