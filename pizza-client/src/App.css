@@ -52,3 +52,20 @@
 button:disabled {
   cursor: not-allowed;
 }
+
+.button-light,
+.button-dark {
+  background-color: #B6DFF8;
+  color: black;
+  padding: .1em .25em;
+  border-radius: 10px;
+  text-decoration: none;
+  font-size: 14px;
+  width: 100%;
+  text-align: center;
+}
+
+.button-dark {
+  background-color: #2579AD;
+  color: white;
+}

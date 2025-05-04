@@ -1,20 +1,26 @@
 //@ts-ignore
-import PizzaImg from "../../shared/assets/pizza/p1avif.avif"
-//@ts-ignore
-import ServiceImg from "../../shared/assets/serviceImg.svg"
+import FooterLogo from "../../shared/assets/footerLogo.svg"
 
 import "./style.css"
 
 export const Footer = () => {
     return <>
+        <div className="about-company-text">
+            <p className="about-company-text__title">Kanagawa Pizza Place</p>
+            Kanagawa Pizza Place — это место, где лучшие традиции приготовления еды сочетаются с качеством и вниманием к деталям. Мы с любовью доставляем нашу еду в Самаре, чтобы каждый мог насладиться насыщенным вкусом свежих блюд прямо у себя дома.<br /><br />
+            Каждое блюдо в Kanagawa Pizza Place начинается с идеально вымешанного теста, тонкого и ароматного, созданного вручную нашими мастерами. Мы используем только свежие, тщательно отобранные ингредиенты, чтобы каждое угощение радовало вас с первого до последнего кусочка. Наша авторская рецептура соусов придает блюдам богатство вкуса и лёгкую кислинку, а фирменные специи делают нашу еду неповторимой.<br /><br />
+            На нашем сайте вы можете легко выбрать еду по своему настроению: классические сочетания, оригинальные авторские рецепты, мясные, овощные и сырные вариации — в Kanagawa Pizza Place найдётся вкус для каждого.<br /><br />
+            Любите мясо? Попробуйте блюда с нежной курицей, ароматным беконом, острой пепперони или сочными фрикадельками. Предпочитаете растительную кухню? У нас большой выбор вегетарианских вариантов с ароматными овощами, свежей зеленью и натуральным сыром без продуктов животного происхождения.<br /><br />
+            И это ещё не всё! В Kanagawa Pizza Place вы можете дополнить заказ аппетитными закусками: сырными палочками, мини-роллами, горячими крылышками или ароматными пападиасами. А на сладкое мы предлагаем десерты — от сладких угощений с ягодами до настоящего шоколадного фондана и мороженого.<br /><br />
+            Заказывайте любимую еду в Kanagawa Pizza Place — быстро, удобно и невероятно вкусно!
+        </div>
         <div className="footer">
             <div className="footer__left-content">
-                <img src={PizzaImg} alt="pizza-img" className="left-content__img" />
                 <a href="about-app" target="_blank" className="left-content__about--app">О сайте</a>
                 <a href="about-app" target="_blank" className="left-content__about--company">О компании</a>
             </div>
+            <img src={FooterLogo} />
             <div className="footer__right-content">
-                <img src={ServiceImg} alt="service-img" className="right-content__img" />
                 <p className="right-content__about--app">Поддержка</p>
                 <a href="tel:+79083807057" className="right-content__about--company">+7 (908) 380-70-57 </a>
             </div>

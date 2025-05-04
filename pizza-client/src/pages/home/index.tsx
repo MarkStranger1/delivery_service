@@ -19,7 +19,7 @@ export const HomePage = () => {
     const dialogRef = useRef<HTMLDialogElement>(null);
 
     const [selectedProdType, setSelectedProdType] = useState<TypeOfDish | null>(null);
-    const [selectedKitchenType, setSelectedKitchenType] = useState<string>(kitchenType[0]);
+    const [selectedKitchenType, setSelectedKitchenType] = useState<string | null>(kitchenType[0]);
 
     const [productsType, setProductsType] = useState<Array<TypeOfDish> | null>(null)
     const [dishesData, setDishesData] = useState<Array<Dish> | null>(null);
@@ -41,11 +41,16 @@ export const HomePage = () => {
         }
 
         if (selectedProdType)
-            return data.filter(dish => dish.type.slug === selectedProdType.slug).filter(dish => dish.cuisine === cuisineConvert[selectedKitchenType.toLowerCase() as keyof typeof cuisineConvert]);
+            return data
+                .filter(dish => dish.type.slug === selectedProdType.slug)
+                .filter(dish => {
+                    if (!selectedKitchenType) return true;
+                    else return dish.cuisine === cuisineConvert[selectedKitchenType.toLowerCase() as keyof typeof cuisineConvert]
+                });
         return data;
     }
 
-    const changeTypeHandler = (whatChange: 'prod' | 'kitchen', type: TypeOfDish | string) => {
+    const changeTypeHandler = (whatChange: 'prod' | 'kitchen', type: TypeOfDish | string | null) => {
         setChangeData(-1);
         if (whatChange === 'prod' && typeof type !== 'string') {
             setTimeout(() => {
@@ -60,6 +65,45 @@ export const HomePage = () => {
             }, 500);
         }
 
+    }
+
+    const addDishToCart = (dish: Dish) => {
+        if (user && userCart) {
+            const userApi = new ClientApi();
+
+            const copy = JSON.parse(JSON.stringify(userCart));
+            const addingDish = copy.dishes.find((d: any) => d.dish === dish.name);
+
+            if (addingDish) {
+                addingDish.quantity++;
+            }
+            else {
+                copy.dishes.push({
+                    id: dish.id,
+                    dish: dish.name,
+                    quantity: 1
+                });
+            }
+
+            Object.assign(copy, { dishes_ordered: copy.dishes });
+            delete copy.dishes;
+
+            const defaultAddress = userAddresses?.find((address: DeliveryAddress) => address.is_default) as DeliveryAddress;
+            copy.address = defaultAddress.id ?? "";
+
+            copy.dishes_ordered.forEach((d: any) => {
+                if (typeof d.dish === "string" && d.id) {
+                    d.dish = d.id
+                    delete d.id;
+                }
+            })
+
+            userApi.updateUserCart(copy)
+                .then(r => {
+                    userApi.getUserCart()
+                        .then(res => setUserCart(res[0]))
+                })
+        }
     }
 
     useEffect(() => {
@@ -105,29 +149,34 @@ export const HomePage = () => {
                     <>
                         {modalData && <>
                             <dialog className="modal-container" ref={dialogRef}>
-                                <div className="modal-container__left-content">
-                                    <div className="left-content__title"><h1>{modalData.name}</h1> <p>{modalData.cost}руб.</p></div>
-                                    <h5 className="left-content__subtitle">{modalData.type.name}</h5>
-                                    <p className="left-content__food-value">Пищевая ценность:<br />{modalData.weight} г. - {modalData.ccal} Ккал</p>
-                                    <p className="left-content__desc">{modalData.description}</p><br />
-                                    <b>Ингридиенты:</b><br />
-                                    <div className="left-content__ingredients-container">
-                                        {modalData.ingredients.map(ing => {
-                                            return <>
-                                                <div className="ingredients-container__ing-item">
-                                                    <b>Название:</b> {ing.name.charAt(0).toUpperCase() + ing.name.slice(1)}<br />
-                                                    <b>Колличество:</b> {ing.amount} {ing.measurement_unit}
-                                                </div>
-                                            </>
-                                        })}
-                                    </div>
-                                </div>
+
+                                <DishImg
+                                    className="modal-container__left-content"
+                                    img={modalData.image}
+                                    onClick={() => { }}
+                                />
+
 
                                 <div className="modal-container__right-content">
-                                    <img src={PizzaImg} alt="" className="right-content__img" />
+                                    <h1 className="right-content__title">{modalData.name}</h1>
+                                    <p className="right-content__desc">{modalData.description}</p><br />
+                                    <b>Ингридиенты:</b><br />
+                                    <div className="right-content__ingredients-container">
+                                        {modalData.ingredients.map(ing => {
+                                            return `${ing.name.charAt(0).toUpperCase() + ing.name.slice(1)} - ${ing.amount} ${ing.measurement_unit}`
+                                        }).join(', ')}
+                                    </div>
+                                    <p className="right-content__food-value">{modalData.weight} г. - {modalData.ccal} Ккал</p>
+                                    {
+                                        user && user.id !== -1 && <>
+                                            <div className="right-content__bottom">
+                                                <p>{modalData.cost}руб.</p>
+                                                <button className="modal-container__button button-dark" onClick={() => addDishToCart(modalData)}>В корзину</button>
+                                            </div>
+                                        </>
+                                    }
+                                    <button className="modal-container__return-button button-dark" onClick={() => setModalData(null)}>Закрыть</button>
                                 </div>
-
-                                <button className="modal-container__return-button" onClick={() => setModalData(null)}>Закрыть</button>
                             </dialog>
                         </>}
 
@@ -147,6 +196,12 @@ export const HomePage = () => {
                         </div>
 
                         <div className="select-kitchen-type">
+                            <button
+                                onClick={() => changeTypeHandler('kitchen', null)}
+                                className={"select-kitchen-type__type-item " + (selectedKitchenType === null ? "selected-type" : "")}
+                            >
+                                <p className="kitchen-type-item__label">Все кухни</p>
+                            </button>
                             {kitchenType.map((type, index) => {
                                 return <>
                                     <button
@@ -183,15 +238,18 @@ export const HomePage = () => {
                             {dishesData
                                 && applyFilter(dishesData).map(dish => {
                                     return <>
-                                        <div className="dishes-container__dish-item" key={`${dish.id}${dish.name}__${dish.type.slug}`}>
-                                            <DishImg img={dish.image} />
+                                        <div
+                                            className="dishes-container__dish-item"
+                                            key={`${dish.id}${dish.name}__${dish.type.slug}`}
+
+                                        >
+                                            <DishImg className="" img={dish.image} onClick={() => setModalData(dish)} />
                                             <p className="dish-item__title">{dish.name}</p>
                                             <span className="dish-item__desc">{dish.description}</span>
-                                            <p className="dish-item__about-text" onClick={() => setModalData(dish)}>Подробнее</p>
                                             {user && user.role === "client" && <div className="dish-item__cart-interaction">
                                                 <p className="cart-interaction__cost">{dish.cost}руб.</p>
                                                 <button
-                                                    className="cart-interaction__add-to-cart-button"
+                                                    className="cart-interaction__add-to-cart-button button-dark"
                                                     onClick={() => {
                                                         if (userCart && userAddresses) {
                                                             const userApi = new ClientApi();
@@ -238,7 +296,7 @@ export const HomePage = () => {
                                                             }
 
                                                         }
-                                                    }} />
+                                                    }}>В корзину</button>
                                             </div>}
                                         </div>
                                     </>

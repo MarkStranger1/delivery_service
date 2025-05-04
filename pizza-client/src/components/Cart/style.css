@@ -1,9 +1,9 @@
 .cart-container {
     position: fixed;
     right: 20px;
-    min-width: 150px;
+    min-width: 225px;
     width: fit-content;
-    max-width: 300px;
+    max-width: 225px;
     background-color: rgb(255, 255, 255);
     border-radius: 6px;
     height: fit-content;
@@ -18,39 +18,72 @@
     margin: 0;
 }
 
+.cart-container__title {
+    font-size: 20px;
+    font-weight: 500;
+}
+
 .cart-container__dishes-list {
+    width: 100%;
     height: fit-content;
     max-height: 230px;
     overflow: auto;
 }
 
-.cart-container__divider {
-    width: 100%;
-    border: 2px solid #cad7e2;
-}
-
 .dish-list__list-item {
-    display: flex;
-    margin-bottom: 5px;
+    width: 100%;
+    display: grid;
+    grid-template-areas:
+        "name delete"
+        "count price";
+    grid-template-columns: repeat(2, 50%);
+    padding-bottom: 5px;
     align-items: center;
+    justify-items: center;
+    border-bottom: 2px solid #B6DFF8;
 }
 
-.list-item__delete-button {
-    margin-right: 5px;
-    background-image: url('../../shared/icons/removeButton.svg');
-    background-position: center;
+.count-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    width: 100%;
+    max-width: 80px;
+}
+
+.list-item__text {
+    text-align: center;
+}
+
+.list-item__delete-button,
+.list-item__add-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
     width: 15px;
-    aspect-ratio: 1;
+    height: 15px;
     border: none;
-    background-repeat: no-repeat;
-    background-size: 70%;
+    border-radius: 50%;
     background-color: #cad7e2;
-    padding: 15px;
-    border-radius: 10px;
+    padding: 0;
     transition: all 0.3s ease-in-out;
 }
 
-.list-item__delete-button:hover {
+.list-item__remove-button {
+    width: 15px;
+    aspect-ratio: 1;
+    background-position: center;
+    border: none;
+    border-radius: 50%;
+    background-color: #cad7e2;
+}
+
+.list-item__add-button:hover {
+    background-color: #cef098;
+}
+
+.list-item__delete-button:hover,
+.list-item__remove-button:hover {
     background-color: #f09e98;
 }
 
@@ -60,6 +93,12 @@
     align-items: flex-start;
     width: 100%;
     margin-top: 10px;
+}
+
+.result-container__title {
+    text-align: center;
+    width: 100%;
+    margin: 0;
 }
 
 .result-container__total-cost {

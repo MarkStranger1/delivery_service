@@ -1,9 +1,23 @@
+.about-company-text {
+    width: 100%;
+    height: 575px;
+    background-color: white;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px 12% 0;
+}
+
+.about-company-text__title {
+    font-size: 24px;
+}
+
 .footer {
     display: flex;
     justify-content: space-between;
-    height: 200px;
-    background-color: rgb(255, 255, 255);
-    padding: 30px 20%;
+    height: 100px;
+    background-color: #2579AD;
+    padding: 30px 14%;
 }
 
 .footer a,

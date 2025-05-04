@@ -2,7 +2,7 @@ import { useState } from "react"
 //@ts-ignore
 import NoPhoto from "../../shared/assets/noPhoto.svg"
 
-export const DishImg = (props: { img: string }) => {
+export const DishImg = (props: { className: string, img: string, onClick: Function }) => {
     const [loaded, setLoaded] = useState(false);
     const [curImage, setCurImage] = useState(props.img);
 
@@ -18,7 +18,8 @@ export const DishImg = (props: { img: string }) => {
             src={curImage}
             onError={handleError}
             alt="dish-img"
-            className="dish-item__img" />
+            className={"dish-item__img " + props.className}
+            onClick={() => props.onClick()} />
     </>
 
 }
