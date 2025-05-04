@@ -34,7 +34,7 @@ class UserAdmin(admin.ModelAdmin):
         'user_permissions',
     )
     readonly_fields = ('date_joined',)
-    list_filter = ('username', 'email', 'role')
+    list_filter = ('role', )
     search_fields = ('username',)
     inlines = [DeliveryAddressInline]
     list_editable = (
@@ -54,7 +54,6 @@ class DeliveryAddressAdmin(admin.ModelAdmin):
         'pk',
         'address'
     )
-    list_filter = ('address',)
     search_fields = ('address',)
     list_editable = ('address',)
     ordering = ('pk',)
@@ -70,7 +69,6 @@ class UserDeliveryAddressAdmin(admin.ModelAdmin):
         'delivery_address',
         'is_default'
     )
-    list_filter = ('user',)
-    search_fields = ('user', 'delivery_address', 'is_default')
+    search_fields = ('user__username', 'delivery_address__address', 'is_default')
     list_editable = ('user', 'delivery_address', 'is_default')
     ordering = ('pk',)

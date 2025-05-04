@@ -14,7 +14,7 @@ class IngredientAdmin(admin.ModelAdmin):
     """Настройка Ingredient для панели Admin"""
 
     list_display = ('pk', 'name', 'measurement_unit')
-    list_filter = ('name',)
+    list_filter = ('measurement_unit',)
     search_fields = ('name',)
     list_editable = ('name', 'measurement_unit',)
     ordering = ('pk',)
@@ -61,8 +61,7 @@ class OrderAdmin(admin.ModelAdmin):
     )
     inlines = [DishInline]
     form = OrderAdminForm
-    list_filter = ('user', 'courier', 'count_dishes', 'status')
-    search_fields = ('user', 'courier', 'count_dishes', 'status')
+    list_filter = ('status', )
     list_editable = ('user', 'courier', 'status', 'address')
     ordering = ('pk',)
 
@@ -87,8 +86,7 @@ class OrderDishAdmin(admin.ModelAdmin):
     """Настройка OrderDish для панели Admin"""
 
     list_display = ('pk', 'order', 'dish', 'quantity')
-    list_filter = ('order', 'dish')
-    search_fields = ('order', 'dish')
+    search_fields = ('order__id', 'dish__name')
     ordering = ('pk',)
 
 
@@ -97,8 +95,7 @@ class TagAdmin(admin.ModelAdmin):
     """Настройка Type для панели Admin"""
 
     list_display = ('pk', 'name', 'slug')
-    list_filter = ('name',)
-    search_fields = ('name',)
+    search_fields = ('name', 'slug')
     list_editable = ('name', 'slug')
     ordering = ('pk',)
 
@@ -108,8 +105,7 @@ class IngredientAmountAdmin(admin.ModelAdmin):
     """Настройка IngredientAmount для панели Admin"""
 
     list_display = ('pk', 'dish', 'ingredient', 'amount')
-    list_filter = ('dish', 'ingredient')
-    search_fields = ('dish', 'ingredient')
+    search_fields = ('dish__name', 'ingredient__name')
     ordering = ('pk',)
 
 
@@ -133,8 +129,8 @@ class DishAdmin(admin.ModelAdmin):
         'type',
         'dish_ingredients'
     )
-    search_fields = ('name', 'type', 'cuisine')
-    list_filter = ('name', 'type', 'cuisine')
+    search_fields = ('name', )
+    list_filter = ('type', 'cuisine')
     inlines = [IngredientInline]
     list_editable = ('name', 'cost', 'cuisine')
     ordering = ('pk',)

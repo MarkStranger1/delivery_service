@@ -24,7 +24,6 @@ class Command(BaseCommand):
                     cost=cost,
                     ccal=ccal,
                     weight=weight,
-                    image=image,  # Убедитесь, что путь изображения правильный
                     cuisine=cuisine,
                     type=type_instance
                 )
