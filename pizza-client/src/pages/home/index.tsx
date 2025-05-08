@@ -314,6 +314,6 @@ export const HomePage = () => {
 
 
         </div >
-        <Footer />
+        <Footer needAbout={true} />
     </>
 }

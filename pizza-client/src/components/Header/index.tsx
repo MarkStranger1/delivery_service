@@ -4,10 +4,11 @@ import Logo from "../../shared/assets/logo.svg";
 import { User } from "../../shared/DataTypes"
 import "./style.scss"
 
-export const Header = (props: { user: User | null }) => {
+export const Header = (props: { user: User | null, onLogout?: Function }) => {
+
     return <>
         <header className="header">
-            <a href="#" className="header__logo">
+            <a href="/" className="header__logo">
                 <img src={Logo} alt="logo" />
                 <p className="header__logo-text">Kanagawa <br /> Pizza Place</p>
             </a>
@@ -17,7 +18,12 @@ export const Header = (props: { user: User | null }) => {
 
             <div className="header__contacts">
                 <p className="header__userName">{props.user ? props.user.username : "Войдите в аккаунт"}</p>
-                <a href="/lk" className="button_for_head button-light">Личный кабинет</a>
+                {
+                    props.user && props.user.id !== -1 && window.location.href.endsWith("/lk") ?
+                        <button onClick={() => props.onLogout && props.onLogout()} className="button_for_head button-light">Выйти</button>
+                        :
+                        <a href="/lk" className="button_for_head button-light">Личный кабинет</a>
+                }
             </div>
         </header>
     </>

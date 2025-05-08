@@ -4,7 +4,7 @@ import { HomePage } from './pages/Home';
 import { UserAccountPage } from './pages/UserAccount';
 import { NotFoundPage } from './pages/NotFound/Index';
 import { UserContainer } from './shared/Containers/UserContainer';
-import { User } from './shared/DataTypes';
+import { ApproveModalType, User } from './shared/DataTypes';
 import { MainApi } from './shared/OpenAPI/Api';
 import { AboutAppPage } from './pages/AboutApp';
 import { ApproveContainer } from './shared/Containers/ApproveModal';
@@ -15,7 +15,7 @@ const App = () => {
 
   const [user, setUser] = useState<User | null>(null);
 
-  const [modalData, setModalData] = useState<{ text: string, resolve: Function, reject: Function } | null>(null);
+  const [modalData, setModalData] = useState<ApproveModalType | null>(null);
   const approveModalRef = useRef<HTMLDialogElement>(null);
 
   useEffect(() => {
@@ -49,10 +49,12 @@ const App = () => {
 
         <dialog ref={approveModalRef} className='approve-modal'>
           {modalData && <>
-            <h3>Вы уверены что хотите {modalData.text}?</h3>
-            <div className="approve-modal__buttons-container">
-              <button className='buttons-container__resolve' onClick={() => modalData.resolve()}>Да</button>
-              <button className='buttons-container__reject' onClick={() => modalData.reject()}>Нет</button>
+            <div className="approve-modal__container">
+              <h3>Вы уверены что хотите {modalData.text}?</h3>
+              <div className="container__buttons-container">
+                <button className='buttons-container__resolve button-dark' onClick={() => modalData.resolve()}>{modalData.resolveText ? modalData.resolveText : "Да"}</button>
+                <button className='buttons-container__reject button-dark' onClick={() => modalData.reject()}>{modalData.rejectText ? modalData.rejectText : "Нет"}</button>
+              </div>
             </div>
           </>}
         </dialog>

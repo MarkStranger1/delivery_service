@@ -1,4 +1,4 @@
-import { useContext, useEffect, useRef, useState } from "react"
+import { ReactElement, ReactHTMLElement, useContext, useEffect, useRef, useState } from "react"
 import { Link } from "react-router-dom";
 import { Cart, CourierForManager, DeliveryAddress, Dish, Order, OrderForWorker, User } from "../../shared/DataTypes"
 
@@ -11,10 +11,16 @@ import AttentionIcon from "../../shared/assets/attention.svg"
 import EditIcon from "../../shared/assets/editIcon.svg"
 //@ts-ignore
 import QRCode from "../../shared/assets/qrCode.svg"
+//@ts-ignore
+import Logo from "../../shared/assets/logoWired.svg"
+//@ts-ignore
+import TreasureIcon from "../../shared/assets/treasureIcon.svg"
 
 import "./style.scss"
 import { ApproveContainer } from "../../shared/Containers/ApproveModal";
 import { convertDateTime, validateData } from "../../shared/utils/HelpFunctions";
+import { Header } from "../../components/Header";
+import { Footer } from "../../components/Footer";
 
 export const UserAccountPage = () => {
 
@@ -40,7 +46,6 @@ export const UserAccountPage = () => {
     const courierApi = new CourierApi();
     const managerApi = new ManagerApi();
 
-
     const { user, setUser } = useContext(UserContainer);
     const showApproveModal = useContext(ApproveContainer);
 
@@ -61,6 +66,12 @@ export const UserAccountPage = () => {
 
     const [scores4Pay, setScores4Pay] = useState<number>(0);
     const approvePayRef = useRef<HTMLDialogElement>(null);
+
+    const [modalData, setModalData] = useState<{
+        title: string,
+        body: "newAddress" | "aboutScores",
+    } | null>(null);
+    const helpModalRef = useRef<HTMLDialogElement>(null);
 
     ///////////////////////////////////FOR COURIER STATE
 
@@ -389,72 +400,70 @@ export const UserAccountPage = () => {
     }, [user])
 
 
+    useEffect(() => {
+        if (helpModalRef.current)
+            modalData ? helpModalRef.current.showModal() : helpModalRef.current.close();
+    }, [modalData])
+
     const renderClientPages = () => {
         if (selectedPage === 'updData') return <>
-            <h1 className="main-content__title">Изменить личные данные</h1>
             {editUser
                 && <>
-                    <h2 className="main-content__sub-title">Данные аккаунта</h2>
-
                     <div className="main-content__edit-user-info">
                         <div className="edit-user-info__form-item">
-                            <label>Username</label>
                             <input
                                 type="text"
                                 className="create-login-form__input input-login"
                                 value={editUser.username}
                                 onChange={(e) => changeValue("username", e.target.value, 'edit')}
-                                placeholder="Enter username"
+                                placeholder="Логин"
                             />
                         </div>
                         <div className="edit-user-info__form-item">
-                            <label>Email</label>
                             <input
                                 type="email"
                                 className="edit-user-info__input input-email"
                                 value={editUser.email}
                                 onChange={(e) => changeValue("email", e.target.value, 'edit')}
-                                placeholder="Enter email@email.com"
+                                placeholder="Почта"
                             />
                         </div>
                         <div className="edit-user-info__form-item">
-                            <label>Phone number</label>
                             <input
                                 type="text"
                                 className="edit-user-info__input input-phone"
                                 value={editUser.phone}
                                 onChange={(e) => changeValue("phone", e.target.value, 'edit')}
-                                placeholder="+79998887766"
+                                placeholder="Телефон"
                             />
                         </div>
                         <div className="edit-user-info__form-item">
-                            <label>Previous password</label>
                             <input
                                 type="text"
                                 className="edit-user-info__input input-password"
                                 value={userRegisterPass}
                                 onChange={(e) => setUserRegisterPass(e.target.value)}
+                                placeholder="Предыдуший пароль"
                             />
                         </div>
                         <div className="edit-user-info__form-item">
-                            <label>New password</label>
                             <input
                                 type="text"
                                 className="edit-user-info__input input-password"
                                 value={userLoginPass}
                                 onChange={(e) => setUserLoginPass(e.target.value)}
+                                placeholder="Новый пароль"
                             />
                         </div>
                         <div className="edit-user-info__form-item">
-                            <label>Repeat password</label>
                             <input
                                 type="text"
                                 className="edit-user-info__input input-password"
                                 value={tmpPass}
                                 onChange={(e) => setTmpPass(e.target.value)}
+                                placeholder="Повторите пароль"
                             />
                         </div>
-
                         <button
                             disabled={
                                 userRegisterPass.length === 0
@@ -464,7 +473,7 @@ export const UserAccountPage = () => {
                                 || !validateData(userRegisterPass, "password")
                                 || !validateData(userLoginPass, "password")
                             }
-                            className="edit-user-info__button-submit"
+                            className="edit-user-info__button-submit button-dark"
                             onClick={() => {
                                 if (editUser) {
                                     const mainApi = new MainApi();
@@ -490,35 +499,15 @@ export const UserAccountPage = () => {
                         </button>
                     </div>
 
-                    <h2 className="main-content__sub-title">Адреса доставки</h2>
-                    {userAddresses && userAddresses.length > 0 && <div className="addresses-list__list-item--add-address">
-                        <p className="list-item__default-address--void" style={{ margin: 0 }}>Добавить адрес</p>
-                        <input value={newAddress?.delivery_address} onChange={(e) => {
-                            const copy = JSON.parse(JSON.stringify(newAddress)) as DeliveryAddress;
-                            copy.delivery_address = e.target.value;
-                            setNewAddress(copy);
-                        }} />
-                        <button
-                            className="list-item__add-address-button"
-                            onClick={() => {
-                                if (newAddress && newAddress?.delivery_address !== "") {
-                                    clientApi.addDeliveryAddresses(newAddress)
-                                        .then(r => {
-                                            clientApi.getDeliveryAddresses()
-                                                .then(r => {
-                                                    setUserAddresses(r)
-                                                    setNewAddress({
-                                                        is_default: true,
-                                                        delivery_address: "",
-                                                        id: 0
-                                                    })
-                                                })
-                                        })
-                                }
-                            }}
-                        >Добавить</button>
-                        <div className="list-item__delete-button--void" />
-                    </div>}
+                    <div className="scores-container">
+                        <div style={{ display: "flex", width: "100%", justifyContent: "space-around", alignItems: "center", height: "70px", margin: "7px 0 5px" }}>
+                            <img src={TreasureIcon} alt="treasureIcon" />
+                            <p className="scores-container__title">У вас {user?.scores} баллов!</p>
+                            <img src={TreasureIcon} alt="treasureIcon" />
+                        </div>
+                        <button className="scores-container__check-about button-dark" onClick={() => setModalData({ title: "Бальная система", body: "aboutScores" })}>Подробнее</button>
+                    </div>
+
                     <div className="main-content__addresses-list">
                         {userAddresses
                             && userAddresses.length > 0
@@ -527,24 +516,23 @@ export const UserAccountPage = () => {
                                 {userAddresses.sort((a, b) => (a.is_default === b.is_default) ? 0 : a.is_default ? -1 : 1).map(address => {
                                     return <>
                                         <div className="addresses-list__list-item">
-                                            <button
-                                                className="list-item__default-address"
+                                            <p
+                                                className={`list-item__address-text${address.is_default ? '--default-address' : ''}`}
                                                 onClick={() => {
-                                                    clientApi.editDeliveryAddresses(address.id, !address.is_default)
+                                                    !address.is_default && clientApi.editDeliveryAddresses(address.id, !address.is_default)
                                                         .then(r => {
                                                             clientApi.getDeliveryAddresses()
                                                                 .then(r => setUserAddresses(r))
                                                         });
-                                                }}
-                                            >
-                                                {address.is_default ? 'Доставлять сюда' : 'Выбран другой адрес'}
-                                            </button>
-                                            <p>{address.delivery_address}</p>
+                                                }}>
+                                                {address.delivery_address} {address.is_default ? 'по умолчанию' : ''}
+                                            </p>
                                             <button
-                                                className="list-item__delete-button"
+                                                className="list-item__delete-button button-dark"
                                                 onClick={() => {
                                                     showApproveModal({
                                                         text: `удалить адрес ${address.delivery_address}`,
+                                                        resolveText: "Удалить",
                                                         resolve: () => {
                                                             clientApi.deleteDeliveryAddresses(address.id)
                                                                 .then(r => {
@@ -556,47 +544,32 @@ export const UserAccountPage = () => {
                                                         reject: () => showApproveModal(null)
                                                     })
                                                 }}
-                                            >Удалить</button>
+                                            />
                                         </div>
                                     </>
                                 })}
+                                <button
+                                    className="list-item__add-address-button button-dark"
+                                    onClick={() => {
+                                        setModalData({
+                                            title: "Добавление нового адреса доставки",
+                                            body: "newAddress"
+                                        })
+                                    }}
+                                >Добавить новый адрес доставки</button>
                             </>
                             :
                             <>
-                                <h2 className="main-content__sub-title">
-                                    Адреса пока не были добавлены, но никогда не поздно сделать первый заказ!
-                                    <div className="addresses-list__list-item--add-address">
-                                        <div className="list-item__default-address--void" />
-                                        <input
-                                            value={newAddress?.delivery_address}
-                                            onChange={(e) => {
-                                                const copy = JSON.parse(JSON.stringify(newAddress)) as DeliveryAddress;
-                                                copy.delivery_address = e.target.value;
-                                                setNewAddress(copy);
-                                            }} />
-                                        <div className="list-item__default-address--void" />
-                                        <button
-                                            className="list-item__add-address-button"
-                                            onClick={() => {
-                                                if (newAddress && newAddress?.delivery_address !== "") {
-                                                    clientApi.addDeliveryAddresses(newAddress)
-                                                        .then(r => {
-                                                            clientApi.getDeliveryAddresses()
-                                                                .then(r => {
-                                                                    setUserAddresses(r)
-                                                                    setNewAddress({
-                                                                        id: -1,
-                                                                        delivery_address: "",
-                                                                        is_default: false
-                                                                    })
-                                                                })
-                                                        })
-                                                }
-                                            }}
-                                        >Добавить</button>
-                                        <div className="list-item__delete-button--void" />
-                                    </div>
-                                </h2>
+                                <p className="main-content__sub-title">Адреса пока не были добавлены, но никогда не поздно сделать первый заказ!</p>
+                                <button
+                                    className="list-item__add-address-button button-dark"
+                                    onClick={() => {
+                                        setModalData({
+                                            title: "Добавление нового адреса доставки",
+                                            body: "newAddress"
+                                        })
+                                    }}
+                                >Добавить новый адрес доставки</button>
                             </>
                         }
                     </div>
@@ -934,70 +907,63 @@ export const UserAccountPage = () => {
 
     const renderCourierPages = () => {
         if (selectedPage === 'updData') return <>
-            <h1 className="main-content__title">Изменить личные данные</h1>
             {editUser
                 && <>
-                    <h2 className="main-content__sub-title">Данные аккаунта</h2>
-
                     <div className="main-content__edit-user-info">
                         <div className="edit-user-info__form-item">
-                            <label>Username</label>
                             <input
                                 type="text"
                                 className="create-login-form__input input-login"
                                 value={editUser.username}
                                 onChange={(e) => changeValue("username", e.target.value, 'edit')}
-                                placeholder="Enter username"
+                                placeholder="Логин"
                             />
                         </div>
                         <div className="edit-user-info__form-item">
-                            <label>Email</label>
                             <input
                                 type="email"
                                 className="edit-user-info__input input-email"
                                 value={editUser.email}
                                 onChange={(e) => changeValue("email", e.target.value, 'edit')}
-                                placeholder="Enter email@email.com"
+                                placeholder="Почта"
                             />
                         </div>
                         <div className="edit-user-info__form-item">
-                            <label>Phone number</label>
                             <input
                                 type="text"
                                 className="edit-user-info__input input-phone"
                                 value={editUser.phone}
                                 onChange={(e) => changeValue("phone", e.target.value, 'edit')}
-                                placeholder="+79998887766"
+                                placeholder="Телефон"
                             />
                         </div>
                         <div className="edit-user-info__form-item">
-                            <label>Previous password</label>
                             <input
                                 type="text"
                                 className="edit-user-info__input input-password"
                                 value={userRegisterPass}
                                 onChange={(e) => setUserRegisterPass(e.target.value)}
+                                placeholder="Предыдуший пароль"
                             />
                         </div>
                         <div className="edit-user-info__form-item">
-                            <label>New password</label>
                             <input
                                 type="text"
                                 className="edit-user-info__input input-password"
                                 value={userLoginPass}
                                 onChange={(e) => setUserLoginPass(e.target.value)}
+                                placeholder="Новый пароль"
                             />
                         </div>
                         <div className="edit-user-info__form-item">
-                            <label>Repeat password</label>
                             <input
                                 type="text"
                                 className="edit-user-info__input input-password"
                                 value={tmpPass}
                                 onChange={(e) => setTmpPass(e.target.value)}
+                                placeholder="Повторите пароль"
                             />
                         </div>
-
                         <button
                             disabled={
                                 userRegisterPass.length === 0
@@ -1007,7 +973,7 @@ export const UserAccountPage = () => {
                                 || !validateData(userRegisterPass, "password")
                                 || !validateData(userLoginPass, "password")
                             }
-                            className="edit-user-info__button-submit"
+                            className="edit-user-info__button-submit button-dark"
                             onClick={() => {
                                 if (editUser) {
                                     const mainApi = new MainApi();
@@ -1116,106 +1082,95 @@ export const UserAccountPage = () => {
 
     const renderManagerPages = () => {
         if (selectedPage === 'updData') return <>
-            <h1 className="main-content__title">Изменить личные данные</h1>
-            {editUser
-                && <>
-                    <h2 className="main-content__sub-title">Данные аккаунта</h2>
-
-                    <div className="main-content__edit-user-info">
-                        <div className="edit-user-info__form-item">
-                            <label>Username</label>
-                            <input
-                                type="text"
-                                className="create-login-form__input input-login"
-                                value={editUser.username}
-                                onChange={(e) => changeValue("username", e.target.value, 'edit')}
-                                placeholder="Enter username"
-                            />
-                        </div>
-                        <div className="edit-user-info__form-item">
-                            <label>Email</label>
-                            <input
-                                type="email"
-                                className="edit-user-info__input input-email"
-                                value={editUser.email}
-                                onChange={(e) => changeValue("email", e.target.value, 'edit')}
-                                placeholder="Enter email@email.com"
-                            />
-                        </div>
-                        <div className="edit-user-info__form-item">
-                            <label>Phone number</label>
-                            <input
-                                type="text"
-                                className="edit-user-info__input input-phone"
-                                value={editUser.phone}
-                                onChange={(e) => changeValue("phone", e.target.value, 'edit')}
-                                placeholder="+79998887766"
-                            />
-                        </div>
-                        <div className="edit-user-info__form-item">
-                            <label>Previous password</label>
-                            <input
-                                type="text"
-                                className="edit-user-info__input input-password"
-                                value={userRegisterPass}
-                                onChange={(e) => setUserRegisterPass(e.target.value)}
-                            />
-                        </div>
-                        <div className="edit-user-info__form-item">
-                            <label>New password</label>
-                            <input
-                                type="text"
-                                className="edit-user-info__input input-password"
-                                value={userLoginPass}
-                                onChange={(e) => setUserLoginPass(e.target.value)}
-                            />
-                        </div>
-                        <div className="edit-user-info__form-item">
-                            <label>Repeat password</label>
-                            <input
-                                type="text"
-                                className="edit-user-info__input input-password"
-                                value={tmpPass}
-                                onChange={(e) => setTmpPass(e.target.value)}
-                            />
-                        </div>
-
-                        <button
-                            disabled={
-                                userRegisterPass.length === 0
-                                || userLoginPass.length === 0
-                                || userLoginPass !== tmpPass
-                                || !validateForm(editUser)
-                                || !validateData(userRegisterPass, "password")
-                                || !validateData(userLoginPass, "password")
-                            }
-                            className="edit-user-info__button-submit"
-                            onClick={() => {
-                                if (editUser) {
-                                    const mainApi = new MainApi();
-                                    const copy = JSON.parse(JSON.stringify(editUser))
-                                    Object.assign(copy, { "old_password": userRegisterPass, "new_password": userLoginPass });
-                                    setTmpPass("");
-                                    setUserLoginPass("");
-                                    setUserRegisterPass("");
-                                    mainApi.editUserInfo(copy)
-                                        .then(r => {
-                                            const tmp = JSON.parse(JSON.stringify(editUser));
-                                            delete tmp.id;
-                                            if (Object.keys(tmp).every(key => Object.keys(r).includes(key))) {
-                                                alert('Данные успешно обновлены!')
-                                            }
-                                            else {
-                                                alert(Object.keys(r).map(key => r[key]).join('\n'))
-                                            }
-                                        })
-                                }
-                            }}>
-                            Обновить данные
-                        </button>
-                    </div>
-                </>
-            }
+            {editUser && <div className="main-content__edit-user-info">
+                <div className="edit-user-info__form-item">
+                    <input
+                        type="text"
+                        className="create-login-form__input input-login"
+                        value={editUser.username}
+                        onChange={(e) => changeValue("username", e.target.value, 'edit')}
+                        placeholder="Логин"
+                    />
+                </div>
+                <div className="edit-user-info__form-item">
+                    <input
+                        type="email"
+                        className="edit-user-info__input input-email"
+                        value={editUser.email}
+                        onChange={(e) => changeValue("email", e.target.value, 'edit')}
+                        placeholder="Почта"
+                    />
+                </div>
+                <div className="edit-user-info__form-item">
+                    <input
+                        type="text"
+                        className="edit-user-info__input input-phone"
+                        value={editUser.phone}
+                        onChange={(e) => changeValue("phone", e.target.value, 'edit')}
+                        placeholder="Телефон"
+                    />
+                </div>
+                <div className="edit-user-info__form-item">
+                    <input
+                        type="text"
+                        className="edit-user-info__input input-password"
+                        value={userRegisterPass}
+                        onChange={(e) => setUserRegisterPass(e.target.value)}
+                        placeholder="Предыдуший пароль"
+                    />
+                </div>
+                <div className="edit-user-info__form-item">
+                    <input
+                        type="text"
+                        className="edit-user-info__input input-password"
+                        value={userLoginPass}
+                        onChange={(e) => setUserLoginPass(e.target.value)}
+                        placeholder="Новый пароль"
+                    />
+                </div>
+                <div className="edit-user-info__form-item">
+                    <input
+                        type="text"
+                        className="edit-user-info__input input-password"
+                        value={tmpPass}
+                        onChange={(e) => setTmpPass(e.target.value)}
+                        placeholder="Повторите пароль"
+                    />
+                </div>
+                <button
+                    disabled={
+                        userRegisterPass.length === 0
+                        || userLoginPass.length === 0
+                        || userLoginPass !== tmpPass
+                        || !validateForm(editUser)
+                        || !validateData(userRegisterPass, "password")
+                        || !validateData(userLoginPass, "password")
+                    }
+                    className="edit-user-info__button-submit button-dark"
+                    onClick={() => {
+                        if (editUser) {
+                            const mainApi = new MainApi();
+                            const copy = JSON.parse(JSON.stringify(editUser))
+                            Object.assign(copy, { "old_password": userRegisterPass, "new_password": userLoginPass });
+                            setTmpPass("");
+                            setUserLoginPass("");
+                            setUserRegisterPass("");
+                            mainApi.editUserInfo(copy)
+                                .then(r => {
+                                    const tmp = JSON.parse(JSON.stringify(editUser));
+                                    delete tmp.id;
+                                    if (Object.keys(tmp).every(key => Object.keys(r).includes(key))) {
+                                        alert('Данные успешно обновлены!')
+                                    }
+                                    else {
+                                        alert(Object.keys(r).map(key => r[key]).join('\n'))
+                                    }
+                                })
+                        }
+                    }}>
+                    Обновить данные
+                </button>
+            </div>}
         </>
         if (selectedPage === 'allOrders' && allOrders) {
             const orders2Show = sortByStatus !== 0 ? allOrders.sort(sortByStatusFoo) : allOrders;
@@ -1450,114 +1405,101 @@ export const UserAccountPage = () => {
     return <>
         <div className="user-page">
 
-            <div className="user-page__header">
-                <Link to="/" className="header__return">Назад</Link>
-                <p className="header__title">Личный кабинет {user ? user.username : ''}{user && user.role === 'client' ? ` (${user.scores} баллов)` : ''}</p>
-                {user
-                    && user.id !== -1
-                    && <button className="header__logout" onClick={() => {
-                        setUser(null);
-                        setUserLogin(defaultUser);
-                        document.cookie = `sessionToken=`
-                    }} />}
-            </div>
+            <Header user={user} onLogout={() => {
+                setUser(null);
+                setUserLogin(defaultUser);
+                document.cookie = `sessionToken=`
+            }} />
 
-            <div className="user-page__nav-bar">
-                {userLogin?.id === -1
-                    ? <>
-                        <button className="nav-bar__nav-item" disabled>Войти</button>
-                    </>
-                    :
-                    <>
-                        {userLogin?.role === 'client'
-                            &&
-                            <>
-                                <button className="nav-bar__nav-item" onClick={() => setSelectedPage('updData')}>Изменить личные данные</button>
-                                <button className="nav-bar__nav-item" onClick={() => setSelectedPage('currOrder')}>Текущий заказ</button>
-                                <button className="nav-bar__nav-item" onClick={() => setSelectedPage('allOrders')}>Список оплаченных заказов</button>
-                            </>
-                        }
-                        {userLogin?.role === 'courier'
-                            &&
-                            <>
-                                <button className="nav-bar__nav-item" onClick={() => setSelectedPage('updData')}>Изменить личные данные</button>
-                                <button className="nav-bar__nav-item" onClick={() => setSelectedPage('currOrder')}>Активный заказ</button>
-                                <button className="nav-bar__nav-item" onClick={() => setSelectedPage('allOrders')}>Список доставленных заказов</button>
-                            </>
-                        }
-                        {userLogin?.role === 'manager'
-                            &&
-                            <>
-                                <button className="nav-bar__nav-item" onClick={() => setSelectedPage('updData')}>Изменить личные данные</button>
-                                <button className="nav-bar__nav-item" onClick={() => setSelectedPage('allOrders')}>Список всех заказов</button>
-                                <button className="nav-bar__nav-item" onClick={() => setSelectedPage('allCouriers')}>Список всех курьеров</button>
-                            </>
-                        }
-                    </>}
-            </div>
+            {userLogin?.id !== -1 &&
+                <div className="user-page__nav-bar">
+                    {userLogin?.role === 'client'
+                        &&
+                        <>
+                            <button className={"nav-bar__nav-item" + (selectedPage === "updData" ? " selected" : "")} onClick={() => setSelectedPage('updData')}>Изменить личные данные</button>
+                            <button className={"nav-bar__nav-item" + (selectedPage === "currOrder" ? " selected" : "")} onClick={() => setSelectedPage('currOrder')}>Текущий заказ</button>
+                            <button className={"nav-bar__nav-item" + (selectedPage === "allOrders" ? " selected" : "")} onClick={() => setSelectedPage('allOrders')}>Список оплаченных заказов</button>
+                        </>
+                    }
+                    {userLogin?.role === 'courier'
+                        &&
+                        <>
+                            <button className={"nav-bar__nav-item" + (selectedPage === "updData" ? " selected" : "")} onClick={() => setSelectedPage('updData')}>Изменить личные данные</button>
+                            <button className={"nav-bar__nav-item" + (selectedPage === "currOrder" ? " selected" : "")} onClick={() => setSelectedPage('currOrder')}>Активный заказ</button>
+                            <button className={"nav-bar__nav-item" + (selectedPage === "allOrders" ? " selected" : "")} onClick={() => setSelectedPage('allOrders')}>Список доставленных заказов</button>
+                        </>
+                    }
+                    {userLogin?.role === 'manager'
+                        &&
+                        <>
+                            <button className={"nav-bar__nav-item" + (selectedPage === "updData" ? " selected" : "")} onClick={() => setSelectedPage('updData')}>Изменить личные данные</button>
+                            <button className={"nav-bar__nav-item" + (selectedPage === "allOrders" ? " selected" : "")} onClick={() => setSelectedPage('allOrders')}>Список всех заказов</button>
+                            <button className={"nav-bar__nav-item" + (selectedPage === "allCouriers" ? " selected" : "")} onClick={() => setSelectedPage('allCouriers')}>Список всех курьеров</button>
+                        </>
+                    }
+                </div>
+            }
 
-            <div className="user-page__main-content">
+            <div className={user?.id === -1 ? "user-page__main-content--login" : "user-page__main-content"}>
 
                 {userLogin
                     && userLogin?.id === -1
                     && userRegister
                     ? <>
-                        <h1 className="main-content__header">Войти в аккаунт или зарегистрироваться</h1>
                         <div className="main-content__forms-container">
                             <div className="forms-container__create-login-form">
-                                <h4 className="create-login-form__form-title">Создать аккаунт</h4>
+                                <h4 className="create-login-form__form-title">
+                                    <img src={Logo} alt="logo" className="form-title__img" />
+                                    Заполните форму для регистрации
+                                </h4>
                                 <div className="create-login-form__form-item">
-                                    <label>Username</label>
                                     <input
                                         type="text"
                                         className="create-login-form__input input-login"
                                         value={userRegister.username}
                                         onChange={(e) => changeValue("username", e.target.value, 'register')}
-                                        placeholder="Enter username"
+                                        placeholder="Логин"
                                     />
                                 </div>
                                 <div className="create-login-form__form-item">
-                                    <label>Email</label>
                                     <input
                                         type="email"
                                         className="create-login-form__input input-email"
                                         value={userRegister.email}
                                         onChange={(e) => changeValue("email", e.target.value, 'register')}
-                                        placeholder="Enter email@email.com"
+                                        placeholder="Почта"
                                     />
                                 </div>
                                 <div className="create-login-form__form-item">
-                                    <label>Phone number</label>
                                     <input
                                         type="text"
                                         className="create-login-form__input input-phone"
                                         value={userRegister.phone}
                                         onChange={(e) => changeValue("phone", e.target.value, 'register')}
-                                        placeholder="+79998887766"
+                                        placeholder="Телефон"
                                     />
                                 </div>
                                 <div className="create-login-form__form-item">
-                                    <label>Password</label>
                                     <input
                                         type="password"
                                         className="create-login-form__input input-passwd"
                                         value={userRegisterPass}
                                         onChange={(e) => setUserRegisterPass(e.target.value)}
-                                        placeholder="Enter password"
+                                        placeholder="Пароль"
                                     />
                                 </div>
                                 <div className="create-login-form__form-item">
-                                    <label>Password {userRegisterPass !== "" && tmpPass !== "" && userRegisterPass !== tmpPass ? "Not eval" : ""}</label>
+                                    <label style={{ color: "red", textShadow: "0 0 4px #ff00008f;" }}>{userRegisterPass !== "" && tmpPass !== "" && userRegisterPass !== tmpPass ? "Not eval" : ""}</label>
                                     <input
                                         type="password"
                                         className="create-login-form__input input-passwd"
                                         value={tmpPass}
                                         onChange={(e) => setTmpPass(e.target.value)}
-                                        placeholder="Enter password"
+                                        placeholder=" Повторите пароль"
                                     />
                                 </div>
                                 <button
-                                    className="create-login-form__button-submit"
+                                    className="create-login-form__button-submit button-dark"
                                     disabled={
                                         !userRegister.email
                                         || !userRegisterPass
@@ -1583,29 +1525,30 @@ export const UserAccountPage = () => {
                             </div>
 
                             <div className="forms-container__login-form">
-                                <h4 className="create-login-form__form-title ">Войти</h4>
+                                <h4 className="create-login-form__form-title ">
+                                    <img src={Logo} alt="logo" className="form-title__img" />
+                                    Заполните форму для авторизации
+                                </h4>
                                 <div className="login-form__form-item">
-                                    <label>Email</label>
                                     <input
                                         type="email"
                                         className="create-login-form__input input-email"
                                         value={userLogin.email}
                                         onChange={(e) => changeValue("email", e.target.value, 'login')}
-                                        placeholder="Enter email@email.com"
+                                        placeholder="Почта"
                                     />
                                 </div>
                                 <div className="login-form__form-item">
-                                    <label>Password</label>
                                     <input
                                         type="password"
                                         className="create-login-form__input input-passwd"
                                         value={userLoginPass}
                                         onChange={(e) => setUserLoginPass(e.target.value)}
-                                        placeholder="Enter password"
+                                        placeholder="Пароль"
                                     />
                                 </div>
                                 <button
-                                    className="login-form__button-submit"
+                                    className="login-form__button-submit button-dark"
                                     disabled={!userLogin.email || !userLoginPass}
                                     onClick={() => {
                                         const mainApi = new MainApi();
@@ -1620,18 +1563,94 @@ export const UserAccountPage = () => {
                                                 }
                                             })
                                     }}>
-                                    Login
+                                    Войти
                                 </button>
                             </div>
                         </div>
                     </>
                     :
                     <>
+
+                        <dialog ref={helpModalRef} className='approve-modal'>
+                            {modalData
+                                && <>
+                                    <p className="approve-modal__title">{modalData.title}</p>
+                                    <div className="approve-modal__container">
+                                        {modalData.body === "newAddress"
+                                            && <>
+                                                <input
+                                                    value={newAddress?.delivery_address}
+                                                    placeholder="Введите новый адрес доставки"
+                                                    style={{ width: "100%" }}
+                                                    onChange={(e) => {
+                                                        const copy = JSON.parse(JSON.stringify(newAddress)) as DeliveryAddress;
+                                                        copy.delivery_address = e.target.value;
+                                                        setNewAddress(copy);
+                                                    }} />
+                                                <div style={{ display: "flex", width: "100%", justifyContent: "space-around" }}>
+                                                    <label htmlFor="wannaDefault">Хотите выбрать его адресом по умолчанию?</label>
+                                                    <div
+                                                        id="wannaDefault"
+                                                        className={`switch-btn${newAddress && newAddress.is_default ? " switch-on" : ""}`}
+                                                        onClick={() => {
+                                                            const copy = JSON.parse(JSON.stringify(newAddress)) as DeliveryAddress;
+                                                            copy.is_default = !newAddress?.is_default;
+                                                            setNewAddress(copy);
+                                                        }}
+                                                    />
+                                                </div>
+                                                <div className="container__buttons-container">
+                                                    <button
+                                                        className="buttons-container__reject button-dark"
+                                                        onClick={() => setModalData(null)}
+                                                    >Назад</button>
+                                                    <button
+                                                        className="buttons-container__resolve button-dark"
+                                                        onClick={() => {
+                                                            if (newAddress && newAddress?.delivery_address !== "") {
+                                                                clientApi.addDeliveryAddresses(newAddress)
+                                                                    .then(r => {
+                                                                        clientApi.getDeliveryAddresses()
+                                                                            .then(r => {
+                                                                                setUserAddresses(r)
+                                                                                setNewAddress({
+                                                                                    is_default: false,
+                                                                                    delivery_address: "",
+                                                                                    id: 0
+                                                                                })
+                                                                                setModalData(null);
+                                                                            })
+                                                                    })
+                                                            }
+                                                        }}>
+                                                        Добавить новый адрес</button>
+                                                </div>
+                                            </>}
+                                        {modalData.body === "aboutScores"
+                                            && <>
+                                                <p style={{ margin: "0" }}>Вы получаете баллы за каждую совершенную покупку в размере 10% от итоговой суммы заказа.<br /><br />1 балл равняется 1 рублю при оплате любого заказа.</p>
+                                                <div className="container__buttons-container" style={{ marginTop: "30px" }}>
+                                                    <button
+                                                        className="buttons-container__resolve button-dark"
+                                                        onClick={() => setModalData(null)}
+                                                    >
+                                                        Отлично!
+                                                    </button>
+                                                </div>
+                                            </>}
+                                    </div>
+                                </>
+                            }
+                        </dialog>
+
                         {userLogin?.role === 'client' && renderClientPages()}
                         {userLogin?.role === 'courier' && renderCourierPages()}
                         {userLogin?.role === 'manager' && renderManagerPages()}
                     </>}
             </div>
+
+            <Footer needAbout={false} />
+
         </div >
     </>
 }

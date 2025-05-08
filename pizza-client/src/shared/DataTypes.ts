@@ -113,3 +113,11 @@ export interface CourierForManager {
     email: string,
     phone: string
 }
+
+export interface ApproveModalType {
+    text: string,
+    resolveText?: string,
+    resolve: Function,
+    rejectText?: string,
+    reject: Function
+}
