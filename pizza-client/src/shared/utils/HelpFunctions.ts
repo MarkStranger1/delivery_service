@@ -1,8 +1,9 @@
-export const convertDateTime = (date: string): string => {
+export const convertDateTime = (date: string, withTime: boolean = false): string => {
     const day = date.split("T")[0].split("-").at(-1);
     const month = date.split("T")[0].split("-").at(1);
     const year = date.split("T")[0].split("-").at(0);
-    return `${day}-${month}-${year}`;
+    if (withTime) return `${date.split("T")[1].slice(0, -3)} ${day}.${month}.${year}`
+    return `${day}.${month}.${year}`;
 }
 
 export const validateData = (data: string, field: "username" | "email" | "phone" | "password" | "datetime"): boolean => {

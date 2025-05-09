@@ -8,13 +8,15 @@ import { UserContainer } from "../../shared/Containers/UserContainer";
 //@ts-ignore
 import AttentionIcon from "../../shared/assets/attention.svg"
 //@ts-ignore
-import EditIcon from "../../shared/assets/editIcon.svg"
-//@ts-ignore
 import QRCode from "../../shared/assets/qrCode.svg"
 //@ts-ignore
 import Logo from "../../shared/assets/logoWired.svg"
 //@ts-ignore
 import TreasureIcon from "../../shared/assets/treasureIcon.svg"
+//@ts-ignore
+import InfoIcon from "../../shared/assets/infoButton.svg"
+//@ts-ignore
+import RemoveButton from "../../shared/assets/closeIcon.svg"
 
 import "./style.scss"
 import { ApproveContainer } from "../../shared/Containers/ApproveModal";
@@ -69,7 +71,8 @@ export const UserAccountPage = () => {
 
     const [modalData, setModalData] = useState<{
         title: string,
-        body: "newAddress" | "aboutScores",
+        body: "newAddress" | "aboutScores" | "order4courier" | "client4courier" | "order4manager" | "courier4manager",
+        forBody?: OrderForWorker | { id: number, username: string, phone: string, email: string } | { id: number, username: string, phone: string, email: string, courierOrders: Array<any> }
     } | null>(null);
     const helpModalRef = useRef<HTMLDialogElement>(null);
 
@@ -98,7 +101,7 @@ export const UserAccountPage = () => {
     ////////////////////////////////////////////////////
 
 
-    const [selectedPage, setSelectedPage] = useState<'login' | 'updData' | 'currOrder' | 'allOrders' | 'allCouriers'>('login');
+    const [selectedPage, setSelectedPage] = useState<'login' | 'updData' | 'currOrder' | 'allOrders' | 'allActiveOrders' | 'allPrevOrders' | 'allCouriers'>('login');
 
     const changeValue = (key: string, value: string, state: 'edit' | 'login' | 'register') => {
         let tmp;
@@ -244,8 +247,14 @@ export const UserAccountPage = () => {
     const sortByDeliveryTimeFoo = (a: OrderForWorker, b: OrderForWorker) => Date.parse(a.delivery_time) - Date.parse(b.delivery_time)
 
     const sortByStatusFoo = (a: OrderForWorker, b: OrderForWorker) => {
-        if (sortByStatus === 1) return convertStatusForSort[a.status as keyof typeof convertStatusForSort] - convertStatusForSort[b.status as keyof typeof convertStatusForSort];
-        if (sortByStatus === -1) return convertStatusForSort[b.status as keyof typeof convertStatusForSort] - convertStatusForSort[a.status as keyof typeof convertStatusForSort];
+        if (sortByStatus === 1)
+            return convertStatusForSort[a.status as keyof typeof convertStatusForSort] - convertStatusForSort[b.status as keyof typeof convertStatusForSort]
+                || (new Date(a.delivery_time) as any) - (new Date() as any)
+                || (new Date(b.delivery_time) as any) - (new Date() as any);
+        if (sortByStatus === -1)
+            return convertStatusForSort[b.status as keyof typeof convertStatusForSort] - convertStatusForSort[a.status as keyof typeof convertStatusForSort]
+                || (new Date(a.delivery_time) as any) - (new Date() as any)
+                || (new Date(b.delivery_time) as any) - (new Date() as any);
         return 0;
     }
 
@@ -683,7 +692,6 @@ export const UserAccountPage = () => {
                                         return <option value={addr.delivery_address}>{addr.delivery_address}</option>
                                     })}
                                 </select>
-                                {/* <p className="title__status"><b>Статус: </b>{convertOrderStatus[userCart.status as keyof typeof convertOrderStatus]}</p> */}
                             </span>
                             <div className="left-cart__change-time"> <b>Время доставки: </b>
                                 <input
@@ -1002,81 +1010,42 @@ export const UserAccountPage = () => {
             }
         </>
         if (selectedPage === 'currOrder') return <>
-            <h1 className="main-content__title">Текущий заказ</h1>
-            {courierActiveOrders ? courierActiveOrders.map(order => {
-                return <div className="cart-container__left-cart--courier">
-
-                    <span className="left-cart__title"><b>Заказ в</b>
-                        <p className="title__select-address">{order.address.address}</p>
-                        <p className="title__status"><b>Статус: </b>{convertOrderStatus[order.status as keyof typeof convertOrderStatus]}</p>
-                    </span>
-                    <div className="left-cart__change-time"> <b>Время доставки: </b>
-                        <p className="change-time__input-delvery-time">{order.delivery_time.split("T").join(" - ")}</p>
+            <div className="courier-order">
+                <div className="orders-count">Всего - {courierActiveOrders ? courierActiveOrders.length : 0}шт. </div>
+                {courierActiveOrders ? courierActiveOrders.map(order => {
+                    return <div className="cart-container__left-cart--courier">
+                        <span
+                            style={{ cursor: "pointer" }}
+                            onClick={() => setModalData({ title: `Информация о заказе №${order.id}`, body: "order4courier", forBody: order })}
+                        >Заказ №{order.id} к {convertDateTime(order.delivery_time, true)}</span>
+                        <span>{order.address ? order.address.address : ""}</span>
+                        <span
+                            style={{ cursor: "pointer" }}
+                            onClick={() => setModalData({ title: "Информация о клиенте", body: "client4courier", forBody: order.user })}
+                        >{order.user ? order.user.username : ""}</span>
+                        <span>Всего блюд: {order.count_dishes}шт.</span>
                     </div>
-
-                    <div className="left-cart__dishes-container">
-
-                        <b>Стоимость заказа: </b> {order.total_cost} руб.
-
-                        <div className="dishes-container__dishes-list">
-                            <b>Содержимое:</b><br />
-                            {order.orderdish_set && order.orderdish_set.length > 0 && order.orderdish_set.map(dish => {
-                                return <>
-                                    <p className="dishes-list__dish-item">
-                                        {dish.dish} - {dish.quantity} шт. ({getDishTotalCostById(dish.id, dish.quantity)} руб.)
-                                    </p>
-                                </>
-                            })}
-                        </div>
-                    </div>
-
-                    {order.comment
-                        && order.comment.length > 0
-                        && <div className="left-cart__comment">
-                            <b>Комментарий:</b><br />
-                            <p>{order.comment}</p>
-                        </div>}
-                </div>
-            }) : <></>}
+                }) : <></>}
+            </div>
         </>
         if (selectedPage === 'allOrders') return <>
-            <h1 className="main-content__title">История заказов</h1>
-            {courierHistory ? courierHistory.map(order => {
-                return <div className="cart-container__left-cart--courier">
-
-                    <span className="left-cart__title"><b>Заказ в</b>
-                        <p className="title__select-address">{order.address ? order.address.address : ""}</p>
-                        <p className="title__status"><b>Статус: </b>{convertOrderStatus[order.status as keyof typeof convertOrderStatus]}</p>
-                    </span>
-                    <div className="left-cart__change-time"> <b>Время доставки: </b>
-                        <p className="change-time__input-delvery-time">{order.delivery_time.split("T").join(" - ")}</p>
+            <div className="courier-order">
+                <div className="orders-count">Всего - {courierHistory ? courierHistory.length : 0}шт. </div>
+                {courierHistory ? courierHistory.map(order => {
+                    return <div className="cart-container__left-cart--courier">
+                        <span
+                            style={{ cursor: "pointer" }}
+                            onClick={() => setModalData({ title: `Информация о заказе №${order.id}`, body: "order4courier", forBody: order })}
+                        >Заказ №{order.id} к {convertDateTime(order.delivery_time, true)}</span>
+                        <span>{order.address ? order.address.address : ""}</span>
+                        <span
+                            style={{ cursor: "pointer" }}
+                            onClick={() => setModalData({ title: "Информация о клиенте", body: "client4courier", forBody: order.user })}
+                        >{order.user ? order.user.username : ""}</span>
+                        <span>Всего блюд: {order.count_dishes}шт.</span>
                     </div>
-
-                    <div className="left-cart__dishes-container">
-
-                        <b>Стоимость заказа: </b> {order.total_cost} руб.
-
-                        <div className="dishes-container__dishes-list">
-                            <b>Содержимое:</b><br />
-                            {order.orderdish_set && order.orderdish_set.length > 0 && order.orderdish_set.map(dish => {
-                                return <>
-                                    <p className="dishes-list__dish-item">
-                                        {dish.dish} - {dish.quantity} шт. ({getDishTotalCostById(dish.id, dish.quantity)} руб.)
-                                    </p>
-                                </>
-                            })}
-                        </div>
-                    </div>
-
-                    {order.comment
-                        && order.comment.length > 0
-                        && <div className="left-cart__comment">
-                            <b>Комментарий:</b><br />
-                            <p>{order.comment}</p>
-                        </div>
-                    }
-                </div>
-            }) : <></>}
+                }) : <></>}
+            </div>
         </>
     }
 
@@ -1172,186 +1141,117 @@ export const UserAccountPage = () => {
                 </button>
             </div>}
         </>
-        if (selectedPage === 'allOrders' && allOrders) {
+        if (selectedPage === 'allActiveOrders' && allOrders) {
             const orders2Show = sortByStatus !== 0 ? allOrders.sort(sortByStatusFoo) : allOrders;
 
             return <>
-                <div className="list-container__sort-panel">
-                    <div className="sort-panel__item--void" />
-                    <button className="sort-panel__button" onClick={() => {
-                        if (sortByStatus === -1) setSortByStatus(0);
-                        else if (sortByStatus === 0) setSortByStatus(1);
-                        else if (sortByStatus === 1) setSortByStatus(-1);
-                    }}>Сортировать {sortByStatus === -1 ? "↓" : (sortByStatus === 1 ? "↑" : '')}</button>
-                    <div className="sort-panel__item--void" />
-                    <div className="sort-panel__item--void" />
-                </div>
-                <div className="main-content__list-container">
 
-                    <dialog ref={editOrderRef}>
-                        {editedOrder && <>
-                            <h4 className="list-item__title">Заказ от
-                                <input
-                                    type="datetime-local"
-                                    className="title__change-date"
-                                    value={editedOrder.delivery_time}
-                                    onChange={(e) => {
-                                        if (validateData(e.target.value, "datetime")) {
-                                            const copy = JSON.parse(JSON.stringify(editedOrder)) as OrderForWorker;
-                                            copy.delivery_time = e.target.value;
-                                            setEditedOrder(copy);
-                                        }
-                                    }} />
-                                - {convertOrderStatus[editedOrder.status as keyof typeof convertOrderStatus]}
-                            </h4>
-                            <p className="list-item__about-client">
-                                <b>Клиент:</b> {editedOrder.user.username} | {editedOrder.user.phone} | {editedOrder.user.email}
-                            </p>
-                            <p className="list-item__about-courier">
-                                <b>Курьер:</b> <select
-                                    disabled={editedOrder.status === "delivered"}
-                                    value={editedOrder.courier ? `${editedOrder.courier.id} - ${editedOrder.courier.username}` : ''}
-                                    onChange={(e) => {
-                                        const courierId = e.target.value.split(' - ').at(0);
-                                        if (courierId && allCouriers) {
-                                            const courier = allCouriers.find(c => c.id === Number.parseInt(courierId))
-                                            if (courier) {
-                                                const copy = JSON.parse(JSON.stringify(editedOrder)) as OrderForWorker;
-                                                copy.courier = courier;
-                                                setEditedOrder(copy);
-                                                managerApi.editOrder(copy)
-                                                    .then(r => {
-                                                        managerApi.getAllOrders()
-                                                            .then(res => setAllOrders(res.sort(sortByDeliveryTimeFoo)))
-                                                    })
+                <div style={{ display: "flex" }}>
+                    <div className="main-content__list-container">
+                        <div className="list-container__sort-panel" key={sortByStatus}>
+                            <div className="sort-panel__item">
+                                <p>Ожидают курьера - {orders2Show.filter(o => o.status === "awaiting_courier").length}шт.</p>
+                            </div>
+
+                            <div className="sort-panel__item">
+                                <p>Доставляются - {orders2Show.filter(o => o.status === "deliver").length}шт.</p>
+                            </div>
+
+                            <div className="sort-panel__item">
+                                <button className="sort-panel__button" onClick={() => {
+                                    if (sortByStatus === -1) setSortByStatus(0);
+                                    else if (sortByStatus === 0) setSortByStatus(1);
+                                    else if (sortByStatus === 1) setSortByStatus(-1);
+                                }}>{sortByStatus === -1 ? "↓" : (sortByStatus === 1 ? "↑" : '↑↓')}</button>
+                            </div>
+                        </div>
+                        {orders2Show.filter(o => o.status === "awaiting_courier" || o.status === "deliver").map(order => {
+                            return <>
+                                <div className={`cart-container__left-cart--courier${order.status === "deliver" ? "--dark" : ""}`} style={{ gridTemplateColumns: "25% 35% 20% 20%" }}>
+                                    <span
+                                        style={{ cursor: "pointer" }}
+                                        onClick={() => setModalData({ title: `Информация о заказе №${order.id}`, body: "order4manager", forBody: order })}
+                                    >Заказ №{order.id} к {convertDateTime(order.delivery_time, true)}</span>
+                                    <span>{order.address ? order.address.address : ""}</span>
+                                    <span
+                                        style={{ cursor: "pointer" }}
+                                        onClick={() => setModalData({ title: "Информация о клиенте", body: "client4courier", forBody: order.user })}
+                                    >Клиент: {order.user ? order.user.username : ""}</span>
+                                    <span
+                                        style={{ cursor: "pointer" }}
+                                        onClick={() => setModalData({
+                                            title: "Информация о курьере", body: "courier4manager", forBody: {
+                                                ...order.courier,
+                                                courierOrders: allOrders ? allOrders?.filter(o => o.courier && order.courier && order.courier.id === o.courier.id) : []
                                             }
-                                        }
-                                    }}
-                                >
-                                    {allCouriers && allCouriers.map((courier) => {
-                                        return <>
-                                            <option>{courier.id} - {courier.username}</option>
-                                        </>
-                                    })}
-                                </select>
-                                {!editedOrder.courier && <img src={AttentionIcon} alt="attention" style={{ maxHeight: "25px", aspectRatio: "1" }} />}
-                            </p>
-                            <p className="list-item__cost"><b>Стоимость:</b> {editedOrder.total_cost} руб.</p>
-                            <p className="list-item__count-dishes"><b>Количество блюд:</b> {editedOrder.count_dishes}</p>
-                            <p className="list-item__address"><b>Адрес:</b> {editedOrder.address ? editedOrder.address.address : ''}</p>
-                            <b>Комментарий:</b><input className="list-item__comment" value={editedOrder.comment} onChange={(e) => {
-                                const copy = JSON.parse(JSON.stringify(editedOrder)) as OrderForWorker;
-                                copy.comment = e.target.value;
-                                setEditedOrder(copy);
-                            }} />
-                            <p><b>Блюда в заказе:</b></p>
-                            <div className="list-item__dishes-list" style={{ maxWidth: "440px" }}>
-                                {editedOrder.orderdish_set.map(dish => {
-                                    return <>
-                                        <p className="dishes-list__dish-item">
-                                            <button
-                                                className="dish-item__remove-item"
-                                                onClick={() => {
-                                                    const copy = JSON.parse(JSON.stringify(editedOrder)) as OrderForWorker;
-                                                    const removedDish = copy.orderdish_set.find((d) => d.dish === dish.dish);
+                                        })}
+                                    >Курьер: {order.courier ? order.courier.username : ""}</span>
+                                </div>
+                            </>
+                        })}
+                    </div>
 
-                                                    if (removedDish) {
-                                                        if (removedDish.quantity > 1) {
-                                                            removedDish.quantity--;
-                                                        }
-                                                        else {
-                                                            copy.orderdish_set = copy.orderdish_set.filter((d) => d.dish !== dish.dish);
-                                                        }
-                                                    }
-                                                    setEditedOrder(copy);
-                                                }}
-                                            />
-                                            {dish.dish} - {dish.quantity} шт. ({getDishTotalCostById(dish.id, dish.quantity)} руб.)
-                                        </p>
-                                    </>
-                                })}
-                            </div>
-                        </>}
-                        <button onClick={() => {
-                            editOrderRef.current?.close();
-                            editedOrder && managerApi.editOrder(editedOrder)
-                                .then(r => {
-                                    managerApi.getAllOrders()
-                                        .then(res => {
-                                            setAllOrders(res.sort(sortByDeliveryTimeFoo))
-                                        })
-                                })
-                        }}>Выйти и сохранить</button>
-                    </dialog>
-                    {orders2Show.map(order => {
-                        return <>
-                            <div className={"list-container__list-item" + (user && user.role === 'manager' ? "--manager" : "")}>
+                    <div className="main-cintent__list-legend">
+                        <p className="list-legend__item">Ожидание курьера</p>
+                        <p className="list-legend__item--dark">Доставляются</p>
+                    </div>
+                </div>
+            </>
+        }
+        if (selectedPage === 'allPrevOrders' && allOrders) {
+            const orders2Show = sortByStatus !== 0 ? allOrders.sort(sortByStatusFoo) : allOrders;
 
-                                {user && user.role === 'manager' ?
-                                    <>
-                                        <button
-                                            className="list-item__edit-button"
-                                            style={{ backgroundImage: `url(${EditIcon})` }}
-                                            onClick={() => {
-                                                editOrderRef.current && editOrderRef.current.showModal();
-                                                setEditedOrder(order);
-                                            }}
-                                        />
-                                        <p className="list-item__title">Заказ от {convertDateTime(order.delivery_time)} - {convertOrderStatus[order.status as keyof typeof convertOrderStatus]}</p>
-                                        <p className="list-item__about-client"><b>Клиент:</b> {order.user.username}</p>
-                                        <p className="list-item__about-courier"><b>Курьер:</b> {order.courier ? order.courier.username : ''}</p>
-                                    </>
-                                    : <>
-                                        <h4 className="list-item__title">Заказ от {convertDateTime(order.delivery_time)} - {convertOrderStatus[order.status as keyof typeof convertOrderStatus]}</h4>
-                                        <p className="list-item__about-client">
-                                            <b>Клиент:</b> {order.user.username} | {order.user.phone} | {order.user.email}
-                                        </p>
-                                        <p className="list-item__about-courier">
-                                            <b>Курьер:</b> <select
-                                                className=""
-                                                value={order.courier ? `${order.courier.id} - ${order.courier.username}` : ''}
-                                                onChange={(e) => {
-                                                    const courierId = e.target.value.split(' - ').at(0);
-                                                    if (courierId && allCouriers) {
-                                                        const courier = allCouriers.find(c => c.id === Number.parseInt(courierId))
-                                                        if (courier) {
-                                                            const copy = JSON.parse(JSON.stringify(order)) as OrderForWorker;
-                                                            copy.courier = courier;
-                                                            managerApi.editOrder(copy)
-                                                                .then(r => {
-                                                                    managerApi.getAllOrders()
-                                                                        .then(res => setAllOrders(res.sort(sortByDeliveryTimeFoo)))
-                                                                })
-                                                        }
-                                                    }
-                                                }}
-                                            >
-                                                {allCouriers && allCouriers.map((courier) => {
-                                                    return <>
-                                                        <option>{courier.id} - {courier.username}</option>
-                                                    </>
-                                                })}
-                                            </select>
-                                            {!order.courier && <img src={AttentionIcon} alt="attention" style={{ maxHeight: "25px", aspectRatio: "1" }} />}
-                                        </p>
-                                        <p className="list-item__cost"><b>Стоимость:</b> {order.total_cost} руб.</p>
-                                        <p className="list-item__count-dishes"><b>Количество блюд:</b> {order.count_dishes}</p>
-                                        <p className="list-item__address"><b>Адрес:</b> {order.address ? order.address.address : ''}</p>
-                                        <p className="list-item__comment"><b>Комментарий:</b> {order.comment}</p>
-                                        <p><b>Блюда в заказе:</b></p>
-                                        <div className="list-item__dishes-list">
-                                            {order.orderdish_set.map(dish => {
-                                                return <>
-                                                    <div className="dishes-list__list-item">
-                                                        <p>{dish.dish} - {dish.quantity} шт.</p>
-                                                    </div>
-                                                </>
-                                            })}
-                                        </div>
-                                    </>}
+            return <>
+
+                <div style={{ display: "flex" }}>
+                    <div className="main-content__list-container">
+                        <div className="list-container__sort-panel" key={sortByStatus}>
+                            <div className="sort-panel__item">
+                                <p>Доставлено - {orders2Show.filter(o => o.status === "delivered").length}шт.</p>
                             </div>
-                        </>
-                    })}
+
+                            <div className="sort-panel__item">
+                                <p>Отменено - {orders2Show.filter(o => o.status === "cancelled").length}шт.</p>
+                            </div>
+
+                            <div className="sort-panel__item">
+                                <button className="sort-panel__button" onClick={() => {
+                                    if (sortByStatus === -1) setSortByStatus(0);
+                                    else if (sortByStatus === 0) setSortByStatus(1);
+                                    else if (sortByStatus === 1) setSortByStatus(-1);
+                                }}>{sortByStatus === -1 ? "↓" : (sortByStatus === 1 ? "↑" : '↑↓')}</button>
+                            </div>
+                        </div>
+                        {orders2Show.filter(o => o.status === "delivered" || o.status === "cancelled").map(order => {
+                            return <>
+                                <div className={`cart-container__left-cart--courier${order.status === "cancelled" ? "--dark" : ""}`} style={{ gridTemplateColumns: "25% 35% 20% 20%" }}>
+                                    <span
+                                        style={{ cursor: "pointer" }}
+                                        onClick={() => setModalData({ title: `Информация о заказе №${order.id}`, body: "order4manager", forBody: order })}
+                                    >Заказ №{order.id} к {convertDateTime(order.delivery_time, true)}</span>
+                                    <span>{order.address ? order.address.address : ""}</span>
+                                    <span
+                                        style={{ cursor: "pointer" }}
+                                        onClick={() => setModalData({ title: "Информация о клиенте", body: "client4courier", forBody: order.user })}
+                                    >Клиент: {order.user ? order.user.username : ""}</span>
+                                    <span
+                                        style={{ cursor: "pointer" }}
+                                        onClick={() => setModalData({
+                                            title: "Информация о курьере", body: "courier4manager", forBody: {
+                                                ...order.courier,
+                                                courierOrders: allOrders ? allOrders?.filter(o => o.courier && order.courier && order.courier.id === o.courier.id) : []
+                                            }
+                                        })}
+                                    >Курьер: {order.courier ? order.courier.username : ""}</span>
+                                </div>
+                            </>
+                        })}
+                    </div>
+
+                    <div className="main-cintent__list-legend">
+                        <p className="list-legend__item">Доставлено</p>
+                        <p className="list-legend__item--dark">Отменено</p>
+                    </div>
                 </div>
             </>
         }
@@ -1433,8 +1333,9 @@ export const UserAccountPage = () => {
                         &&
                         <>
                             <button className={"nav-bar__nav-item" + (selectedPage === "updData" ? " selected" : "")} onClick={() => setSelectedPage('updData')}>Изменить личные данные</button>
-                            <button className={"nav-bar__nav-item" + (selectedPage === "allOrders" ? " selected" : "")} onClick={() => setSelectedPage('allOrders')}>Список всех заказов</button>
-                            <button className={"nav-bar__nav-item" + (selectedPage === "allCouriers" ? " selected" : "")} onClick={() => setSelectedPage('allCouriers')}>Список всех курьеров</button>
+                            <button className={"nav-bar__nav-item" + (selectedPage === "allActiveOrders" ? " selected" : "")} onClick={() => setSelectedPage('allActiveOrders')}>Активные заказы</button>
+                            <button className={"nav-bar__nav-item" + (selectedPage === "allPrevOrders" ? " selected" : "")} onClick={() => setSelectedPage('allPrevOrders')}>Прошлые заказы</button>
+                            <button className={"nav-bar__nav-item" + (selectedPage === "allCouriers" ? " selected" : "")} onClick={() => setSelectedPage('allCouriers')}>Курьеры</button>
                         </>
                     }
                 </div>
@@ -1575,7 +1476,7 @@ export const UserAccountPage = () => {
                             {modalData
                                 && <>
                                     <p className="approve-modal__title">{modalData.title}</p>
-                                    <div className="approve-modal__container">
+                                    <div className="approve-modal__container--modify">
                                         {modalData.body === "newAddress"
                                             && <>
                                                 <input
@@ -1635,6 +1536,305 @@ export const UserAccountPage = () => {
                                                         onClick={() => setModalData(null)}
                                                     >
                                                         Отлично!
+                                                    </button>
+                                                </div>
+                                            </>}
+                                        {modalData.body === "order4courier"
+                                            && <>
+                                                {modalData.forBody && <>
+                                                    <label htmlFor="dateTime">Время и дата</label>
+                                                    <p className="value">{convertDateTime((modalData.forBody as OrderForWorker).delivery_time, true)}</p>
+
+                                                    <label htmlFor="address">Адресс доставки</label>
+                                                    <p className="value">{(modalData.forBody as OrderForWorker).address ? (modalData.forBody as OrderForWorker).address.address : ""}</p>
+
+                                                    <label htmlFor="status">Статус</label>
+                                                    <p className="value">{convertOrderStatus[(modalData.forBody as OrderForWorker).status]}</p>
+
+                                                    <label>Клиент</label>
+                                                    <div style={{ width: "100%", display: "flex", justifyContent: "space-evenly" }}>
+                                                        <p className="value">{(modalData.forBody as OrderForWorker).user ? (modalData.forBody as OrderForWorker).user.username : ""}</p>
+                                                        <button
+                                                            style={{
+                                                                backgroundImage: `url(${InfoIcon})`,
+                                                                backgroundSize: "contain",
+                                                                backgroundPosition: "center",
+                                                                backgroundRepeat: "no-repeat",
+                                                                border: "none",
+                                                                width: "25px",
+                                                                aspectRatio: 1,
+                                                                marginLeft: "15px",
+                                                            }}
+                                                            onClick={() => (modalData.forBody as OrderForWorker).user && setModalData({ title: "Информация о клиенте", body: "client4courier", forBody: (modalData.forBody as OrderForWorker).user })}
+                                                        />
+                                                    </div>
+
+                                                    <label>Блюда</label>
+                                                    {(modalData.forBody as OrderForWorker).orderdish_set.map(dish => {
+                                                        return <div style={{ width: "100%", display: "grid", gridTemplateColumns: "60% repeat(2, 20%)", justifyItems: "start" }}>
+                                                            <p>{dish.dish}</p>
+                                                            <p>{dish.quantity}шт.</p>
+                                                            <p>{getDishTotalCostById(dish.id, dish.quantity)}руб.</p>
+                                                        </div>
+                                                    })}
+                                                    <div style={{ width: "100%", display: "flex", justifyContent: "space-between" }}>
+                                                        <p>Итого:</p>
+                                                        <p>{(modalData.forBody as OrderForWorker).total_cost}руб. за {(modalData.forBody as OrderForWorker).count_dishes} блюд</p>
+                                                    </div>
+
+                                                    <label>Комментарий</label>
+                                                    <p className="value">{(modalData.forBody as OrderForWorker).comment}</p>
+                                                </>}
+
+                                                <div className="container__buttons-container" style={{ marginTop: "30px" }}>
+                                                    <button
+                                                        className="buttons-container__resolve button-dark"
+                                                        onClick={() => setModalData(null)}
+                                                    >
+                                                        Назад
+                                                    </button>
+                                                </div>
+                                            </>}
+                                        {modalData.body === "client4courier"
+                                            && <>
+                                                {modalData.forBody && <>
+                                                    <label htmlFor="dateTime">Логин</label>
+                                                    <p className="value">{(modalData.forBody as any).username ?? ""}</p>
+
+                                                    <label htmlFor="address">Телефон</label>
+                                                    <p className="value">{(modalData.forBody as any).phone ?? ""}</p>
+
+                                                    <label htmlFor="email">Почта</label>
+                                                    <p className="value">{(modalData.forBody as any).email ?? ""}</p>
+                                                </>}
+
+                                                <div className="container__buttons-container" style={{ marginTop: "30px" }}>
+                                                    <button
+                                                        className="buttons-container__resolve button-dark"
+                                                        onClick={() => setModalData(null)}
+                                                    >
+                                                        Назад
+                                                    </button>
+                                                </div>
+                                            </>}
+                                        {modalData.body === "order4manager"
+                                            && <>
+                                                {modalData.forBody && <>
+                                                    <label htmlFor="dateTime">Время и дата</label>
+                                                    <input
+                                                        type="datetime-local"
+                                                        className="value"
+                                                        value={(modalData.forBody as OrderForWorker).delivery_time}
+                                                        onChange={(e) => {
+                                                            if (validateData(e.target.value, "datetime")) {
+                                                                const copy = JSON.parse(JSON.stringify(modalData.forBody)) as OrderForWorker;
+                                                                copy.delivery_time = e.target.value;
+                                                                setModalData({
+                                                                    title: modalData.title,
+                                                                    body: modalData.body,
+                                                                    forBody: copy
+                                                                });
+                                                            }
+                                                        }}
+                                                    />
+
+                                                    <label htmlFor="address">Адресс доставки</label>
+                                                    <p className="value">{(modalData.forBody as OrderForWorker).address ? (modalData.forBody as OrderForWorker).address.address : ""}</p>
+
+                                                    <label htmlFor="status">Статус</label>
+                                                    <p className="value">{convertOrderStatus[(modalData.forBody as OrderForWorker).status]}</p>
+
+                                                    <label>Курьер</label>
+                                                    <div style={{ width: "100%", display: "flex", justifyContent: "space-evenly" }}>
+                                                        <p className="value">{(modalData.forBody as OrderForWorker).courier ? (modalData.forBody as OrderForWorker).courier.username : ""}</p>
+                                                        <button
+                                                            style={{
+                                                                backgroundImage: `url(${InfoIcon})`,
+                                                                backgroundSize: "contain",
+                                                                backgroundPosition: "center",
+                                                                backgroundRepeat: "no-repeat",
+                                                                border: "none",
+                                                                width: "25px",
+                                                                aspectRatio: 1,
+                                                                marginLeft: "15px",
+                                                            }}
+                                                            onClick={() => (modalData.forBody as OrderForWorker).courier
+                                                                && setModalData({
+                                                                    title: "Информация о курьере",
+                                                                    body: "courier4manager",
+                                                                    forBody: {
+                                                                        ...(modalData.forBody as OrderForWorker).courier,
+                                                                        courierOrders: allOrders ? allOrders?.filter(o => o.courier && (modalData.forBody as OrderForWorker).courier && (modalData.forBody as OrderForWorker).courier.id === o.courier.id) : []
+                                                                    }
+                                                                })}
+                                                        />
+                                                    </div>
+
+                                                    <label>Клиент</label>
+                                                    <div style={{ width: "100%", display: "flex", justifyContent: "space-evenly" }}>
+                                                        <p className="value">{(modalData.forBody as OrderForWorker).user ? (modalData.forBody as OrderForWorker).user.username : ""}</p>
+                                                        <button
+                                                            style={{
+                                                                backgroundImage: `url(${InfoIcon})`,
+                                                                backgroundSize: "contain",
+                                                                backgroundPosition: "center",
+                                                                backgroundRepeat: "no-repeat",
+                                                                border: "none",
+                                                                width: "25px",
+                                                                aspectRatio: 1,
+                                                                marginLeft: "15px",
+                                                            }}
+                                                            onClick={() => (modalData.forBody as OrderForWorker).user && setModalData({ title: "Информация о клиенте", body: "client4courier", forBody: (modalData.forBody as OrderForWorker).user })}
+                                                        />
+                                                    </div>
+
+                                                    <label>Блюда</label>
+                                                    {(modalData.forBody as OrderForWorker).orderdish_set.map(dish => {
+                                                        return <div style={{ width: "100%", display: "grid", gridTemplateColumns: "40% repeat(4, 15%)", justifyItems: "start" }}>
+                                                            <p>{dish.dish}</p>
+                                                            <p>{dish.quantity}шт.</p>
+                                                            <button
+                                                                className="button-light"
+                                                                style={{
+                                                                    borderRadius: "50%",
+                                                                    aspectRatio: 1,
+                                                                    maxWidth: "25px",
+                                                                }}
+                                                                onClick={() => {
+                                                                    const copy = JSON.parse(JSON.stringify(modalData.forBody)) as OrderForWorker;
+                                                                    const removedDish = copy.orderdish_set.find((d) => d.dish === dish.dish);
+
+                                                                    if (removedDish) {
+                                                                        if (removedDish.quantity > 1) {
+                                                                            removedDish.quantity--;
+                                                                        }
+                                                                        else {
+                                                                            copy.orderdish_set = copy.orderdish_set.filter((d) => d.dish !== dish.dish);
+                                                                        }
+                                                                    }
+                                                                    setModalData({
+                                                                        title: modalData.title,
+                                                                        body: modalData.body,
+                                                                        forBody: copy
+                                                                    });
+                                                                }}
+                                                            >-</button>
+                                                            <p>{getDishTotalCostById(dish.id, dish.quantity)}руб.</p>
+                                                            <button
+                                                                className="button-dark"
+                                                                style={{
+                                                                    borderRadius: "50%",
+                                                                    aspectRatio: 1,
+                                                                    maxWidth: "25px",
+                                                                    backgroundImage: `url(${RemoveButton})`,
+                                                                    backgroundSize: "75%",
+                                                                    backgroundPosition: "center",
+                                                                    backgroundRepeat: "no-repeat",
+                                                                    marginLeft: "60%"
+                                                                }}
+                                                                onClick={() => {
+                                                                    const copy = JSON.parse(JSON.stringify(modalData.forBody)) as OrderForWorker;
+                                                                    const removedDish = copy.orderdish_set.find((d) => d.dish === dish.dish);
+
+                                                                    if (removedDish)
+                                                                        copy.orderdish_set = copy.orderdish_set.filter((d) => d.dish !== dish.dish);
+
+                                                                    setModalData({
+                                                                        title: modalData.title,
+                                                                        body: modalData.body,
+                                                                        forBody: copy
+                                                                    });
+                                                                }}
+                                                            />
+                                                        </div>
+                                                    })}
+                                                    <div style={{ width: "100%", display: "flex", justifyContent: "space-between" }}>
+                                                        <p>Итого:</p>
+                                                        <p>{
+                                                            (modalData.forBody as OrderForWorker).orderdish_set.reduce((acc, curr) => acc + getDishTotalCostById(curr.id, curr.quantity), 0)
+                                                        }руб. за {(modalData.forBody as OrderForWorker).orderdish_set.reduce((acc, curr) => acc + curr.quantity, 0)} блюд</p>
+                                                    </div>
+
+                                                    <label>Комментарий</label>
+                                                    <textarea
+                                                        style={{
+                                                            minHeight: "30px",
+                                                            height: "90px",
+                                                            maxHeight: "90px"
+                                                        }}
+                                                        className="value"
+                                                        value={(modalData.forBody as OrderForWorker).comment}
+                                                        onChange={(e) => {
+                                                            const copy = JSON.parse(JSON.stringify(modalData.forBody)) as OrderForWorker;
+                                                            copy.comment = e.target.value;
+                                                            setModalData({
+                                                                title: modalData.title,
+                                                                body: modalData.body,
+                                                                forBody: copy
+                                                            });
+                                                        }}
+                                                    />
+                                                </>}
+
+                                                <div className="container__buttons-container" style={{ marginTop: "30px" }}>
+                                                    <button
+                                                        className="buttons-container__resolve button-dark"
+                                                        onClick={() => {
+                                                            modalData.forBody && managerApi.editOrder(modalData.forBody as OrderForWorker)
+                                                                .then(r => {
+                                                                    managerApi.getAllOrders()
+                                                                        .then(res => {
+                                                                            setAllOrders(res.sort(sortByDeliveryTimeFoo))
+                                                                        })
+                                                                })
+                                                            setModalData(null);
+                                                        }}
+                                                    >
+                                                        Выйти и сохранить
+                                                    </button>
+                                                </div>
+                                            </>}
+                                        {modalData.body === "courier4manager"
+                                            && <>
+                                                {modalData.forBody && <>
+                                                    <label htmlFor="dateTime">Логин</label>
+                                                    <p className="value">{(modalData.forBody as any).username ?? ""}</p>
+
+                                                    <label htmlFor="address">Телефон</label>
+                                                    <p className="value">{(modalData.forBody as any).phone ?? ""}</p>
+
+                                                    <label htmlFor="email">Почта</label>
+                                                    <p className="value">{(modalData.forBody as any).email ?? ""}</p>
+                                                </>}
+
+                                                {
+                                                    (modalData.forBody as any).courierOrders
+                                                        && (modalData.forBody as any).courierOrders.length
+                                                        ? <>
+                                                            <label htmlFor="orders">Активные заказы</label>
+                                                            {(modalData.forBody as any).courierOrders.map((order: any) => {
+                                                                return <div style={{
+                                                                    width: "100%",
+                                                                    height: "19px",
+                                                                    fontSize: "16px",
+                                                                    marginBottom: "13px",
+                                                                    display: "grid",
+                                                                    gridTemplateColumns: "10% 30% 60%"
+                                                                }}>
+                                                                    <p>№{order.id}</p>
+                                                                    <p>{convertDateTime(order.delivery_time, true)}</p>
+                                                                    <p>{order.address ? order.address.address : ''}</p>
+                                                                </div>
+                                                            })}
+                                                        </> : <></>
+                                                }
+
+                                                <div className="container__buttons-container" style={{ marginTop: "30px" }}>
+                                                    <button
+                                                        className="buttons-container__resolve button-dark"
+                                                        onClick={() => setModalData(null)}
+                                                    >
+                                                        Назад
                                                     </button>
                                                 </div>
                                             </>}
