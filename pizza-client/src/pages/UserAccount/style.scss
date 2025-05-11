@@ -839,3 +839,14 @@ textarea.container__item {
     margin: 0;
     width: 75px;
 }
+
+.couriers-list__item {
+    display: flex;
+    flex-direction: row;
+    background-color: #B6DFF8;
+    border-radius: 10px;
+    height: 150px;
+    padding: 10px;
+    width: 90%;
+    margin: 0 auto;
+}

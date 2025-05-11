@@ -1277,7 +1277,7 @@ export const UserAccountPage = () => {
             return <>
 
                 <div style={{ display: "flex" }}>
-                    <div className="main-content__list-container">
+                    <div className="main-content__list-container" style={{ marginTop: 0 }}>
                         <div className="list-container__sort-panel" key={sortByStatus}>
                             <div className="sort-panel__item">
                                 <p>Ожидают курьера - {orders2Show.filter(o => o.status === "awaiting_courier").length}шт.</p>
@@ -1334,7 +1334,7 @@ export const UserAccountPage = () => {
             return <>
 
                 <div style={{ display: "flex" }}>
-                    <div className="main-content__list-container">
+                    <div className="main-content__list-container" style={{ marginTop: 0 }}>
                         <div className="list-container__sort-panel" key={sortByStatus}>
                             <div className="sort-panel__item">
                                 <p>Доставлено - {orders2Show.filter(o => o.status === "delivered").length}шт.</p>
@@ -1386,44 +1386,57 @@ export const UserAccountPage = () => {
             </>
         }
         if (selectedPage === 'allCouriers' && allCouriers) {
-            const orders2Show = sortByCount !== 0 ? allCouriers.sort(sortByCountFoo) : allCouriers;
+            const couriers2Show = sortByCount !== 0 ? allCouriers.sort(sortByCountFoo) : allCouriers;
 
             return <>
-                <div className="list-container__sort-panel">
-                    <div className="sort-panel__item--void" />
-                    <button className="sort-panel__button" onClick={() => {
-                        if (sortByCount === -1) setSortByCount(0);
-                        else if (sortByCount === 0) setSortByCount(1);
-                        else if (sortByCount === 1) setSortByCount(-1);
-                    }}>Сортировать {sortByCount === -1 ? "↓" : (sortByCount === 1 ? "↑" : '')}</button>
-                    <div className="sort-panel__item--void" />
-                    <div className="sort-panel__item--void" />
-                </div>
-                <div className="main-content__list-container">
-                    {orders2Show.map(courier => {
+                <div className="main-content__list-container" style={{ margin: "20px auto 0", height: "auto" }}>
+                    <div className="list-container__sort-panel" key={sortByCount} style={{ marginBottom: "20px" }}>
+                        <div className="sort-panel__item">
+                            <p>Всего - {couriers2Show.length} человек</p>
+                        </div>
 
+                        <div className="sort-panel__item">
+                            <p>Свободных - {couriers2Show.filter(c => allOrders ? allOrders?.filter(order => order.courier && order.courier.id === c.id).length === 0 : true).length} человек</p>
+                        </div>
+
+                        <div className="sort-panel__item">
+                            <button className="sort-panel__button" onClick={() => {
+                                if (sortByCount === -1) setSortByCount(0);
+                                else if (sortByCount === 0) setSortByCount(1);
+                                else if (sortByCount === 1) setSortByCount(-1);
+                            }}>{sortByCount === -1 ? "↓" : (sortByCount === 1 ? "↑" : '↑↓')}</button>
+                        </div>
+                    </div>
+                    {couriers2Show.map(courier => {
                         const courierOrders = allOrders ? allOrders?.filter(order => order.courier && order.courier.id === courier.id) : []
-
                         return <>
-                            <div className="list-container__list-item">
-                                <h4 className="list-item__title">Курьер: {courier.username}</h4>
-                                <p className="list-item__email"><b>Email:</b> {courier.email}</p>
-                                <p className="list-item__phone"><b>Номер телефона:</b> {courier.phone}</p>
-                                {courierOrders
-                                    && courierOrders.length
-                                    ? <>
-                                        <p><b>Активные заказы ({courierOrders.length}):</b></p>
-                                        <div className="list-item__dishes-list">
-                                            {courierOrders.map(order => {
-                                                return <>
-                                                    <div className="dishes-list__list-item">
-                                                        <p>Время: {convertDateTime(order.delivery_time)} {order.delivery_time.split('T').at(-1)?.slice(0, -3)}</p>
-                                                        <p>Место: {order.address ? order.address.address : ''}</p>
-                                                    </div>
-                                                </>
-                                            })}
+                            <div className="couriers-list__item">
+                                <div style={{ flex: 1, display: "flex", flexDirection: "column", height: "100%", justifyContent: "space-between" }}>
+                                    <p style={{ margin: 0, cursor: "pointer" }} onClick={() => setModalData({
+                                        title: "Информация о курьере", body: "courier4manager", forBody: {
+                                            ...courier,
+                                            courierOrders: allOrders ? allOrders?.filter(o => o.courier && courier && courier.id === o.courier.id) : []
+                                        }
+                                    })}>{courier.id} - {courier.username}</p>
+                                    <p style={{ margin: 0 }}>Всего заказов - {courierOrders.length} шт.</p>
+                                </div>
+                                <div style={{ flex: 4, maxHeight: "100%", overflow: "auto" }}>
+                                    {courierOrders.map(order => {
+                                        return <div
+                                            onClick={() => setModalData({ title: `Информация о заказе №${order.id}`, body: "order4manager", forBody: order })}
+                                            style={{
+                                                cursor: "pointer",
+                                                display: "grid",
+                                                gridTemplateColumns: "repeat(2, 50%)",
+                                                justifyItems: "center",
+                                                width: "80%",
+                                                margin: "0 0 16px auto"
+                                            }}>
+                                            <p style={{ margin: 0 }}>Заказ №{order.id} к {convertDateTime(order.delivery_time, true)}</p>
+                                            <p style={{ margin: 0 }}>{order.address ? order.address.address : ""}</p>
                                         </div>
-                                    </> : <>Нет активных заказов</>}
+                                    })}
+                                </div>
                             </div>
                         </>
                     })}
