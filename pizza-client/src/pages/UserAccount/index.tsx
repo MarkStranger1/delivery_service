@@ -23,6 +23,10 @@ import { ApproveContainer } from "../../shared/Containers/ApproveModal";
 import { convertDateTime, validateData } from "../../shared/utils/HelpFunctions";
 import { Header } from "../../components/Header";
 import { Footer } from "../../components/Footer";
+import { DishImg } from "../../components/DishImg";
+import { DishesContainer } from "../../shared/Containers/DishesContainer";
+import * as _ from "lodash";
+
 
 export const UserAccountPage = () => {
 
@@ -49,6 +53,7 @@ export const UserAccountPage = () => {
     const managerApi = new ManagerApi();
 
     const { user, setUser } = useContext(UserContainer);
+    const { dishes: dishesContainer } = useContext(DishesContainer);
     const showApproveModal = useContext(ApproveContainer);
 
     const [userAddresses, setUserAddresses] = useState<Array<DeliveryAddress> | null>(null);
@@ -67,6 +72,7 @@ export const UserAccountPage = () => {
     const [allDishes, setAllDishes] = useState<Array<Dish> | null>(null);
 
     const [scores4Pay, setScores4Pay] = useState<number>(0);
+    const [payType, setPayType] = useState<"cash" | "sfp">("cash");
     const approvePayRef = useRef<HTMLDialogElement>(null);
 
     const [modalData, setModalData] = useState<{
@@ -180,7 +186,7 @@ export const UserAccountPage = () => {
         }
     }
 
-    const removeDishHandler = (dishName: string) => {
+    const removeDishHandler = (dishName: string, clear: boolean = false) => {
         if (user) {
             const clientApi = new ClientApi();
 
@@ -188,7 +194,7 @@ export const UserAccountPage = () => {
             const removedDish = copy.dishes.find((d: any) => d.dish === dishName);
 
             if (removedDish) {
-                if (removedDish.quantity > 1) {
+                if (removedDish.quantity > 1 && !clear) {
                     removedDish.quantity--;
                 }
                 else {
@@ -305,7 +311,7 @@ export const UserAccountPage = () => {
                     clientApi.getActiveCart(),
                 ]).then(response => {
                     if (response[0] && response[0].length) {
-                        const newHistory = response[0].filter((cart: any) => cart.status === "delivered" || cart.status === "cancelled").sort(sortByDeliveryTimeFoo)
+                        const newHistory = response[0].filter((cart: any) => cart.status === "delivered" || cart.status === "cancelled").sort(sortByDeliveryTimeFoo);
                         setUserOrdersHistory(newHistory);
                     }
 
@@ -586,38 +592,29 @@ export const UserAccountPage = () => {
             }
         </>
         if (selectedPage === 'currOrder') return <>
-            <h1 className="main-content__title">Текущий заказ</h1>
-
             {user
                 && userCart
                 && <dialog ref={approvePayRef} className="approvePayModal">
-                    <h3>Оплатить заказ</h3>
-                    <img src={QRCode} alt="" style={{ width: "300px", aspectRatio: "1" }} />
-                    <label htmlFor="input-scores">Оплатить баллами?</label>
-                    <input
-                        type="number"
-                        id="input-scores"
-                        className="input-scores"
-                        min={1}
-                        max={user?.scores < userCart?.total_cost ? user?.scores : userCart?.total_cost}
-                        value={scores4Pay}
-                        onChange={(e) => {
-                            if (user) {
-                                let inputed = Number.parseInt(e.target.value);
-                                if (inputed < 0) inputed = 0;
-                                if (inputed > user.scores) inputed = user.scores;
-                                setScores4Pay(inputed);
-                            }
-                        }}
-                        placeholder={`Доступно ${user?.scores < userCart?.total_cost ? user?.scores : userCart?.total_cost} баллов`}
-                    />
+                    <h3>Оплата заказа</h3>
+                    <h5>Итоговая сумма к оплате: {userCart.total_cost - scores4Pay}руб.</h5>
+                    <img src={QRCode} alt="" style={{ width: "325px", aspectRatio: "1" }} />
                     <div className="buttons-container">
                         <button
-                            className="buttons-container__back"
+                            className="buttons-container__back button-dark"
+                            style={{
+                                height: "50px",
+                                fontSize: "20px",
+                                width: "45%"
+                            }}
                             onClick={() => approvePayRef.current?.close()}
-                        >Вернуться</button>
+                        >Назад</button>
                         <button
-                            className="buttons-container__approve"
+                            className="buttons-container__approve button-dark"
+                            style={{
+                                height: "50px",
+                                fontSize: "20px",
+                                width: "45%"
+                            }}
                             onClick={() => {
                                 if (userCart) {
                                     const copy = JSON.parse(JSON.stringify(userCart));
@@ -653,257 +650,390 @@ export const UserAccountPage = () => {
                     </div>
                 </dialog>}
 
-            {userCart
-                ?
-                <>
-                    <div className="main-content__cart-container">
-
-                        <div className="cart-container__left-cart">
-
-                            <span className="left-cart__title"><b>Заказ в</b>
-                                <select
-                                    className="title__select-address"
-                                    value={userCart.address}
-                                    onChange={(e) => {
-                                        const copy = JSON.parse(JSON.stringify(userCart));
-                                        const newAddress = userAddresses?.find((address: DeliveryAddress) => e.target.value === address.delivery_address) as DeliveryAddress;
-                                        copy.address = newAddress.id ?? "";
-
-
-                                        Object.assign(copy, { dishes_ordered: copy.dishes });
-                                        delete copy.dishes;
-                                        copy.dishes_ordered.forEach((d: any) => {
-                                            if (typeof d.dish === "string" && d.id) {
-                                                d.dish = d.id
-                                                delete d.id;
-                                            }
-                                        })
-
-                                        clientApi.updateUserCart(copy)
-                                            .then(r => {
-                                                clientApi.getUserCart()
-                                                    .then(res => {
-                                                        setUserCart(res[0]);
-                                                    })
-                                            })
-                                    }}
-                                >
-                                    {userAddresses && userAddresses.length > 0 && userAddresses.map(addr => {
-                                        return <option value={addr.delivery_address}>{addr.delivery_address}</option>
-                                    })}
-                                </select>
-                            </span>
-                            <div className="left-cart__change-time"> <b>Время доставки: </b>
-                                <input
-                                    type="datetime-local"
-                                    className="change-time__input-delvery-time"
-                                    value={userCart.delivery_time}
-                                    onChange={(e) => {
-                                        const copy = JSON.parse(JSON.stringify(userCart));
-
-                                        if (!copy.address) {
-                                            const defaultAddress = userAddresses?.find((address: DeliveryAddress) => address.is_default) as DeliveryAddress;
-                                            copy.address = defaultAddress.id ?? "";
-                                        }
-                                        else {
-                                            const address = userAddresses?.find((add: DeliveryAddress) => add.delivery_address === copy.address) as DeliveryAddress;
-                                            copy.address = address.id
-                                        }
-
-                                        if (validateData(e.target.value, "datetime")) {
-                                            copy.delivery_time = e.target.value;
-                                        }
-
-
-                                        Object.assign(copy, { dishes_ordered: copy.dishes });
-                                        delete copy.dishes;
-                                        copy.dishes_ordered.forEach((d: any) => {
-                                            if (typeof d.dish === "string" && d.id) {
-                                                d.dish = d.id
-                                                delete d.id;
-                                            }
-                                        })
-
-                                        clientApi.updateUserCart(copy)
-                                            .then(r => {
-                                                clientApi.getUserCart()
-                                                    .then(r => {
-                                                        setUserCart(r[0]);
-                                                    })
-                                            })
-                                    }}
+            {userCart ? <>
+                <div className="main-content__user-cart">
+                    <div className="user-cart__container">
+                        <div className="dishes__header">
+                            <p>Всего блюд - {userCart.count_dishes}шт.</p>
+                            <button
+                                className="button-dark"
+                                onClick={() => {
+                                    showApproveModal({
+                                        text: "удалить все блюда из корзины",
+                                        resolveText: "Удалить",
+                                        resolve: () => { clearCartHandler(); showApproveModal(null); },
+                                        reject: () => showApproveModal(null)
+                                    })
+                                }}>Убрать все</button>
+                        </div>
+                        {userCart.dishes.map(dish => {
+                            return <div className="dishes__dish-item">
+                                <DishImg
+                                    key={dish.dish}
+                                    className="dish-item__img--user-cart"
+                                    img={() => (dishesContainer?.find(d => d.id === dish.id)?.image as string) ?? null}
+                                    onClick={() => { }}
                                 />
-                            </div>
-
-                            <div className="left-cart__dishes-container">
-
-                                <b>Стоимость заказа: </b> {userCart.total_cost} руб.
-
-                                <div className="dishes-container__dishes-list">
-                                    <b>Содержимое:</b><br />
-                                    {userCart.dishes && userCart.dishes.length > 0 && userCart.dishes.map(dish => {
-                                        return <>
-                                            <p className="dishes-list__dish-item">
-                                                <button
-                                                    className="dish-item__remove-item"
-                                                    onClick={() => removeDishHandler(dish.dish)}
-                                                />
-                                                <button
-                                                    className="dish-item__inc-item"
-                                                    onClick={() => addDishHandler(dish.dish)}
-                                                />
-                                                {dish.dish} - {dish.quantity} шт. ({getDishTotalCostById(dish.id, dish.quantity)} руб.)
-                                            </p>
-                                        </>
-                                    })}
-                                </div>
-                            </div>
-
-                            <div className="left-cart__divider" />
-
-                            <div className="left-cart__buttons-container">
+                                <p style={{ marginLeft: "10px", }}>{dish.dish}</p>
+                                <button className="list-item__add-button" onClick={() => { addDishHandler(dish.dish) }} style={{ width: "25px", height: "25px" }}>+</button>
+                                <p style={{ marginLeft: "10px", }}>{dish.quantity}</p>
+                                <button className="list-item__delete-button" onClick={() => { removeDishHandler(dish.dish) }} style={{ width: "25px", height: "25px" }}>-</button>
+                                <p>{getDishTotalCostById(dish.id, dish.quantity)}руб.</p>
                                 <button
-                                    className="buttons-container__button"
-                                    disabled={!userAddresses || userAddresses.length === 0 || userCart.count_dishes === 0}
-                                    onClick={() => {
-                                        approvePayRef.current?.showModal();
-                                    }}>Оплатить</button>
-                                <button
-                                    className="buttons-container__button"
-                                    disabled={!userAddresses || userAddresses.length === 0 || userCart.count_dishes === 0}
-                                    onClick={() => {
-                                        showApproveModal({
-                                            text: "очистить корзину",
-                                            resolve: () => { clearCartHandler(); showApproveModal(null); },
-                                            reject: () => showApproveModal(null)
-                                        })
+                                    className="list-item__remove-button"
+                                    style={{
+                                        width: "25px",
+                                        height: "25px",
+                                        marginLeft: "10px",
+                                        backgroundSize: "65%",
+                                        backgroundImage: `url(${RemoveButton})`,
+                                        backgroundRepeat: 'no-repeat'
                                     }}
-                                >Очистить</button>
+                                    onClick={() => { removeDishHandler(dish.dish, true) }} />
                             </div>
+                        })}
 
+                        <div style={{ width: "90%", display: "flex", justifyContent: "space-between", margin: "20px auto 10px", fontSize: "20px" }}>
+                            <p>Итого:</p>
+                            <p>{userCart.total_cost}руб. за {userCart.count_dishes} блюд</p>
                         </div>
 
-
-                        {activeUserCarts
-                            &&
-                            <>
-                                <div className="cart-container__right-cart-container">
-                                    {activeUserCarts.map(activeCart => {
-                                        return <>
-                                            <div className="cart-container__right-cart">
-                                                <span className="right-cart__title">
-                                                    <p className="title__select-address"><b>Заказ в</b> {activeCart.address}</p>
-                                                    <p className="title__status"><b>Статус: </b>{convertOrderStatus[activeCart.status as keyof typeof convertOrderStatus]}</p>
-                                                </span>
-                                                <div className="right-cart__change-time"> <b>Время доставки: </b>
-                                                    <p className="change-time__text">{activeCart.delivery_time.split("T")[0]} {activeCart.delivery_time.split("T")[1].slice(0, 5)}</p>
-                                                </div>
-
-                                                <div className="right-cart__dishes-container">
-
-                                                    <b>Стоимость заказа: </b> {activeCart.total_cost} руб.
-
-                                                    <div className="dishes-container__dishes-list">
-                                                        <b>Содержимое:</b><br />
-                                                        {activeCart.dishes && activeCart.dishes.length > 0 && activeCart.dishes.map(dish => {
-                                                            return <>
-                                                                <p className="dishes-list__dish-item">
-                                                                    {dish.dish} - {dish.quantity} шт. ({getDishTotalCostById(dish.id, dish.quantity)} руб.)
-                                                                </p>
-                                                            </>
-                                                        })}
-                                                    </div>
-                                                </div>
-
-                                                <div className="right-cart__divider" />
-
-                                                <div className="right-cart__buttons-container">
-                                                    <button className="buttons-container__button" onClick={() => {
-                                                        showApproveModal({
-                                                            text: "отменить заказ",
-                                                            resolve: () => {
-                                                                clientApi.updateActiveCart(activeCart.id, 'cancelled')
-                                                                    .then(r => {
-                                                                        clientApi.getActiveCart()
-                                                                            .then(r => {
-                                                                                setActiveUserCarts(r);
-                                                                            })
-
-                                                                        clientApi.getOrdersHistory()
-                                                                            .then(r => {
-                                                                                setUserOrdersHistory(r);
-                                                                            })
-                                                                    })
-                                                                showApproveModal(null);
-                                                            },
-                                                            reject: () => showApproveModal(null)
-                                                        })
-                                                    }}>Отменить</button>
-                                                    {activeCart.status === "deliver" && <>
-                                                        <button
-                                                            className="buttons-container__button"
-                                                            onClick={() => {
-                                                                clientApi.updateActiveCart(activeCart.id, 'delivered')
-                                                                    .then(r => {
-                                                                        clientApi.getActiveCart()
-                                                                            .then(r => {
-                                                                                setActiveUserCarts(r);
-                                                                            })
-
-                                                                        clientApi.getOrdersHistory()
-                                                                            .then(r => {
-                                                                                setUserOrdersHistory(r);
-                                                                            })
-                                                                    })
-                                                            }}
-                                                        >
-                                                            Доставлено
-                                                        </button>
-                                                    </>}
-                                                </div>
-                                            </div>
-                                        </>
-                                    })}
-                                </div>
-                            </>
-                        }
                     </div>
-                </>
-                :
-                <>
-                    <h2 className="main-content__sub-title">Корзина пуста</h2>
-                </>
+                </div>
+                <div className="user-cart__container" style={{ padding: "10px" }}>
+                    <select
+                        className="container__item"
+                        value={userCart.address}
+                        onChange={(e) => {
+                            const copy = JSON.parse(JSON.stringify(userCart));
+                            const newAddress = userAddresses?.find((address: DeliveryAddress) => e.target.value === address.delivery_address) as DeliveryAddress;
+                            copy.address = newAddress.id ?? "";
+
+
+                            Object.assign(copy, { dishes_ordered: copy.dishes });
+                            delete copy.dishes;
+                            copy.dishes_ordered.forEach((d: any) => {
+                                if (typeof d.dish === "string" && d.id) {
+                                    d.dish = d.id
+                                    delete d.id;
+                                }
+                            })
+
+                            clientApi.updateUserCart(copy)
+                                .then(r => {
+                                    clientApi.getUserCart()
+                                        .then(res => {
+                                            setUserCart(res[0]);
+                                        })
+                                })
+                        }}
+                    >
+                        {userAddresses && userAddresses.length > 0 && userAddresses.map(addr => {
+                            return <option value={addr.delivery_address}>{addr.delivery_address}</option>
+                        })}
+                    </select>
+                    <input
+                        type="datetime-local"
+                        className="container__item"
+                        placeholder="Время доставки"
+                        value={userCart.delivery_time}
+                        onChange={(e) => {
+                            const copy = JSON.parse(JSON.stringify(userCart));
+
+                            if (!copy.address) {
+                                const defaultAddress = userAddresses?.find((address: DeliveryAddress) => address.is_default) as DeliveryAddress;
+                                copy.address = defaultAddress.id ?? "";
+                            }
+                            else {
+                                const address = userAddresses?.find((add: DeliveryAddress) => add.delivery_address === copy.address) as DeliveryAddress;
+                                copy.address = address.id
+                            }
+
+                            if (validateData(e.target.value, "datetime")) {
+                                copy.delivery_time = e.target.value;
+                            }
+
+
+                            Object.assign(copy, { dishes_ordered: copy.dishes });
+                            delete copy.dishes;
+                            copy.dishes_ordered.forEach((d: any) => {
+                                if (typeof d.dish === "string" && d.id) {
+                                    d.dish = d.id
+                                    delete d.id;
+                                }
+                            })
+
+                            clientApi.updateUserCart(copy)
+                                .then(r => {
+                                    clientApi.getUserCart()
+                                        .then(r => {
+                                            setUserCart(r[0]);
+                                        })
+                                })
+                        }}
+                    />
+
+                    <textarea
+                        className="container__item"
+                        value={userCart.comment}
+                        placeholder="Комментарий к заказу"
+                        onChange={(e) => {
+                            const copy = JSON.parse(JSON.stringify(userCart));
+                            copy.comment = e.target.value;
+
+                            const address = userAddresses?.find((add: DeliveryAddress) => add.delivery_address === copy.address) as DeliveryAddress;
+                            copy.address = address.id
+
+                            Object.assign(copy, { dishes_ordered: copy.dishes });
+                            delete copy.dishes;
+                            copy.dishes_ordered.forEach((d: any) => {
+                                if (typeof d.dish === "string" && d.id) {
+                                    d.dish = d.id
+                                    delete d.id;
+                                }
+                            })
+
+                            clientApi.updateUserCart(copy)
+                                .then(r => {
+                                    clientApi.getUserCart()
+                                        .then(res => {
+                                            setUserCart(res[0]);
+                                        })
+                                })
+                        }}>
+                    </textarea>
+
+                    {user && <input
+                        type="number"
+                        id="input-scores"
+                        className="container__item"
+                        min={1}
+                        max={user?.scores < userCart?.total_cost ? user?.scores : userCart?.total_cost}
+                        value={scores4Pay}
+                        onChange={(e) => {
+                            if (user) {
+                                let inputed = Number.parseInt(e.target.value);
+                                if (inputed < 0) inputed = 0;
+                                if (inputed > user.scores) inputed = user.scores;
+                                setScores4Pay(inputed);
+                            }
+                        }}
+                        placeholder={`Доступно ${user?.scores < userCart?.total_cost ? user?.scores : userCart?.total_cost} баллов`}
+                    />}
+
+                    <div style={{ display: "flex", justifyContent: "space-between", width: "90%", margin: "10px auto", height: "50px" }}>
+                        <button
+                            onClick={() => setPayType("cash")}
+                            className={payType === "cash" ? "selected-pay-type" : ""}
+                            style={{
+                                width: "49%",
+                                fontSize: "20px",
+                                backgroundColor: "white",
+                                color: "black",
+                                border: "none",
+                                borderRadius: "10px",
+                                boxShadow: "5px 5px 10px rgba(0, 0, 0, 0.25)",
+                                transition: "all .3s ease-in-out"
+                            }}
+                        >Наличными курьеру</button>
+                        <button
+                            onClick={() => setPayType("sfp")}
+                            className={payType === "sfp" ? "selected-pay-type" : ""}
+                            style={{
+                                width: "49%",
+                                fontSize: "20px",
+                                backgroundColor: "white",
+                                color: "black",
+                                border: "none",
+                                borderRadius: "10px",
+                                boxShadow: "5px 5px 10px rgba(0, 0, 0, 0.25)",
+                                transition: "all .3s ease-in-out"
+                            }}
+                        >По СБП</button>
+                    </div>
+                    <button
+                        className="button-dark"
+                        style={{ width: "90%", margin: "10px auto", height: "50px", fontSize: "20px" }}
+                        onClick={() => {
+                            if (payType === "sfp") approvePayRef.current?.showModal()
+                            else if (userCart) {
+                                const copy = JSON.parse(JSON.stringify(userCart));
+                                copy.status = "deliver";
+
+                                const address = userAddresses?.find((add: DeliveryAddress) => add.delivery_address === copy.address) as DeliveryAddress;
+                                copy.address = address.id
+
+                                Object.assign(copy, { dishes_ordered: copy.dishes });
+                                delete copy.dishes;
+                                copy.dishes_ordered.forEach((d: any) => {
+                                    if (typeof d.dish === "string" && d.id) {
+                                        d.dish = d.id
+                                        delete d.id;
+                                    }
+                                })
+
+                                const userCopy = JSON.parse(JSON.stringify(user)) as User;
+                                userCopy.scores += Math.round((userCart.total_cost - scores4Pay) / 10) - scores4Pay;
+                                mainApi.editUserInfo(userCopy)
+
+                                clientApi.updateUserCart(copy)
+                                    .then(r => {
+                                        clientApi.getUserCart()
+                                            .then(r => {
+                                                setUserCart(r[0]);
+                                                approvePayRef.current?.close();
+                                            })
+                                    })
+                            }
+                        }}
+                    >Оформить</button>
+                </div>
+                <div className="main-cintent__list-legend">
+                    <p className="list-legend__item--no-color">У вас есть {user?.scores} баллов</p>
+                </div>
+            </> : <>
+                <div
+                    className="main-content__user-cart"
+                    style={{
+                        backgroundColor: "white",
+                        width: "fit-content",
+                        margin: "0 auto",
+                        padding: "30px",
+                        fontSize: "24px",
+                        borderRadius: "10px"
+                    }}
+                >
+                    <p>Корзина пока что пуста</p>
+                </div>
+            </>
             }
+
+
+        </>
+        if (selectedPage === "allActiveOrders") return <>
+            {activeUserCarts
+                ? activeUserCarts.map(cart => {
+                    return <>
+                        <div className="main-content__user-cart">
+                            <div className="user-cart__container">
+                                <div className="dishes__header--history">
+                                    <p>Заказ на {convertDateTime(cart.delivery_time, true)}</p>
+                                    <p className="header__status--history">{convertOrderStatus[cart.status as keyof typeof convertOrderStatus].slice(0, 1).toUpperCase() + convertOrderStatus[cart.status as keyof typeof convertOrderStatus].slice(1)}</p>
+                                </div>
+                                <p style={{
+                                    fontSize: "20px",
+                                    margin: "10px auto 15px 30px"
+                                }}>Всего блюд - {cart.count_dishes}шт.</p>
+                                {cart.dishes.map(dish => {
+                                    return <div className="dishes__dish-item--history">
+                                        <DishImg
+                                            key={dish.dish}
+                                            className="dish-item__img--user-cart"
+                                            img={() => (dishesContainer?.find(d => d.id === dish.id)?.image as string) ?? null}
+                                            onClick={() => { }}
+                                        />
+                                        <p style={{ marginLeft: "10px", }}>{dish.dish}</p>
+                                        <p style={{ marginLeft: "10px", }}>{dish.quantity}</p>
+                                        <p>{getDishTotalCostById(dish.id, dish.quantity)}руб.</p>
+                                    </div>
+                                })}
+
+                                <div style={{ width: "90%", display: "flex", justifyContent: "space-between", margin: "20px auto 10px", fontSize: "20px" }}>
+                                    <p>Итого:</p>
+                                    <p>{cart.total_cost}руб. за {cart.count_dishes} блюд</p>
+                                </div>
+
+                                <p className="user-cart__address">{cart.address ? cart.address : "! Адрес не указан !"}</p>
+
+                                <div className="container__buttons-container">
+                                    <button
+                                        className="buttons-container__button button-dark"
+                                        onClick={() => {
+                                            clientApi.updateActiveCart(cart.id, 'delivered')
+                                                .then(r => {
+                                                    clientApi.getActiveCart()
+                                                        .then(r => {
+                                                            setActiveUserCarts(r);
+                                                        })
+
+                                                    clientApi.getOrdersHistory()
+                                                        .then(r => {
+                                                            setUserOrdersHistory(r);
+                                                        })
+                                                })
+                                        }}
+                                    >Доставлен</button>
+                                    <button
+                                        className="buttons-container__button button-dark"
+                                        onClick={() => {
+                                            showApproveModal({
+                                                text: "отменить заказ",
+                                                subText: "Деньги будут возвращены в течении 3 рабочих дней!",
+                                                resolve: () => {
+                                                    clientApi.updateActiveCart(cart.id, 'cancelled')
+                                                        .then(r => {
+                                                            clientApi.getActiveCart()
+                                                                .then(r => {
+                                                                    setActiveUserCarts(r);
+                                                                })
+
+                                                            clientApi.getOrdersHistory()
+                                                                .then(r => {
+                                                                    setUserOrdersHistory(r);
+                                                                })
+                                                        })
+                                                    showApproveModal(null);
+                                                },
+                                                reject: () => showApproveModal(null)
+                                            })
+                                        }}> Отменить</button>
+                                </div>
+                            </div>
+                        </div >
+                    </>
+                })
+                : <></>}
         </>
         if (selectedPage === 'allOrders') return <>
-            <h1 className="main-content__title">История заказов</h1>
-
             {userOrdersHistory
                 ?
                 <>
-                    <div className="main-content__list-container">
-                        {userOrdersHistory.map(order => {
-                            return <>
-                                <div className="list-container__list-item">
-                                    <h4 className="list-item__title">Заказ от {convertDateTime(order.delivery_time)} - {convertOrderStatus[order.status as keyof typeof convertOrderStatus]}</h4>
-                                    <p className="list-item__cost"><b>Стоимость:</b> {order.total_cost} руб.</p>
-                                    <p className="list-item__count-dishes"><b>Количество блюд:</b> {order.count_dishes}</p>
-                                    <p className="list-item__address"><b>Адрес:</b> {order.address}</p>
-                                    <p className="list-item__comment"><b>Комментарий:</b> {order.comment}</p>
-                                    <p><b>Блюда в заказе:</b></p>
-                                    <div className="list-item__dishes-list">
-                                        {order.dishes.map(dish => {
-                                            return <>
-                                                <div className="dishes-list__list-item">
-                                                    <p>{dish.dish} - {dish.quantity} шт.</p>
-                                                </div>
-                                            </>
-                                        })}
+                    {userOrdersHistory.map(cart => {
+                        return <>
+                            <div className="main-content__user-cart">
+                                <div className="user-cart__container">
+                                    <div className="dishes__header--history">
+                                        <p>Заказ на {convertDateTime(cart.delivery_time, true)}</p>
+                                        <p className="header__status--history">{convertOrderStatus[cart.status as keyof typeof convertOrderStatus].slice(0, 1).toUpperCase() + convertOrderStatus[cart.status as keyof typeof convertOrderStatus].slice(1)}</p>
                                     </div>
+                                    <p style={{
+                                        fontSize: "20px",
+                                        margin: "10px auto 15px 30px"
+                                    }}>Всего блюд - {cart.count_dishes}шт.</p>
+                                    {cart.dishes.map(dish => {
+                                        return <div className="dishes__dish-item--history">
+                                            <DishImg
+                                                key={dish.dish}
+                                                className="dish-item__img--user-cart"
+                                                img={() => (dishesContainer?.find(d => d.id === dish.id)?.image as string) ?? null}
+                                                onClick={() => { }}
+                                            />
+                                            <p style={{ marginLeft: "10px", }}>{dish.dish}</p>
+                                            <p style={{ marginLeft: "10px", }}>{dish.quantity}</p>
+                                            <p>{getDishTotalCostById(dish.id, dish.quantity)}руб.</p>
+                                        </div>
+                                    })}
+
+                                    <div style={{ width: "90%", display: "flex", justifyContent: "space-between", margin: "20px auto 10px", fontSize: "20px" }}>
+                                        <p>Итого:</p>
+                                        <p>{cart.total_cost}руб. за {cart.count_dishes} блюд</p>
+                                    </div>
+
+                                    <p className="user-cart__address">{cart.address ? cart.address : "! Адрес не указан !"}</p>
                                 </div>
-                            </>
-                        })}
-                    </div>
+                            </div >
+                        </>
+                    })}
                 </>
                 :
                 <>
@@ -1318,7 +1448,8 @@ export const UserAccountPage = () => {
                         <>
                             <button className={"nav-bar__nav-item" + (selectedPage === "updData" ? " selected" : "")} onClick={() => setSelectedPage('updData')}>Изменить личные данные</button>
                             <button className={"nav-bar__nav-item" + (selectedPage === "currOrder" ? " selected" : "")} onClick={() => setSelectedPage('currOrder')}>Текущий заказ</button>
-                            <button className={"nav-bar__nav-item" + (selectedPage === "allOrders" ? " selected" : "")} onClick={() => setSelectedPage('allOrders')}>Список оплаченных заказов</button>
+                            <button className={"nav-bar__nav-item" + (selectedPage === "allActiveOrders" ? " selected" : "")} onClick={() => setSelectedPage('allActiveOrders')}>Активные заказы</button>
+                            <button className={"nav-bar__nav-item" + (selectedPage === "allOrders" ? " selected" : "")} onClick={() => setSelectedPage('allOrders')}>История заказов</button>
                         </>
                     }
                     {userLogin?.role === 'courier'

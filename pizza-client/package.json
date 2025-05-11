@@ -12,6 +12,7 @@
     "@types/react-dom": "^19.0.4",
     "axios": "^1.8.4",
     "bootstrap": "^5.3.3",
+    "lodash": "^4.17.21",
     "react": "^19.0.0",
     "react-bootstrap": "^2.10.9",
     "react-dom": "^19.0.0",
@@ -46,6 +47,7 @@
     ]
   },
   "devDependencies": {
+    "@types/lodash": "^4.17.16",
     "@types/node": "^22.13.13",
     "ajv": "^7.2.4"
   }

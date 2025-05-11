@@ -70,6 +70,10 @@
   justify-content: space-around;
 }
 
+.approve-modal__container>p {
+  margin: 10px auto 35px;
+}
+
 .container>h3 {
   font-size: 24px;
   text-align: center;

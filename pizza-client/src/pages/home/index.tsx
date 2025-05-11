@@ -151,6 +151,7 @@ export const HomePage = () => {
                             <dialog className="modal-container" ref={dialogRef}>
 
                                 <DishImg
+                                    key={modalData.name}
                                     className="modal-container__left-content"
                                     img={modalData.image}
                                     onClick={() => { }}
@@ -243,7 +244,12 @@ export const HomePage = () => {
                                             key={`${dish.id}${dish.name}__${dish.type.slug}`}
 
                                         >
-                                            <DishImg className="" img={dish.image} onClick={() => setModalData(dish)} />
+                                            <DishImg
+                                                key={dish.name}
+                                                className=""
+                                                img={dish.image}
+                                                onClick={() => setModalData(dish)}
+                                            />
                                             <p className="dish-item__title">{dish.name}</p>
                                             <span className="dish-item__desc">{dish.description}</span>
                                             {user && user.role === "client" && <div className="dish-item__cart-interaction">

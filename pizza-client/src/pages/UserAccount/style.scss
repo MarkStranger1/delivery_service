@@ -507,16 +507,6 @@ button.list-item__delete-button {
     justify-content: space-around;
 }
 
-.buttons-container__button,
-dialog>button {
-    min-width: 200px;
-    color: #d8d8d8;
-    text-decoration: none;
-    background-color: #567e9f;
-    border-radius: 10px;
-    margin: 8px 5px;
-}
-
 dialog>button {
     width: 100%;
     height: 50px;
@@ -529,6 +519,9 @@ dialog.approvePayModal:open {
     display: flex;
     flex-direction: column;
     align-items: center;
+    border: none;
+    border-radius: 10px;
+    width: 550px;
 }
 
 .input-scores {
@@ -538,8 +531,8 @@ dialog.approvePayModal:open {
 
 .buttons-container {
     display: flex;
-    justify-content: space-evenly;
-    width: 100%;
+    justify-content: space-between;
+    width: 90%;
 }
 
 .list-container__sort-panel {
@@ -594,7 +587,8 @@ dialog.approvePayModal:open {
 }
 
 .list-legend__item,
-.list-legend__item--dark {
+.list-legend__item--dark,
+.list-legend__item--no-color {
     display: grid;
     grid-template-columns: 25px calc(100% - 25px);
     margin: 10px;
@@ -602,6 +596,27 @@ dialog.approvePayModal:open {
     font-size: 16px;
     justify-items: center;
     text-align: center;
+}
+
+.main-cintent__list-legend:has(.list-legend__item--no-color) {
+    top: 231px;
+    right: 155px;
+    width: 275px;
+    height: 75px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.list-legend__item--no-color {
+    display: block;
+    background-image: url("../../shared/assets/treasureIcon.svg");
+    background-size: 25px;
+    background-repeat: no-repeat;
+    background-position: center right;
+    width: 100%;
+    text-align: left;
+    padding-left: 30px;
 }
 
 .list-legend__item::before,
@@ -707,4 +722,120 @@ dialog.approvePayModal:open {
 .approve-modal__container--modify>label {
     margin-top: 10px;
     margin-bottom: 5px;
+}
+
+
+.user-cart__container {
+    display: flex;
+    flex-direction: column;
+    width: 525px;
+    margin: 0 450px 30px auto;
+    background-color: white;
+    border-radius: 10px;
+}
+
+.user-cart__container:has(.dishes__header--history) {
+    margin: 0 auto 30px
+}
+
+.container__item {
+    background-color: #B6DFF8;
+    width: 90%;
+    margin: 10px auto 15px;
+    height: 25px;
+    border: none;
+    border-radius: 10px;
+    padding: 0 10px;
+}
+
+textarea.container__item {
+    min-height: 35px;
+    max-height: 125px;
+}
+
+.selected-pay-type {
+    outline: 2px solid #2579AD;
+    color: #2579AD !important;
+}
+
+.dishes__header,
+.dishes__header--history {
+    display: flex;
+    justify-content: space-between;
+    margin: 25px auto 10px;
+    width: 92%;
+    align-items: center;
+    font-size: 20px;
+}
+
+.dishes__header--history {
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-evenly;
+}
+
+.dishes__header>p {
+    margin: 0;
+}
+
+.dishes__header>button {
+    width: 125px;
+    height: 25px;
+}
+
+.header__status--history,
+.user-cart__address {
+    margin: 0;
+    width: 100%;
+    font-size: 16px;
+    background-color: #b6dff8;
+    border-radius: 10px;
+    padding-left: 10px;
+    box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.25);
+}
+
+.user-cart__address {
+    width: 92%;
+    margin: 0 auto 20px;
+}
+
+.container__buttons-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 92% !important;
+    margin: 0 auto 20px;
+}
+
+.buttons-container__button {
+    font-size: 20px !important;
+    width: 275px;
+    height: 50px;
+    box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.25);
+}
+
+.dishes__dish-item,
+.dishes__dish-item--history {
+    --buttons-width: 30px;
+    display: grid;
+    grid-template-columns: 100px 40% repeat(3, var(--buttons-width)) calc(60% - 100px - 4 * var(--buttons-width)) var(--buttons-width);
+    width: 90%;
+    align-items: center;
+    margin: 0 auto 10px;
+    padding: 10px 0 20px;
+    border-bottom: 2px solid #B6DFF8;
+}
+
+.dishes__dish-item--history {
+    grid-template-columns: 100px 40% repeat(2, calc((60% - 100px) / 2));
+}
+
+.dishes__dish-item>p {
+    margin: 0;
+}
+
+.dish-item__img--user-cart {
+    flex: initial;
+    margin: 0;
+    width: 75px;
 }

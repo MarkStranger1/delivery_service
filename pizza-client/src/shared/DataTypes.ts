@@ -45,6 +45,7 @@ export interface UserNoId {
 export interface Order {
     id: number,
     dishes: Array<{
+        id: number,
         dish: string,
         quantity: number
     }>,
@@ -116,6 +117,7 @@ export interface CourierForManager {
 
 export interface ApproveModalType {
     text: string,
+    subText?: string,
     resolveText?: string,
     resolve: Function,
     rejectText?: string,
