@@ -376,7 +376,7 @@ button.list-item__delete-button {
 .cart-container__left-cart--courier--dark {
     display: grid;
     grid-template-columns: 27% 43% 15% 15%;
-    margin: 10px 50px 0;
+    margin: 10px 50px 20px;
     font-size: 16px;
     justify-items: center;
     align-items: center;
@@ -600,7 +600,7 @@ dialog.approvePayModal:open {
 
 .main-cintent__list-legend:has(.list-legend__item--no-color) {
     top: 231px;
-    right: 155px;
+    right: 20%;
     width: 275px;
     height: 75px;
     display: flex;
@@ -679,6 +679,10 @@ dialog.approvePayModal:open {
     left: 29px;
 }
 
+.switch-btn.switch-on {
+    background: #2579AD;
+}
+
 .scores-container {
     display: flex;
     flex-direction: column;
@@ -719,6 +723,15 @@ dialog.approvePayModal:open {
     margin: 0;
 }
 
+.approve-modal__container--modify>input {
+    border: none;
+    height: 29px;
+    background-color: #B6DFF8;
+    box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.25);
+    border-radius: 10px;
+    padding-left: 10px;
+}
+
 .approve-modal__container--modify>label {
     margin-top: 10px;
     margin-bottom: 5px;
@@ -729,7 +742,7 @@ dialog.approvePayModal:open {
     display: flex;
     flex-direction: column;
     width: 525px;
-    margin: 0 450px 30px auto;
+    margin: 0 auto 30px;
     background-color: white;
     border-radius: 10px;
 }

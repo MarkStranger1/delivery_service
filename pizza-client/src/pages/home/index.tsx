@@ -2,15 +2,24 @@ import { useContext, useEffect, useRef, useState } from "react";
 import { Header } from "../../components/Header"
 import { Cart as CartType, DeliveryAddress, Dish, TypeOfDish } from "../../shared/DataTypes";
 import Spinner from 'react-bootstrap/Spinner';
-//@ts-ignore
-import PizzaImg from "../../shared/assets/pizza/p1avif.avif"
 import { MainApi, ClientApi } from "../../shared/OpenAPI/Api";
 
-import "./style.scss"
 import { UserContainer } from "../../shared/Containers/UserContainer";
 import Cart from "../../components/Cart";
 import { Footer } from "../../components/Footer";
 import { DishImg } from "../../components/DishImg";
+import Carousel from "react-multi-carousel";
+import "react-multi-carousel/lib/styles.css";
+
+//@ts-ignore
+import FirstStock from "../../shared/assets/креветочное комбо.png"
+//@ts-ignore
+import SecondStock from "../../shared/assets/сезон персиков.png"
+//@ts-ignore
+import ThirdStock from "../../shared/assets/яркое трио.png"
+
+import "./style.scss"
+
 
 export const HomePage = () => {
 
@@ -31,6 +40,24 @@ export const HomePage = () => {
     const [userAddresses, setUserAddresses] = useState<Array<DeliveryAddress> | null>(null);
 
     const { user } = useContext(UserContainer);
+
+    const responsive = {
+        desktop: {
+            breakpoint: { max: 3000, min: 1024 },
+            items: 3,
+            slidesToSlide: 3 // optional, default to 1.
+        },
+        tablet: {
+            breakpoint: { max: 1024, min: 464 },
+            items: 2,
+            slidesToSlide: 2 // optional, default to 1.
+        },
+        mobile: {
+            breakpoint: { max: 464, min: 0 },
+            items: 1,
+            slidesToSlide: 1 // optional, default to 1.
+        }
+    };
 
     const applyFilter = (data: Array<Dish>) => {
         enum cuisineConvert {
@@ -147,6 +174,18 @@ export const HomePage = () => {
                     && productsType
                     ?
                     <>
+                        <div style={{
+                            width: "fit-content",
+                            margin: "0 auto",
+                            paddingTop: "30px"
+                        }}>
+                            <Carousel centerMode={true} responsive={responsive}>
+                                <img style={{ maxHeight: "250px" }} src={FirstStock} alt="stock-img" />
+                                <img style={{ maxHeight: "250px" }} src={SecondStock} alt="stock-img" />
+                                <img style={{ maxHeight: "250px" }} src={ThirdStock} alt="stock-img" />
+                            </Carousel>
+                        </div>
+
                         {modalData && <>
                             <dialog className="modal-container" ref={dialogRef}>
 
