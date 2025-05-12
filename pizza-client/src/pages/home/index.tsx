@@ -187,6 +187,7 @@ export const HomePage = () => {
                         {modalData && <>
                             <dialog className="modal-container" ref={dialogRef}>
 
+                                <button className="close-modal-button" style={{ right: "220px" }} onClick={() => setModalData(null)} />
                                 <DishImg
                                     key={modalData.name}
                                     className="modal-container__left-content"
@@ -206,14 +207,13 @@ export const HomePage = () => {
                                     </div>
                                     <p className="right-content__food-value">{modalData.weight} г. - {modalData.ccal} Ккал</p>
                                     {
-                                        user && user.id !== -1 && <>
+                                        user && user.id !== -1 && user.role === "client" && <>
                                             <div className="right-content__bottom">
                                                 <p>{modalData.cost}руб.</p>
                                                 <button className="modal-container__button button-dark" onClick={() => addDishToCart(modalData)}>В корзину</button>
                                             </div>
                                         </>
                                     }
-                                    <button className="modal-container__return-button button-dark" onClick={() => setModalData(null)}>Закрыть</button>
                                 </div>
                             </dialog>
                         </>}
