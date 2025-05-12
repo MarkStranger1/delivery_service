@@ -77,7 +77,7 @@ export const UserAccountPage = () => {
 
     const [modalData, setModalData] = useState<{
         title: string,
-        body: "newAddress" | "aboutScores" | "order4courier" | "client4courier" | "order4manager" | "courier4manager",
+        body: "newAddress" | "aboutScores" | "order4courier" | "client4courier" | "order4manager" | "courier4manager" | "prevOrder4manager",
         forBody?: OrderForWorker | { id: number, username: string, phone: string, email: string } | { id: number, username: string, phone: string, email: string, courierOrders: Array<any> }
     } | null>(null);
     const helpModalRef = useRef<HTMLDialogElement>(null);
@@ -1431,7 +1431,7 @@ export const UserAccountPage = () => {
                                 <div className={`cart-container__left-cart--courier${order.status === "cancelled" ? "--dark" : ""}`} style={{ gridTemplateColumns: "25% 35% 20% 20%" }}>
                                     <span
                                         style={{ cursor: "pointer" }}
-                                        onClick={() => setModalData({ title: `Информация о заказе №${order.id}`, body: "order4courier", forBody: order })}
+                                        onClick={() => setModalData({ title: `Информация о заказе №${order.id}`, body: "prevOrder4manager", forBody: order })}
                                     >Заказ №{order.id} к {convertDateTime(order.delivery_time, true)}</span>
                                     <span>{order.address ? order.address.address : ""}</span>
                                     <span
@@ -1766,7 +1766,7 @@ export const UserAccountPage = () => {
                                                 <p style={{ margin: "0" }}>Вы получаете баллы за каждую совершенную покупку в размере 10% от итоговой суммы заказа.<br /><br />1 балл равняется 1 рублю при оплате любого заказа.</p>
                                                 <div className="container__buttons-container" style={{ margin: "30px auto 0" }}>
                                                     <button
-                                                        style={{ width: "200px" }}
+                                                        style={{ width: "420px" }}
                                                         className="buttons-container__resolve button-dark hover-button"
                                                         onClick={() => setModalData(null)}
                                                     >
@@ -1824,7 +1824,7 @@ export const UserAccountPage = () => {
 
                                                 <div className="container__buttons-container" style={{ margin: "30px auto 0" }}>
                                                     <button
-                                                        style={{ width: "200px" }}
+                                                        style={{ width: "420px" }}
                                                         className="buttons-container__resolve button-dark hover-button"
                                                         onClick={() => setModalData(null)}
                                                     >
@@ -2060,6 +2060,84 @@ export const UserAccountPage = () => {
                                                         }}
                                                     >
                                                         Выйти и сохранить
+                                                    </button>
+                                                </div>
+                                            </>}
+                                        {modalData.body === "prevOrder4manager"
+                                            && <>
+                                                {modalData.forBody && <>
+                                                    <label htmlFor="dateTime">Время и дата</label>
+                                                    <p className="value">{convertDateTime((modalData.forBody as OrderForWorker).delivery_time, true)}</p>
+
+                                                    <label htmlFor="address">Адресс доставки</label>
+                                                    <p className="value">{(modalData.forBody as OrderForWorker).address ? (modalData.forBody as OrderForWorker).address.address : ""}</p>
+
+                                                    <label htmlFor="status">Статус</label>
+                                                    <p className="value">{convertOrderStatus[(modalData.forBody as OrderForWorker).status]}</p>
+
+                                                    <label>Клиент</label>
+                                                    <div style={{ width: "100%", display: "flex", justifyContent: "space-evenly" }}>
+                                                        <p className="value">{(modalData.forBody as OrderForWorker).user ? (modalData.forBody as OrderForWorker).user.username : ""}</p>
+                                                        <button
+                                                            className="hover-button"
+                                                            style={{
+                                                                backgroundImage: `url(${InfoIcon})`,
+                                                                backgroundSize: "contain",
+                                                                backgroundPosition: "center",
+                                                                backgroundRepeat: "no-repeat",
+                                                                border: "none",
+                                                                width: "25px",
+                                                                aspectRatio: 1,
+                                                                marginLeft: "15px",
+                                                            }}
+                                                            onClick={() => (modalData.forBody as OrderForWorker).user && setModalData({ title: "Информация о клиенте", body: "client4courier", forBody: (modalData.forBody as OrderForWorker).user })}
+                                                        />
+                                                    </div>
+
+
+                                                    <label>Курьер</label>
+                                                    <div style={{ width: "100%", display: "flex", justifyContent: "space-evenly" }}>
+                                                        <p className="value">{(modalData.forBody as OrderForWorker).courier ? (modalData.forBody as OrderForWorker).courier.username : ""}</p>
+                                                        <button
+                                                            className="hover-button"
+                                                            style={{
+                                                                backgroundImage: `url(${InfoIcon})`,
+                                                                backgroundSize: "contain",
+                                                                backgroundPosition: "center",
+                                                                backgroundRepeat: "no-repeat",
+                                                                border: "none",
+                                                                width: "25px",
+                                                                aspectRatio: 1,
+                                                                marginLeft: "15px",
+                                                            }}
+                                                            onClick={() => (modalData.forBody as OrderForWorker).courier && setModalData({ title: "Информация о курьере", body: "courier4manager", forBody: (modalData.forBody as OrderForWorker).courier })}
+                                                        />
+                                                    </div>
+
+                                                    <label>Блюда</label>
+                                                    {(modalData.forBody as OrderForWorker).orderdish_set.map(dish => {
+                                                        return <div style={{ width: "100%", display: "grid", gridTemplateColumns: "60% repeat(2, 20%)", justifyItems: "start" }}>
+                                                            <p>{dish.dish}</p>
+                                                            <p>{dish.quantity}шт.</p>
+                                                            <p>{getDishTotalCostById(dish.id, dish.quantity)}руб.</p>
+                                                        </div>
+                                                    })}
+                                                    <div style={{ width: "100%", display: "flex", justifyContent: "space-between" }}>
+                                                        <p>Итого:</p>
+                                                        <p>{(modalData.forBody as OrderForWorker).total_cost}руб. за {(modalData.forBody as OrderForWorker).count_dishes} блюд</p>
+                                                    </div>
+
+                                                    <label>Комментарий</label>
+                                                    <p className="value" style={{ height: "fit-content", maxHeight: "100px", overflow: "auto" }}>{(modalData.forBody as OrderForWorker).comment ?? ""}</p>
+                                                </>}
+
+                                                <div className="container__buttons-container" style={{ margin: "30px auto 0" }}>
+                                                    <button
+                                                        style={{ width: "420px" }}
+                                                        className="buttons-container__resolve button-dark hover-button"
+                                                        onClick={() => setModalData(null)}
+                                                    >
+                                                        Назад
                                                     </button>
                                                 </div>
                                             </>}
