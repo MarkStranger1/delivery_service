@@ -56,13 +56,14 @@ const App = () => {
         <DishesContainer.Provider value={{ dishes: dishes, setDishes: (dishes: Array<Dish>) => setDishes(dishes) }}>
 
           <dialog ref={approveModalRef} className='approve-modal'>
+            <button className="close-modal-button" onClick={() => setModalData(null)} />
             {modalData && <>
               <div className="approve-modal__container">
                 <h3>Вы уверены что хотите {modalData.text}?</h3>
                 {modalData.subText && <p>{modalData.subText}</p>}
                 <div className="container__buttons-container">
-                  <button className='buttons-container__resolve button-dark' onClick={() => modalData.resolve()}>{modalData.resolveText ? modalData.resolveText : "Да"}</button>
-                  <button className='buttons-container__reject button-dark' onClick={() => modalData.reject()}>{modalData.rejectText ? modalData.rejectText : "Нет"}</button>
+                  <button style={{ width: "200px" }} className='buttons-container__resolve button-dark' onClick={() => modalData.resolve()}>{modalData.resolveText ? modalData.resolveText : "Да"}</button>
+                  <button style={{ width: "200px" }} className='buttons-container__reject button-dark' onClick={() => modalData.reject()}>{modalData.rejectText ? modalData.rejectText : "Нет"}</button>
                 </div>
               </div>
             </>}

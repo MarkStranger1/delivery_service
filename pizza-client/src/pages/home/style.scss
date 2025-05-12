@@ -34,11 +34,11 @@ dialog:-internal-dialog-in-top-layer::backdrop {
 
 .select-product-type {
     --padding-size: 20px;
-    height: calc(165px - 2* var(--padding-size));
+    height: calc(165px - 2 * var(--padding-size));
     background-color: rgb(255, 255, 255);
     display: flex;
-    justify-content: space-around;
-    padding: var(--padding-size);
+    justify-content: space-evenly;
+    padding: var(--padding-size) calc(var(--padding-size) + 75px);
     position: relative;
     z-index: 100;
     top: 30px;
@@ -72,8 +72,9 @@ dialog:-internal-dialog-in-top-layer::backdrop {
 
 .select-kitchen-type {
     display: flex;
-    justify-content: center;
-    margin-top: 90px;
+    justify-content: space-evenly;
+    margin: 90px auto 0;
+    width: 1195px;
 }
 
 .select-kitchen-type__type-item {
@@ -90,13 +91,18 @@ dialog:-internal-dialog-in-top-layer::backdrop {
     margin: 0 5px;
     cursor: pointer;
     transition: 0.5s all;
-    outline: 0px solid #2579AD;
+    outline: 2px solid white;
     box-shadow: 5px 5px 10px 0 #00000040;
+}
+
+.select-kitchen-type__type-item:hover {
+    color: #2579AD;
+    outline: 2px solid #2579AD;
 }
 
 .select-kitchen-type__type-item.selected-type {
     color: #2579AD;
-    outline: 1px solid #2579AD;
+    outline: 2px solid #2579AD;
 }
 
 .kitchen-type-item__label {
@@ -223,7 +229,8 @@ dialog:-internal-dialog-in-top-layer::backdrop {
     max-width: 775px;
     max-height: 450px;
     border: none;
-    box-shadow: 0px 1px 20px 15px #3c6f99;
+    border-radius: 10px;
+    box-shadow: 5px 5px 10px 0 #00000040;
 }
 
 .modal-container__left-content {

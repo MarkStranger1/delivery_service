@@ -71,7 +71,7 @@ export const UserAccountPage = () => {
     const [tmpPass, setTmpPass] = useState<string>("");
     const [allDishes, setAllDishes] = useState<Array<Dish> | null>(null);
 
-    const [scores4Pay, setScores4Pay] = useState<number>(0);
+    const [scores4Pay, setScores4Pay] = useState<number | null>(null);
     const [payType, setPayType] = useState<"cash" | "sfp">("cash");
     const approvePayRef = useRef<HTMLDialogElement>(null);
 
@@ -81,6 +81,8 @@ export const UserAccountPage = () => {
         forBody?: OrderForWorker | { id: number, username: string, phone: string, email: string } | { id: number, username: string, phone: string, email: string, courierOrders: Array<any> }
     } | null>(null);
     const helpModalRef = useRef<HTMLDialogElement>(null);
+
+    const [isLogin, setIsLogin] = useState<boolean>(true);
 
     ///////////////////////////////////FOR COURIER STATE
 
@@ -426,6 +428,7 @@ export const UserAccountPage = () => {
                 && <>
                     <div className="main-content__edit-user-info">
                         <div className="edit-user-info__form-item">
+                            <label>Логин</label>
                             <input
                                 type="text"
                                 className="create-login-form__input input-login"
@@ -435,6 +438,7 @@ export const UserAccountPage = () => {
                             />
                         </div>
                         <div className="edit-user-info__form-item">
+                            <label>Почта</label>
                             <input
                                 type="email"
                                 className="edit-user-info__input input-email"
@@ -444,6 +448,7 @@ export const UserAccountPage = () => {
                             />
                         </div>
                         <div className="edit-user-info__form-item">
+                            <label>Телефон</label>
                             <input
                                 type="text"
                                 className="edit-user-info__input input-phone"
@@ -453,6 +458,7 @@ export const UserAccountPage = () => {
                             />
                         </div>
                         <div className="edit-user-info__form-item">
+                            <label>Старый</label>
                             <input
                                 type="text"
                                 className="edit-user-info__input input-password"
@@ -462,6 +468,7 @@ export const UserAccountPage = () => {
                             />
                         </div>
                         <div className="edit-user-info__form-item">
+                            <label>Новый пароль</label>
                             <input
                                 type="text"
                                 className="edit-user-info__input input-password"
@@ -471,6 +478,7 @@ export const UserAccountPage = () => {
                             />
                         </div>
                         <div className="edit-user-info__form-item">
+                            <label>Повтор нового пароля</label>
                             <input
                                 type="text"
                                 className="edit-user-info__input input-password"
@@ -544,6 +552,7 @@ export const UserAccountPage = () => {
                                             </p>
                                             <button
                                                 className="list-item__delete-button button-dark"
+                                                style={{ width: "200px" }}
                                                 onClick={() => {
                                                     showApproveModal({
                                                         text: `удалить адрес ${address.delivery_address}`,
@@ -578,6 +587,7 @@ export const UserAccountPage = () => {
                                 <p className="main-content__sub-title">Адреса пока не были добавлены, но никогда не поздно сделать первый заказ!</p>
                                 <button
                                     className="list-item__add-address-button button-dark"
+                                    style={{ width: "200px" }}
                                     onClick={() => {
                                         setModalData({
                                             title: "Добавление нового адреса доставки",
@@ -596,7 +606,7 @@ export const UserAccountPage = () => {
                 && userCart
                 && <dialog ref={approvePayRef} className="approvePayModal">
                     <h3>Оплата заказа</h3>
-                    <h5>Итоговая сумма к оплате: {userCart.total_cost - scores4Pay}руб.</h5>
+                    <h5>Итоговая сумма к оплате: {scores4Pay ? userCart.total_cost - scores4Pay : 0}руб.</h5>
                     <img src={QRCode} alt="" style={{ width: "325px", aspectRatio: "1" }} />
                     <div className="buttons-container">
                         <button
@@ -632,9 +642,11 @@ export const UserAccountPage = () => {
                                         }
                                     })
 
-                                    const userCopy = JSON.parse(JSON.stringify(user)) as User;
-                                    userCopy.scores += Math.round((userCart.total_cost - scores4Pay) / 10) - scores4Pay;
-                                    mainApi.editUserInfo(userCopy)
+                                    if (scores4Pay) {
+                                        const userCopy = JSON.parse(JSON.stringify(user)) as User;
+                                        userCopy.scores += Math.round((userCart.total_cost - scores4Pay) / 10) - scores4Pay;
+                                        mainApi.editUserInfo(userCopy)
+                                    }
 
                                     clientApi.updateUserCart(copy)
                                         .then(r => {
@@ -693,7 +705,7 @@ export const UserAccountPage = () => {
                             </div>
                         })}
 
-                        <div style={{ width: "90%", display: "flex", justifyContent: "space-between", margin: "20px auto 10px", fontSize: "20px" }}>
+                        <div style={{ display: "flex", justifyContent: "space-between", margin: "20px 50px 10px", fontSize: "20px" }}>
                             <p>Итого:</p>
                             <p>{userCart.total_cost}руб. за {userCart.count_dishes} блюд</p>
                         </div>
@@ -809,7 +821,8 @@ export const UserAccountPage = () => {
                         className="container__item"
                         min={1}
                         max={user?.scores < userCart?.total_cost ? user?.scores : userCart?.total_cost}
-                        value={scores4Pay}
+                        value={scores4Pay ?? ""}
+                        placeholder="Выберить количество баллов"
                         onChange={(e) => {
                             if (user) {
                                 let inputed = Number.parseInt(e.target.value);
@@ -818,7 +831,6 @@ export const UserAccountPage = () => {
                                 setScores4Pay(inputed);
                             }
                         }}
-                        placeholder={`Доступно ${user?.scores < userCart?.total_cost ? user?.scores : userCart?.total_cost} баллов`}
                     />}
 
                     <div style={{ display: "flex", justifyContent: "space-between", width: "90%", margin: "10px auto", height: "50px" }}>
@@ -872,9 +884,11 @@ export const UserAccountPage = () => {
                                     }
                                 })
 
-                                const userCopy = JSON.parse(JSON.stringify(user)) as User;
-                                userCopy.scores += Math.round((userCart.total_cost - scores4Pay) / 10) - scores4Pay;
-                                mainApi.editUserInfo(userCopy)
+                                if (scores4Pay) {
+                                    const userCopy = JSON.parse(JSON.stringify(user)) as User;
+                                    userCopy.scores += Math.round((userCart.total_cost - scores4Pay) / 10) - scores4Pay;
+                                    mainApi.editUserInfo(userCopy)
+                                }
 
                                 clientApi.updateUserCart(copy)
                                     .then(r => {
@@ -922,7 +936,7 @@ export const UserAccountPage = () => {
                                 </div>
                                 <p style={{
                                     fontSize: "20px",
-                                    margin: "10px auto 15px 30px"
+                                    margin: "10px auto 15px 50px"
                                 }}>Всего блюд - {cart.count_dishes}шт.</p>
                                 {cart.dishes.map(dish => {
                                     return <div className="dishes__dish-item--history">
@@ -938,7 +952,7 @@ export const UserAccountPage = () => {
                                     </div>
                                 })}
 
-                                <div style={{ width: "90%", display: "flex", justifyContent: "space-between", margin: "20px auto 10px", fontSize: "20px" }}>
+                                <div style={{ display: "flex", justifyContent: "space-between", margin: "20px 50px 10px", fontSize: "20px" }}>
                                     <p>Итого:</p>
                                     <p>{cart.total_cost}руб. за {cart.count_dishes} блюд</p>
                                 </div>
@@ -1008,7 +1022,7 @@ export const UserAccountPage = () => {
                                     </div>
                                     <p style={{
                                         fontSize: "20px",
-                                        margin: "10px auto 15px 30px"
+                                        margin: "10px auto 15px 50px"
                                     }}>Всего блюд - {cart.count_dishes}шт.</p>
                                     {cart.dishes.map(dish => {
                                         return <div className="dishes__dish-item--history">
@@ -1024,7 +1038,7 @@ export const UserAccountPage = () => {
                                         </div>
                                     })}
 
-                                    <div style={{ width: "90%", display: "flex", justifyContent: "space-between", margin: "20px auto 10px", fontSize: "20px" }}>
+                                    <div style={{ display: "flex", justifyContent: "space-between", margin: "20px 50px 10px", fontSize: "20px" }}>
                                         <p>Итого:</p>
                                         <p>{cart.total_cost}руб. за {cart.count_dishes} блюд</p>
                                     </div>
@@ -1280,11 +1294,11 @@ export const UserAccountPage = () => {
                     <div className="main-content__list-container" style={{ marginTop: 0 }}>
                         <div className="list-container__sort-panel" key={sortByStatus}>
                             <div className="sort-panel__item">
-                                <p>Ожидают курьера - {orders2Show.filter(o => o.status === "awaiting_courier").length}шт.</p>
+                                <p className="circle-before--light">Ожидают курьера - {orders2Show.filter(o => o.status === "awaiting_courier").length}шт.</p>
                             </div>
 
                             <div className="sort-panel__item">
-                                <p>Доставляются - {orders2Show.filter(o => o.status === "deliver").length}шт.</p>
+                                <p className="circle-before--dark">Доставляются - {orders2Show.filter(o => o.status === "deliver").length}шт.</p>
                             </div>
 
                             <div className="sort-panel__item">
@@ -1320,11 +1334,6 @@ export const UserAccountPage = () => {
                             </>
                         })}
                     </div>
-
-                    <div className="main-cintent__list-legend">
-                        <p className="list-legend__item">Ожидание курьера</p>
-                        <p className="list-legend__item--dark">Доставляются</p>
-                    </div>
                 </div>
             </>
         }
@@ -1337,11 +1346,11 @@ export const UserAccountPage = () => {
                     <div className="main-content__list-container" style={{ marginTop: 0 }}>
                         <div className="list-container__sort-panel" key={sortByStatus}>
                             <div className="sort-panel__item">
-                                <p>Доставлено - {orders2Show.filter(o => o.status === "delivered").length}шт.</p>
+                                <p className="circle-before--light">Доставлено - {orders2Show.filter(o => o.status === "delivered").length}шт.</p>
                             </div>
 
                             <div className="sort-panel__item">
-                                <p>Отменено - {orders2Show.filter(o => o.status === "cancelled").length}шт.</p>
+                                <p className="circle-before--dark">Отменено - {orders2Show.filter(o => o.status === "cancelled").length}шт.</p>
                             </div>
 
                             <div className="sort-panel__item">
@@ -1376,11 +1385,6 @@ export const UserAccountPage = () => {
                                 </div>
                             </>
                         })}
-                    </div>
-
-                    <div className="main-cintent__list-legend">
-                        <p className="list-legend__item">Доставлено</p>
-                        <p className="list-legend__item--dark">Отменено</p>
                     </div>
                 </div>
             </>
@@ -1448,40 +1452,42 @@ export const UserAccountPage = () => {
     return <>
         <div className="user-page">
 
-            <Header user={user} onLogout={() => {
+            {user && user.id !== -1 && <Header user={user} onLogout={() => {
                 setUser(null);
                 setUserLogin(defaultUser);
                 document.cookie = `sessionToken=`
-            }} />
+            }} />}
 
             {userLogin?.id !== -1 &&
                 <div className="user-page__nav-bar">
-                    {userLogin?.role === 'client'
-                        &&
-                        <>
-                            <button className={"nav-bar__nav-item" + (selectedPage === "updData" ? " selected" : "")} onClick={() => setSelectedPage('updData')}>Изменить личные данные</button>
-                            <button className={"nav-bar__nav-item" + (selectedPage === "currOrder" ? " selected" : "")} onClick={() => setSelectedPage('currOrder')}>Текущий заказ</button>
-                            <button className={"nav-bar__nav-item" + (selectedPage === "allActiveOrders" ? " selected" : "")} onClick={() => setSelectedPage('allActiveOrders')}>Активные заказы</button>
-                            <button className={"nav-bar__nav-item" + (selectedPage === "allOrders" ? " selected" : "")} onClick={() => setSelectedPage('allOrders')}>История заказов</button>
-                        </>
-                    }
-                    {userLogin?.role === 'courier'
-                        &&
-                        <>
-                            <button className={"nav-bar__nav-item" + (selectedPage === "updData" ? " selected" : "")} onClick={() => setSelectedPage('updData')}>Изменить личные данные</button>
-                            <button className={"nav-bar__nav-item" + (selectedPage === "currOrder" ? " selected" : "")} onClick={() => setSelectedPage('currOrder')}>Активный заказ</button>
-                            <button className={"nav-bar__nav-item" + (selectedPage === "allOrders" ? " selected" : "")} onClick={() => setSelectedPage('allOrders')}>Список доставленных заказов</button>
-                        </>
-                    }
-                    {userLogin?.role === 'manager'
-                        &&
-                        <>
-                            <button className={"nav-bar__nav-item" + (selectedPage === "updData" ? " selected" : "")} onClick={() => setSelectedPage('updData')}>Изменить личные данные</button>
-                            <button className={"nav-bar__nav-item" + (selectedPage === "allActiveOrders" ? " selected" : "")} onClick={() => setSelectedPage('allActiveOrders')}>Активные заказы</button>
-                            <button className={"nav-bar__nav-item" + (selectedPage === "allPrevOrders" ? " selected" : "")} onClick={() => setSelectedPage('allPrevOrders')}>Прошлые заказы</button>
-                            <button className={"nav-bar__nav-item" + (selectedPage === "allCouriers" ? " selected" : "")} onClick={() => setSelectedPage('allCouriers')}>Курьеры</button>
-                        </>
-                    }
+                    <div className="user-page__nav-bar__container">
+                        {userLogin?.role === 'client'
+                            &&
+                            <>
+                                <button className={"nav-bar__nav-item" + (selectedPage === "updData" ? " selected" : "")} onClick={() => setSelectedPage('updData')}>Изменить личные данные</button>
+                                <button className={"nav-bar__nav-item" + (selectedPage === "currOrder" ? " selected" : "")} onClick={() => setSelectedPage('currOrder')}>Текущий заказ</button>
+                                <button className={"nav-bar__nav-item" + (selectedPage === "allActiveOrders" ? " selected" : "")} onClick={() => setSelectedPage('allActiveOrders')}>Активные заказы</button>
+                                <button className={"nav-bar__nav-item" + (selectedPage === "allOrders" ? " selected" : "")} onClick={() => setSelectedPage('allOrders')}>История заказов</button>
+                            </>
+                        }
+                        {userLogin?.role === 'courier'
+                            &&
+                            <>
+                                <button className={"nav-bar__nav-item" + (selectedPage === "updData" ? " selected" : "")} onClick={() => setSelectedPage('updData')}>Изменить личные данные</button>
+                                <button className={"nav-bar__nav-item" + (selectedPage === "currOrder" ? " selected" : "")} onClick={() => setSelectedPage('currOrder')}>Активный заказ</button>
+                                <button className={"nav-bar__nav-item" + (selectedPage === "allOrders" ? " selected" : "")} onClick={() => setSelectedPage('allOrders')}>Список доставленных заказов</button>
+                            </>
+                        }
+                        {userLogin?.role === 'manager'
+                            &&
+                            <>
+                                <button className={"nav-bar__nav-item" + (selectedPage === "updData" ? " selected" : "")} onClick={() => setSelectedPage('updData')}>Изменить личные данные</button>
+                                <button className={"nav-bar__nav-item" + (selectedPage === "allActiveOrders" ? " selected" : "")} onClick={() => setSelectedPage('allActiveOrders')}>Активные заказы</button>
+                                <button className={"nav-bar__nav-item" + (selectedPage === "allPrevOrders" ? " selected" : "")} onClick={() => setSelectedPage('allPrevOrders')}>Прошлые заказы</button>
+                                <button className={"nav-bar__nav-item" + (selectedPage === "allCouriers" ? " selected" : "")} onClick={() => setSelectedPage('allCouriers')}>Курьеры</button>
+                            </>
+                        }
+                    </div>
                 </div>
             }
 
@@ -1492,131 +1498,134 @@ export const UserAccountPage = () => {
                     && userRegister
                     ? <>
                         <div className="main-content__forms-container">
-                            <div className="forms-container__create-login-form">
-                                <h4 className="create-login-form__form-title">
-                                    <img src={Logo} alt="logo" className="form-title__img" />
-                                    Заполните форму для регистрации
-                                </h4>
-                                <div className="create-login-form__form-item">
-                                    <input
-                                        type="text"
-                                        className="create-login-form__input input-login"
-                                        value={userRegister.username}
-                                        onChange={(e) => changeValue("username", e.target.value, 'register')}
-                                        placeholder="Логин"
-                                    />
+                            {isLogin
+                                ? <div className="forms-container__login-form">
+                                    <h4 className="create-login-form__form-title ">
+                                        <a href="/"><img src={Logo} alt="logo" className="form-title__img" /></a>
+                                        Заполните форму для авторизации
+                                    </h4>
+                                    <div className="login-form__form-item">
+                                        <input
+                                            type="email"
+                                            className="create-login-form__input input-email"
+                                            value={userLogin.email}
+                                            onChange={(e) => changeValue("email", e.target.value, 'login')}
+                                            placeholder="Почта"
+                                        />
+                                    </div>
+                                    <div className="login-form__form-item">
+                                        <input
+                                            type="password"
+                                            className="create-login-form__input input-passwd"
+                                            value={userLoginPass}
+                                            onChange={(e) => setUserLoginPass(e.target.value)}
+                                            placeholder="Пароль"
+                                        />
+                                    </div>
+                                    <button
+                                        className="login-form__button-submit button-dark"
+                                        disabled={!userLogin.email || !userLoginPass}
+                                        style={{ width: "450px", margin: "0 auto" }}
+                                        onClick={() => {
+                                            const mainApi = new MainApi();
+                                            mainApi.authUser(userLogin, userLoginPass)
+                                                .then(async (r) => {
+                                                    let res = await mainApi.getUserInfo();
+                                                    if (!res.detail) {
+                                                        setUserLogin(res as User);
+                                                        setUser(res as User);
+                                                        setUserLoginPass("");
+                                                        setSelectedPage('currOrder')
+                                                    }
+                                                })
+                                        }}>
+                                        Войти
+                                    </button>
+                                    <p style={{ cursor: "pointer", width: "fit-content", margin: "10px auto 0" }} onClick={() => setIsLogin(false)}>Нет аккаунта?</p>
                                 </div>
-                                <div className="create-login-form__form-item">
-                                    <input
-                                        type="email"
-                                        className="create-login-form__input input-email"
-                                        value={userRegister.email}
-                                        onChange={(e) => changeValue("email", e.target.value, 'register')}
-                                        placeholder="Почта"
-                                    />
-                                </div>
-                                <div className="create-login-form__form-item">
-                                    <input
-                                        type="text"
-                                        className="create-login-form__input input-phone"
-                                        value={userRegister.phone}
-                                        onChange={(e) => changeValue("phone", e.target.value, 'register')}
-                                        placeholder="Телефон"
-                                    />
-                                </div>
-                                <div className="create-login-form__form-item">
-                                    <input
-                                        type="password"
-                                        className="create-login-form__input input-passwd"
-                                        value={userRegisterPass}
-                                        onChange={(e) => setUserRegisterPass(e.target.value)}
-                                        placeholder="Пароль"
-                                    />
-                                </div>
-                                <div className="create-login-form__form-item">
-                                    <label style={{ color: "red", textShadow: "0 0 4px #ff00008f;" }}>{userRegisterPass !== "" && tmpPass !== "" && userRegisterPass !== tmpPass ? "Not eval" : ""}</label>
-                                    <input
-                                        type="password"
-                                        className="create-login-form__input input-passwd"
-                                        value={tmpPass}
-                                        onChange={(e) => setTmpPass(e.target.value)}
-                                        placeholder=" Повторите пароль"
-                                    />
-                                </div>
-                                <button
-                                    className="create-login-form__button-submit button-dark"
-                                    disabled={
-                                        !userRegister.email
-                                        || !userRegisterPass
-                                        || !validateForm(userRegister)
-                                        || !validateData(userRegisterPass, "password")
-                                    }
-                                    onClick={() => {
-                                        const mainApi = new MainApi();
-                                        mainApi.createUser(userRegister, userRegisterPass)
-                                            .then(async (r) => {
-                                                let res = await mainApi.getUserInfo();
-                                                if (!res.detail) {
-                                                    setUserLogin(res as User);
-                                                    setUser(res as User);
-                                                    setUserLoginPass("");
-                                                    setSelectedPage('currOrder')
-                                                    setUserRegister(defaultUser);
-                                                }
-                                            })
-                                    }}>
-                                    зарегистрироваться
-                                </button>
-                            </div>
-
-                            <div className="forms-container__login-form">
-                                <h4 className="create-login-form__form-title ">
-                                    <img src={Logo} alt="logo" className="form-title__img" />
-                                    Заполните форму для авторизации
-                                </h4>
-                                <div className="login-form__form-item">
-                                    <input
-                                        type="email"
-                                        className="create-login-form__input input-email"
-                                        value={userLogin.email}
-                                        onChange={(e) => changeValue("email", e.target.value, 'login')}
-                                        placeholder="Почта"
-                                    />
-                                </div>
-                                <div className="login-form__form-item">
-                                    <input
-                                        type="password"
-                                        className="create-login-form__input input-passwd"
-                                        value={userLoginPass}
-                                        onChange={(e) => setUserLoginPass(e.target.value)}
-                                        placeholder="Пароль"
-                                    />
-                                </div>
-                                <button
-                                    className="login-form__button-submit button-dark"
-                                    disabled={!userLogin.email || !userLoginPass}
-                                    onClick={() => {
-                                        const mainApi = new MainApi();
-                                        mainApi.authUser(userLogin, userLoginPass)
-                                            .then(async (r) => {
-                                                let res = await mainApi.getUserInfo();
-                                                if (!res.detail) {
-                                                    setUserLogin(res as User);
-                                                    setUser(res as User);
-                                                    setUserLoginPass("");
-                                                    setSelectedPage('currOrder')
-                                                }
-                                            })
-                                    }}>
-                                    Войти
-                                </button>
-                            </div>
+                                : <div className="forms-container__create-login-form">
+                                    <h4 className="create-login-form__form-title">
+                                        <a href="/"><img src={Logo} alt="logo" className="form-title__img" /></a>
+                                        Заполните форму для регистрации
+                                    </h4>
+                                    <div className="create-login-form__form-item">
+                                        <input
+                                            type="text"
+                                            className="create-login-form__input input-login"
+                                            value={userRegister.username}
+                                            onChange={(e) => changeValue("username", e.target.value, 'register')}
+                                            placeholder="Логин"
+                                        />
+                                    </div>
+                                    <div className="create-login-form__form-item">
+                                        <input
+                                            type="email"
+                                            className="create-login-form__input input-email"
+                                            value={userRegister.email}
+                                            onChange={(e) => changeValue("email", e.target.value, 'register')}
+                                            placeholder="Почта"
+                                        />
+                                    </div>
+                                    <div className="create-login-form__form-item">
+                                        <input
+                                            type="text"
+                                            className="create-login-form__input input-phone"
+                                            value={userRegister.phone}
+                                            onChange={(e) => changeValue("phone", e.target.value, 'register')}
+                                            placeholder="Телефон"
+                                        />
+                                    </div>
+                                    <div className="create-login-form__form-item">
+                                        <input
+                                            type="password"
+                                            className="create-login-form__input input-passwd"
+                                            value={userRegisterPass}
+                                            onChange={(e) => setUserRegisterPass(e.target.value)}
+                                            placeholder="Пароль"
+                                        />
+                                    </div>
+                                    <div className="create-login-form__form-item">
+                                        <input
+                                            type="password"
+                                            className="create-login-form__input input-passwd"
+                                            value={tmpPass}
+                                            onChange={(e) => setTmpPass(e.target.value)}
+                                            placeholder=" Повторите пароль"
+                                        />
+                                    </div>
+                                    <button
+                                        className="create-login-form__button-submit button-dark"
+                                        style={{ width: "450px", margin: "0 auto" }}
+                                        disabled={
+                                            !userRegister.email
+                                            || !userRegisterPass
+                                            || !validateForm(userRegister)
+                                            || !validateData(userRegisterPass, "password")
+                                        }
+                                        onClick={() => {
+                                            const mainApi = new MainApi();
+                                            mainApi.createUser(userRegister, userRegisterPass)
+                                                .then(async (r) => {
+                                                    let res = await mainApi.getUserInfo();
+                                                    if (!res.detail) {
+                                                        setUserLogin(res as User);
+                                                        setUser(res as User);
+                                                        setUserLoginPass("");
+                                                        setSelectedPage('currOrder')
+                                                        setUserRegister(defaultUser);
+                                                    }
+                                                })
+                                        }}>
+                                        Зарегистрироваться
+                                    </button>
+                                    <p style={{ cursor: "pointer", width: "fit-content", margin: "10px auto 0" }} onClick={() => setIsLogin(true)}>Уже есть аккаунт?</p>
+                                </div>}
                         </div>
                     </>
                     :
                     <>
-
                         <dialog ref={helpModalRef} className='approve-modal'>
+                            <button className="close-modal-button" onClick={() => setModalData(null)} />
                             {modalData
                                 && <>
                                     <p className="approve-modal__title">{modalData.title}</p>
@@ -1644,12 +1653,14 @@ export const UserAccountPage = () => {
                                                         }}
                                                     />
                                                 </div>
-                                                <div className="container__buttons-container">
+                                                <div className="container__buttons-container" style={{ width: "auto", margin: "0" }}>
                                                     <button
+                                                        style={{ width: "200px" }}
                                                         className="buttons-container__reject button-dark"
                                                         onClick={() => setModalData(null)}
                                                     >Назад</button>
                                                     <button
+                                                        style={{ width: "200px" }}
                                                         className="buttons-container__resolve button-dark"
                                                         onClick={() => {
                                                             if (newAddress && newAddress?.delivery_address !== "") {
@@ -1674,8 +1685,9 @@ export const UserAccountPage = () => {
                                         {modalData.body === "aboutScores"
                                             && <>
                                                 <p style={{ margin: "0" }}>Вы получаете баллы за каждую совершенную покупку в размере 10% от итоговой суммы заказа.<br /><br />1 балл равняется 1 рублю при оплате любого заказа.</p>
-                                                <div className="container__buttons-container" style={{ marginTop: "30px" }}>
+                                                <div className="container__buttons-container" style={{ margin: "30px auto 0" }}>
                                                     <button
+                                                        style={{ width: "200px" }}
                                                         className="buttons-container__resolve button-dark"
                                                         onClick={() => setModalData(null)}
                                                     >
@@ -1730,8 +1742,9 @@ export const UserAccountPage = () => {
                                                     <p className="value">{(modalData.forBody as OrderForWorker).comment}</p>
                                                 </>}
 
-                                                <div className="container__buttons-container" style={{ marginTop: "30px" }}>
+                                                <div className="container__buttons-container" style={{ margin: "30px auto 0" }}>
                                                     <button
+                                                        style={{ width: "200px" }}
                                                         className="buttons-container__resolve button-dark"
                                                         onClick={() => setModalData(null)}
                                                     >
@@ -1752,8 +1765,9 @@ export const UserAccountPage = () => {
                                                     <p className="value">{(modalData.forBody as any).email ?? ""}</p>
                                                 </>}
 
-                                                <div className="container__buttons-container" style={{ marginTop: "30px" }}>
+                                                <div className="container__buttons-container" style={{ margin: "30px auto 0" }}>
                                                     <button
+                                                        style={{ width: "420px" }}
                                                         className="buttons-container__resolve button-dark"
                                                         onClick={() => setModalData(null)}
                                                     >
@@ -1790,7 +1804,35 @@ export const UserAccountPage = () => {
 
                                                     <label>Курьер</label>
                                                     <div style={{ width: "100%", display: "flex", justifyContent: "space-evenly" }}>
-                                                        <p className="value">{(modalData.forBody as OrderForWorker).courier ? (modalData.forBody as OrderForWorker).courier.username : ""}</p>
+                                                        <select
+                                                            className="value"
+                                                            value={(modalData.forBody as OrderForWorker).courier ? `${(modalData.forBody as OrderForWorker).courier.id} - ${(modalData.forBody as OrderForWorker).courier.username}` : ""}
+                                                            onChange={(e) => {
+                                                                const courier = allCouriers?.find(c => c.id === Number(e.target.value.split(" - ")[0]));
+                                                                if (courier) {
+                                                                    const copy = JSON.parse(JSON.stringify(modalData.forBody)) as OrderForWorker;
+                                                                    copy.courier = courier;
+                                                                    setModalData({
+                                                                        title: modalData.title,
+                                                                        body: modalData.body,
+                                                                        forBody: copy
+                                                                    });
+                                                                    managerApi.editOrder(copy)
+                                                                        .then(r => {
+                                                                            managerApi.getAllOrders()
+                                                                                .then(res => {
+                                                                                    setAllOrders(res.sort(sortByDeliveryTimeFoo))
+
+                                                                                })
+                                                                        })
+                                                                }
+                                                            }}
+                                                        >
+                                                            {allCouriers?.map(courier => {
+                                                                return <option>{courier.id} - {courier.username}</option>
+                                                            })}
+                                                        </select>
+                                                        {/* <p className="value">{(modalData.forBody as OrderForWorker).courier ? (modalData.forBody as OrderForWorker).courier.username : ""}</p> */}
                                                         <button
                                                             style={{
                                                                 backgroundImage: `url(${InfoIcon})`,
@@ -1920,8 +1962,9 @@ export const UserAccountPage = () => {
                                                     />
                                                 </>}
 
-                                                <div className="container__buttons-container" style={{ marginTop: "30px" }}>
+                                                <div className="container__buttons-container" style={{ margin: "30px auto 0" }}>
                                                     <button
+                                                        style={{ width: "420px" }}
                                                         className="buttons-container__resolve button-dark"
                                                         onClick={() => {
                                                             modalData.forBody && managerApi.editOrder(modalData.forBody as OrderForWorker)
@@ -1973,8 +2016,9 @@ export const UserAccountPage = () => {
                                                         </> : <></>
                                                 }
 
-                                                <div className="container__buttons-container" style={{ marginTop: "30px" }}>
+                                                <div className="container__buttons-container" style={{ margin: "30px auto 0" }}>
                                                     <button
+                                                        style={{ width: "420px" }}
                                                         className="buttons-container__resolve button-dark"
                                                         onClick={() => setModalData(null)}
                                                     >
@@ -1993,7 +2037,7 @@ export const UserAccountPage = () => {
                     </>}
             </div>
 
-            <Footer needAbout={false} />
+            {user && user.id !== -1 && <Footer needAbout={false} />}
 
         </div >
     </>

@@ -16,11 +16,6 @@ export const DishImg = (props: { key: string, className: string, img: (() => str
     return <>
         <img
             key={props.key}
-            onLoad={(e) => {
-                if (typeof props.img === "string")
-                    e.currentTarget.src = props.img
-                else e.currentTarget.src = props.img()
-            }}
             src={curImage ?? NoPhoto}
             onError={handleError}
             alt="dish-img"

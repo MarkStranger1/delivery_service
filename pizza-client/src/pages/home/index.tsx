@@ -8,8 +8,6 @@ import { UserContainer } from "../../shared/Containers/UserContainer";
 import Cart from "../../components/Cart";
 import { Footer } from "../../components/Footer";
 import { DishImg } from "../../components/DishImg";
-import Carousel from "react-multi-carousel";
-import "react-multi-carousel/lib/styles.css";
 
 //@ts-ignore
 import FirstStock from "../../shared/assets/креветочное комбо.png"
@@ -174,7 +172,7 @@ export const HomePage = () => {
                     && productsType
                     ?
                     <>
-                        <div style={{
+                        {/* <div style={{
                             width: "fit-content",
                             margin: "0 auto",
                             paddingTop: "30px"
@@ -184,7 +182,7 @@ export const HomePage = () => {
                                 <img style={{ maxHeight: "250px" }} src={SecondStock} alt="stock-img" />
                                 <img style={{ maxHeight: "250px" }} src={ThirdStock} alt="stock-img" />
                             </Carousel>
-                        </div>
+                        </div> */}
 
                         {modalData && <>
                             <dialog className="modal-container" ref={dialogRef}>

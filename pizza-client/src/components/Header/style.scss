@@ -1,12 +1,18 @@
 .header {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
     position: relative;
     z-index: 1;
     background-color: #2579AD;
     min-height: 100px;
-    padding: 23px 10% 10px;
+
+    &__header-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        min-width: 1195px;
+        max-width: 1195px;
+        margin: 0 auto;
+    }
 
     &__logo {
         width: 165px;

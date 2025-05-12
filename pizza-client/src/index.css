@@ -14,13 +14,9 @@ code {
 
 
 ::-webkit-scrollbar {
-  width: 4px;
+  width: 0;
 }
 
-::-webkit-scrollbar-track {
-  background-color: #cad7e2;
-}
+::-webkit-scrollbar-track {}
 
-::-webkit-scrollbar-thumb {
-  background-color: #1d4260;
-}
+::-webkit-scrollbar-thumb {}
