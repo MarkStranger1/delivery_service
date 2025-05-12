@@ -99,10 +99,11 @@
     text-align: center;
     width: 100%;
     margin: 0;
+    font-size: 20px;
 }
 
 .result-container__total-cost {
-    font-size: 30px;
+    font-size: 20px;
     width: 100%;
     text-align: center;
 }
