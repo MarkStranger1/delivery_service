@@ -116,7 +116,7 @@ button:disabled {
 
 .close-modal-button {
   position: fixed;
-  right: 340px;
+  right: 32%;
   background-image: url("./shared/assets/closeIcon.svg");
   background-position: center;
   background-repeat: no-repeat;

@@ -187,7 +187,7 @@ export const HomePage = () => {
                         {modalData && <>
                             <dialog className="modal-container" ref={dialogRef}>
 
-                                <button className="close-modal-button" style={{ right: "220px" }} onClick={() => setModalData(null)} />
+                                <button className="close-modal-button" style={{ right: "25%" }} onClick={() => setModalData(null)} />
                                 <DishImg
                                     key={modalData.name}
                                     className="modal-container__left-content"
