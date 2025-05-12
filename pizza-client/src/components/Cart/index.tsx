@@ -123,7 +123,7 @@ const Cart = (props: {
                             <p className="result-container__total-cost">{props.userCart.total_cost} руб.</p>
                         </div>
                     </> : <>
-                        <div>
+                        <div style={{ display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", textAlign: "center", padding: "13px" }}>
                             <img src={CartIcon} alt="cartIcon" />
                             <p>Ваша корзина сейчас, к сожалению, пуста :(</p>
                         </div>

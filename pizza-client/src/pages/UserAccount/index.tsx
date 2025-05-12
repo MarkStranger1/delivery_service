@@ -493,10 +493,9 @@ export const UserAccountPage = () => {
                                 || userLoginPass.length === 0
                                 || userLoginPass !== tmpPass
                                 || !validateForm(editUser)
-                                || !validateData(userRegisterPass, "password")
                                 || !validateData(userLoginPass, "password")
                             }
-                            className="edit-user-info__button-submit button-dark"
+                            className="edit-user-info__button-submit button-dark hover-button"
                             onClick={() => {
                                 if (editUser) {
                                     const mainApi = new MainApi();
@@ -528,7 +527,7 @@ export const UserAccountPage = () => {
                             <p className="scores-container__title">У вас {user?.scores} баллов!</p>
                             <img src={TreasureIcon} alt="treasureIcon" />
                         </div>
-                        <button className="scores-container__check-about button-dark" onClick={() => setModalData({ title: "Бальная система", body: "aboutScores" })}>Подробнее</button>
+                        <button className="scores-container__check-about button-dark hover-button" onClick={() => setModalData({ title: "Бальная система", body: "aboutScores" })}>Подробнее</button>
                     </div>
 
                     <div className="main-content__addresses-list">
@@ -551,7 +550,7 @@ export const UserAccountPage = () => {
                                                 {address.delivery_address} {address.is_default ? 'по умолчанию' : ''}
                                             </p>
                                             <button
-                                                className="list-item__delete-button button-dark"
+                                                className="list-item__delete-button button-dark hover-button"
                                                 style={{ width: "200px" }}
                                                 onClick={() => {
                                                     showApproveModal({
@@ -573,7 +572,7 @@ export const UserAccountPage = () => {
                                     </>
                                 })}
                                 <button
-                                    className="list-item__add-address-button button-dark"
+                                    className="list-item__add-address-button button-dark hover-button"
                                     onClick={() => {
                                         setModalData({
                                             title: "Добавление нового адреса доставки",
@@ -586,7 +585,7 @@ export const UserAccountPage = () => {
                             <>
                                 <p className="main-content__sub-title">Адреса пока не были добавлены, но никогда не поздно сделать первый заказ!</p>
                                 <button
-                                    className="list-item__add-address-button button-dark"
+                                    className="list-item__add-address-button button-dark hover-button"
                                     style={{ width: "200px" }}
                                     onClick={() => {
                                         setModalData({
@@ -610,7 +609,7 @@ export const UserAccountPage = () => {
                     <img src={QRCode} alt="" style={{ width: "325px", aspectRatio: "1" }} />
                     <div className="buttons-container">
                         <button
-                            className="buttons-container__back button-dark"
+                            className="buttons-container__back button-dark hover-button"
                             style={{
                                 height: "50px",
                                 fontSize: "20px",
@@ -619,7 +618,7 @@ export const UserAccountPage = () => {
                             onClick={() => approvePayRef.current?.close()}
                         >Назад</button>
                         <button
-                            className="buttons-container__approve button-dark"
+                            className="buttons-container__approve button-dark hover-button"
                             style={{
                                 height: "50px",
                                 fontSize: "20px",
@@ -668,7 +667,7 @@ export const UserAccountPage = () => {
                         <div className="dishes__header">
                             <p>Всего блюд - {userCart.count_dishes}шт.</p>
                             <button
-                                className="button-dark"
+                                className="button-dark hover-button"
                                 onClick={() => {
                                     showApproveModal({
                                         text: "удалить все блюда из корзины",
@@ -836,7 +835,7 @@ export const UserAccountPage = () => {
                     <div style={{ display: "flex", justifyContent: "space-between", width: "90%", margin: "10px auto", height: "50px" }}>
                         <button
                             onClick={() => setPayType("cash")}
-                            className={payType === "cash" ? "selected-pay-type" : ""}
+                            className={payType === "cash" ? "selected-pay-type" : "not-select"}
                             style={{
                                 width: "49%",
                                 fontSize: "20px",
@@ -850,7 +849,7 @@ export const UserAccountPage = () => {
                         >Наличными курьеру</button>
                         <button
                             onClick={() => setPayType("sfp")}
-                            className={payType === "sfp" ? "selected-pay-type" : ""}
+                            className={payType === "sfp" ? "selected-pay-type" : "not-select"}
                             style={{
                                 width: "49%",
                                 fontSize: "20px",
@@ -864,7 +863,7 @@ export const UserAccountPage = () => {
                         >По СБП</button>
                     </div>
                     <button
-                        className="button-dark"
+                        className="button-dark hover-button"
                         style={{ width: "90%", margin: "10px auto", height: "50px", fontSize: "20px" }}
                         onClick={() => {
                             if (payType === "sfp") approvePayRef.current?.showModal()
@@ -960,7 +959,7 @@ export const UserAccountPage = () => {
 
                                 <div className="container__buttons-container">
                                     <button
-                                        className="buttons-container__button button-dark"
+                                        className="buttons-container__button button-dark hover-button"
                                         onClick={() => {
                                             clientApi.updateActiveCart(cart.id, 'delivered')
                                                 .then(r => {
@@ -977,7 +976,7 @@ export const UserAccountPage = () => {
                                         }}
                                     >Доставлен</button>
                                     <button
-                                        className="buttons-container__button button-dark"
+                                        className="buttons-container__button button-dark hover-button"
                                         onClick={() => {
                                             showApproveModal({
                                                 text: "отменить заказ",
@@ -1148,10 +1147,9 @@ export const UserAccountPage = () => {
                                 || userLoginPass.length === 0
                                 || userLoginPass !== tmpPass
                                 || !validateForm(editUser)
-                                || !validateData(userRegisterPass, "password")
                                 || !validateData(userLoginPass, "password")
                             }
-                            className="edit-user-info__button-submit button-dark"
+                            className="edit-user-info__button-submit button-dark hover-button"
                             onClick={() => {
                                 if (editUser) {
                                     const mainApi = new MainApi();
@@ -1310,10 +1308,9 @@ export const UserAccountPage = () => {
                         || userLoginPass.length === 0
                         || userLoginPass !== tmpPass
                         || !validateForm(editUser)
-                        || !validateData(userRegisterPass, "password")
                         || !validateData(userLoginPass, "password")
                     }
-                    className="edit-user-info__button-submit button-dark"
+                    className="edit-user-info__button-submit button-dark hover-button"
                     onClick={() => {
                         if (editUser) {
                             const mainApi = new MainApi();
@@ -1356,7 +1353,7 @@ export const UserAccountPage = () => {
                             </div>
 
                             <div className="sort-panel__item">
-                                <button className="sort-panel__button" onClick={() => {
+                                <button className="sort-panel__button hover-button" onClick={() => {
                                     if (sortByStatus === -1) setSortByStatus(0);
                                     else if (sortByStatus === 0) setSortByStatus(1);
                                     else if (sortByStatus === 1) setSortByStatus(-1);
@@ -1422,7 +1419,7 @@ export const UserAccountPage = () => {
                             </div>
 
                             <div className="sort-panel__item">
-                                <button className="sort-panel__button" onClick={() => {
+                                <button className="sort-panel__button hover-button" onClick={() => {
                                     if (sortByStatus === -1) setSortByStatus(0);
                                     else if (sortByStatus === 0) setSortByStatus(1);
                                     else if (sortByStatus === 1) setSortByStatus(-1);
@@ -1434,7 +1431,7 @@ export const UserAccountPage = () => {
                                 <div className={`cart-container__left-cart--courier${order.status === "cancelled" ? "--dark" : ""}`} style={{ gridTemplateColumns: "25% 35% 20% 20%" }}>
                                     <span
                                         style={{ cursor: "pointer" }}
-                                        onClick={() => setModalData({ title: `Информация о заказе №${order.id}`, body: "order4manager", forBody: order })}
+                                        onClick={() => setModalData({ title: `Информация о заказе №${order.id}`, body: "order4courier", forBody: order })}
                                     >Заказ №{order.id} к {convertDateTime(order.delivery_time, true)}</span>
                                     <span>{order.address ? order.address.address : ""}</span>
                                     <span
@@ -1486,7 +1483,7 @@ export const UserAccountPage = () => {
                         </div>
 
                         <div className="sort-panel__item">
-                            <button className="sort-panel__button" onClick={() => {
+                            <button className="sort-panel__button hover-button" onClick={() => {
                                 if (sortByCount === -1) setSortByCount(0);
                                 else if (sortByCount === 0) setSortByCount(1);
                                 else if (sortByCount === 1) setSortByCount(-1);
@@ -1605,7 +1602,7 @@ export const UserAccountPage = () => {
                                         />
                                     </div>
                                     <button
-                                        className="login-form__button-submit button-dark"
+                                        className="login-form__button-submit button-dark hover-button"
                                         disabled={!userLogin.email || !userLoginPass}
                                         style={{ width: "450px", margin: "0 auto" }}
                                         onClick={() => {
@@ -1676,7 +1673,7 @@ export const UserAccountPage = () => {
                                         />
                                     </div>
                                     <button
-                                        className="create-login-form__button-submit button-dark"
+                                        className="create-login-form__button-submit button-dark hover-button"
                                         style={{ width: "450px", margin: "0 auto" }}
                                         disabled={
                                             !userRegister.email
@@ -1738,12 +1735,12 @@ export const UserAccountPage = () => {
                                                 <div className="container__buttons-container" style={{ width: "auto", margin: "0" }}>
                                                     <button
                                                         style={{ width: "200px" }}
-                                                        className="buttons-container__reject button-dark"
+                                                        className="buttons-container__reject button-dark hover-button"
                                                         onClick={() => setModalData(null)}
                                                     >Назад</button>
                                                     <button
                                                         style={{ width: "200px" }}
-                                                        className="buttons-container__resolve button-dark"
+                                                        className="buttons-container__resolve button-dark hover-button"
                                                         onClick={() => {
                                                             if (newAddress && newAddress?.delivery_address !== "") {
                                                                 clientApi.addDeliveryAddresses(newAddress)
@@ -1770,7 +1767,7 @@ export const UserAccountPage = () => {
                                                 <div className="container__buttons-container" style={{ margin: "30px auto 0" }}>
                                                     <button
                                                         style={{ width: "200px" }}
-                                                        className="buttons-container__resolve button-dark"
+                                                        className="buttons-container__resolve button-dark hover-button"
                                                         onClick={() => setModalData(null)}
                                                     >
                                                         Отлично!
@@ -1793,6 +1790,7 @@ export const UserAccountPage = () => {
                                                     <div style={{ width: "100%", display: "flex", justifyContent: "space-evenly" }}>
                                                         <p className="value">{(modalData.forBody as OrderForWorker).user ? (modalData.forBody as OrderForWorker).user.username : ""}</p>
                                                         <button
+                                                            className="hover-button"
                                                             style={{
                                                                 backgroundImage: `url(${InfoIcon})`,
                                                                 backgroundSize: "contain",
@@ -1821,13 +1819,13 @@ export const UserAccountPage = () => {
                                                     </div>
 
                                                     <label>Комментарий</label>
-                                                    <p className="value">{(modalData.forBody as OrderForWorker).comment}</p>
+                                                    <p className="value" style={{ height: "fit-content", maxHeight: "100px", overflow: "auto" }}>{(modalData.forBody as OrderForWorker).comment ?? ""}</p>
                                                 </>}
 
                                                 <div className="container__buttons-container" style={{ margin: "30px auto 0" }}>
                                                     <button
                                                         style={{ width: "200px" }}
-                                                        className="buttons-container__resolve button-dark"
+                                                        className="buttons-container__resolve button-dark hover-button"
                                                         onClick={() => setModalData(null)}
                                                     >
                                                         Назад
@@ -1850,7 +1848,7 @@ export const UserAccountPage = () => {
                                                 <div className="container__buttons-container" style={{ margin: "30px auto 0" }}>
                                                     <button
                                                         style={{ width: "420px" }}
-                                                        className="buttons-container__resolve button-dark"
+                                                        className="buttons-container__resolve button-dark hover-button"
                                                         onClick={() => setModalData(null)}
                                                     >
                                                         Назад
@@ -1926,6 +1924,7 @@ export const UserAccountPage = () => {
                                                                 aspectRatio: 1,
                                                                 marginLeft: "15px",
                                                             }}
+                                                            className="hover-button"
                                                             onClick={() => (modalData.forBody as OrderForWorker).courier
                                                                 && setModalData({
                                                                     title: "Информация о курьере",
@@ -1942,6 +1941,7 @@ export const UserAccountPage = () => {
                                                     <div style={{ width: "100%", display: "flex", justifyContent: "space-evenly" }}>
                                                         <p className="value">{(modalData.forBody as OrderForWorker).user ? (modalData.forBody as OrderForWorker).user.username : ""}</p>
                                                         <button
+                                                            className="hover-button"
                                                             style={{
                                                                 backgroundImage: `url(${InfoIcon})`,
                                                                 backgroundSize: "contain",
@@ -2101,7 +2101,7 @@ export const UserAccountPage = () => {
                                                 <div className="container__buttons-container" style={{ margin: "30px auto 0" }}>
                                                     <button
                                                         style={{ width: "420px" }}
-                                                        className="buttons-container__resolve button-dark"
+                                                        className="buttons-container__resolve button-dark hover-button"
                                                         onClick={() => setModalData(null)}
                                                     >
                                                         Назад

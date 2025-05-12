@@ -54,6 +54,11 @@ dialog:-internal-dialog-in-top-layer::backdrop {
     transition: all .4s ease-in-out;
 }
 
+.select-product-type__type-item:hover {
+    border-radius: 14px;
+    box-shadow: inset 0px 0px 20px 20px #2579AD47;
+}
+
 .selected-prod-type {
     box-shadow: inset 0px 0px 20px 20px #2579AD47;
     border-radius: 14px;
@@ -214,10 +219,11 @@ dialog:-internal-dialog-in-top-layer::backdrop {
     max-width: 125px;
     height: 25px;
     border: none;
+    transition: all .4s ease-in-out;
 }
 
 .cart-interaction__add-to-cart-button:hover {
-    background-color: #96b3ca;
+    background-color: #13679C;
 }
 
 .modal-container {

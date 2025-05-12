@@ -46,3 +46,11 @@
     min-width: initial;
     aspect-ratio: 1;
 }
+
+.footer_logo {
+    transition: all .3s ease-in-out;
+}
+
+.footer_logo:hover {
+    filter: drop-shadow(0 0 1px #0000008f);
+}

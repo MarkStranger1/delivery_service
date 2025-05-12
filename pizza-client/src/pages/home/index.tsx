@@ -210,7 +210,7 @@ export const HomePage = () => {
                                         user && user.id !== -1 && user.role === "client" && <>
                                             <div className="right-content__bottom">
                                                 <p>{modalData.cost}руб.</p>
-                                                <button className="modal-container__button button-dark" onClick={() => addDishToCart(modalData)}>В корзину</button>
+                                                <button className="modal-container__button button-dark hover-button" onClick={() => addDishToCart(modalData)}>В корзину</button>
                                             </div>
                                         </>
                                     }

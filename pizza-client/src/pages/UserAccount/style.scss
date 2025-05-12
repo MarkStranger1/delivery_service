@@ -141,6 +141,11 @@
 .form-title__img {
     width: 182px;
     height: 56px;
+    transition: all .3s ease-in-out;
+}
+
+.form-title__img:hover {
+    filter: drop-shadow(0 0 1px #0000008f);
 }
 
 .create-login-form__form-item,
@@ -199,7 +204,7 @@
 button.list-item__add-address-button {
     padding: 0;
     max-width: 450px;
-    margin: 0 auto;
+    margin: 13px auto 0;
 }
 
 .addresses-list__list-item button {
@@ -747,7 +752,7 @@ dialog.approvePayModal:open {
 
 .scores-container__check-about {
     border: none;
-    width: 400px !important;
+    width: 450px !important;
     height: 50px;
     background-color: #2579AD;
     box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.25);
@@ -759,7 +764,7 @@ dialog.approvePayModal:open {
     text-align: left;
     padding-left: 10px;
     width: 100%;
-    height: 25px;
+    min-height: 25px;
     background: #B6DFF8;
     box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.25);
     border: none;
@@ -812,6 +817,16 @@ textarea.container__item {
 }
 
 .selected-pay-type {
+    outline: 2px solid #2579AD;
+    color: #2579AD !important;
+}
+
+.not-select {
+    outline: 2px solid white;
+    transition: all .3s ease-in-out;
+}
+
+.not-select:hover {
     outline: 2px solid #2579AD;
     color: #2579AD !important;
 }

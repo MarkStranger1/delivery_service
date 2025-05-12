@@ -21,9 +21,9 @@ export const Header = (props: { user: User | null, onLogout?: Function }) => {
                     <p className="header__userName">{props.user ? props.user.username : "Войдите в аккаунт"}</p>
                     {
                         props.user && props.user.id !== -1 && window.location.href.endsWith("/lk") ?
-                            <button onClick={() => props.onLogout && props.onLogout()} className="button_for_head button-light">Выйти</button>
+                            <button onClick={() => props.onLogout && props.onLogout()} className="button_for_head button-light hover-button">Выйти</button>
                             :
-                            <a href="/lk" className="button_for_head button-light">Личный кабинет</a>
+                            <a href="/lk" className="button_for_head button-light hover-button">Личный кабинет</a>
                     }
                 </div>
             </div>

@@ -12,6 +12,7 @@
     align-items: center;
     padding: 8px;
     z-index: 100;
+    box-shadow: 5px 5px 10px 0 #00000040;
 }
 
 .cart-container p {
