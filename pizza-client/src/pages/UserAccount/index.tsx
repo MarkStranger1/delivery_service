@@ -921,8 +921,6 @@ export const UserAccountPage = () => {
                 </div>
             </>
             }
-
-
         </>
         if (selectedPage === "allActiveOrders") return <>
             {activeUserCarts
@@ -1006,7 +1004,21 @@ export const UserAccountPage = () => {
                         </div >
                     </>
                 })
-                : <></>}
+                : <>
+                    <div
+                        className="main-content__user-cart"
+                        style={{
+                            backgroundColor: "white",
+                            width: "fit-content",
+                            margin: "0 auto",
+                            padding: "30px",
+                            fontSize: "24px",
+                            borderRadius: "10px"
+                        }}
+                    >
+                        <p>Заказов ещё не было, но никогда не поздно начать!</p>
+                    </div>
+                </>}
         </>
         if (selectedPage === 'allOrders') return <>
             {userOrdersHistory
@@ -1051,7 +1063,19 @@ export const UserAccountPage = () => {
                 </>
                 :
                 <>
-                    <h2 className="main-content__sub-title">Заказов ещё не было, но никогда не поздно начать!</h2>
+                    <div
+                        className="main-content__user-cart"
+                        style={{
+                            backgroundColor: "white",
+                            width: "fit-content",
+                            margin: "0 auto",
+                            padding: "30px",
+                            fontSize: "24px",
+                            borderRadius: "10px"
+                        }}
+                    >
+                        <p>Заказов ещё не было, но никогда не поздно начать!</p>
+                    </div>
                 </>
             }
         </>
@@ -1169,7 +1193,21 @@ export const UserAccountPage = () => {
                         >{order.user ? order.user.username : ""}</span>
                         <span>Всего блюд: {order.count_dishes}шт.</span>
                     </div>
-                }) : <></>}
+                }) : <>
+                    <div
+                        className="main-content__user-cart"
+                        style={{
+                            backgroundColor: "white",
+                            width: "fit-content",
+                            margin: "0 auto",
+                            padding: "30px",
+                            fontSize: "24px",
+                            borderRadius: "10px"
+                        }}
+                    >
+                        <p>Вот-вот поступит новый заказ!</p>
+                    </div>
+                </>}
             </div>
         </>
         if (selectedPage === 'allOrders') return <>
@@ -1188,7 +1226,21 @@ export const UserAccountPage = () => {
                         >{order.user ? order.user.username : ""}</span>
                         <span>Всего блюд: {order.count_dishes}шт.</span>
                     </div>
-                }) : <></>}
+                }) : <>
+                    <div
+                        className="main-content__user-cart"
+                        style={{
+                            backgroundColor: "white",
+                            width: "fit-content",
+                            margin: "0 auto",
+                            padding: "30px",
+                            fontSize: "24px",
+                            borderRadius: "10px"
+                        }}
+                    >
+                        <p>История пока пуста, но всё только впереди!</p>
+                    </div>
+                </>}
             </div>
         </>
     }
@@ -1309,7 +1361,7 @@ export const UserAccountPage = () => {
                                 }}>{sortByStatus === -1 ? "↓" : (sortByStatus === 1 ? "↑" : '↑↓')}</button>
                             </div>
                         </div>
-                        {orders2Show.filter(o => o.status === "awaiting_courier" || o.status === "deliver").map(order => {
+                        {orders2Show && orders2Show.length > 0 ? orders2Show.filter(o => o.status === "awaiting_courier" || o.status === "deliver").map(order => {
                             return <>
                                 <div className={`cart-container__left-cart--courier${order.status === "deliver" ? "--dark" : ""}`} style={{ gridTemplateColumns: "25% 35% 20% 20%" }}>
                                     <span
@@ -1332,7 +1384,21 @@ export const UserAccountPage = () => {
                                     >Курьер: {order.courier ? order.courier.username : ""}</span>
                                 </div>
                             </>
-                        })}
+                        }) : <>
+                            <div
+                                className="main-content__user-cart"
+                                style={{
+                                    backgroundColor: "white",
+                                    width: "fit-content",
+                                    margin: "0 auto",
+                                    padding: "30px",
+                                    fontSize: "24px",
+                                    borderRadius: "10px"
+                                }}
+                            >
+                                <p>Вот-вот поступит новый заказ!</p>
+                            </div>
+                        </>}
                     </div>
                 </div>
             </>
@@ -1361,7 +1427,7 @@ export const UserAccountPage = () => {
                                 }}>{sortByStatus === -1 ? "↓" : (sortByStatus === 1 ? "↑" : '↑↓')}</button>
                             </div>
                         </div>
-                        {orders2Show.filter(o => o.status === "delivered" || o.status === "cancelled").map(order => {
+                        {orders2Show && orders2Show.length > 0 ? orders2Show.filter(o => o.status === "delivered" || o.status === "cancelled").map(order => {
                             return <>
                                 <div className={`cart-container__left-cart--courier${order.status === "cancelled" ? "--dark" : ""}`} style={{ gridTemplateColumns: "25% 35% 20% 20%" }}>
                                     <span
@@ -1384,7 +1450,21 @@ export const UserAccountPage = () => {
                                     >Курьер: {order.courier ? order.courier.username : ""}</span>
                                 </div>
                             </>
-                        })}
+                        }) : <>
+                            <div
+                                className="main-content__user-cart"
+                                style={{
+                                    backgroundColor: "white",
+                                    width: "fit-content",
+                                    margin: "0 auto",
+                                    padding: "30px",
+                                    fontSize: "24px",
+                                    borderRadius: "10px"
+                                }}
+                            >
+                                <p>История пока пуста!</p>
+                            </div>
+                        </>}
                     </div>
                 </div>
             </>
