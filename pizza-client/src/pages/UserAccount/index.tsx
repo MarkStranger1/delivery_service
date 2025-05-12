@@ -924,6 +924,7 @@ export const UserAccountPage = () => {
         </>
         if (selectedPage === "allActiveOrders") return <>
             {activeUserCarts
+                && activeUserCarts.length > 0
                 ? activeUserCarts.map(cart => {
                     return <>
                         <div className="main-content__user-cart">
@@ -1022,6 +1023,7 @@ export const UserAccountPage = () => {
         </>
         if (selectedPage === 'allOrders') return <>
             {userOrdersHistory
+                && userOrdersHistory.length > 0
                 ?
                 <>
                     {userOrdersHistory.map(cart => {

@@ -6,6 +6,9 @@ import { ClientApi } from "../../shared/OpenAPI/Api";
 //@ts-ignore
 import RemoveButton from "../../shared/icons/removeButton.svg"
 
+//@ts-ignore
+import CartIcon from "../../shared/assets/cartIcon.svg"
+
 import "./style.css"
 
 const Cart = (props: {
@@ -92,29 +95,40 @@ const Cart = (props: {
     return <>
         <div className="cart-container">
             <p className="cart-container__title">Корзина</p>
-            <div className="cart-container__dishes-list">
-                {props.userCart && props.userCart.dishes.map(dish => {
-                    return <>
-                        <div className="dish-list__list-item">
-                            <p className="list-item__text" style={{ gridArea: "name" }}>{dish.dish}</p>
-                            <div className="count-container" style={{ gridArea: "count" }}>
-                                <button className="list-item__add-button" onClick={() => { addDishHandler(dish.dish) }}>+</button>
-                                <p>{dish.quantity}</p>
-                                <button className="list-item__delete-button" onClick={() => { removeDishHandler(dish.dish) }}>-</button>
-                            </div>
-                            <button
-                                className="list-item__remove-button"
-                                style={{ gridArea: "delete", backgroundImage: `url(${RemoveButton})` }}
-                                onClick={() => { removeDishHandler(dish.dish, true) }} />
-                            <p style={{ gridArea: "price" }}>{getDishTotalCostById(dish.id, dish.quantity)} руб.</p>
+            {
+                props.userCart
+                    && props.userCart.dishes.length > 0
+                    ? <>
+                        <div className="cart-container__dishes-list">
+                            {props.userCart && props.userCart.dishes.map(dish => {
+                                return <>
+                                    <div className="dish-list__list-item">
+                                        <p className="list-item__text" style={{ gridArea: "name" }}>{dish.dish}</p>
+                                        <div className="count-container" style={{ gridArea: "count" }}>
+                                            <button className="list-item__add-button" onClick={() => { addDishHandler(dish.dish) }}>+</button>
+                                            <p>{dish.quantity}</p>
+                                            <button className="list-item__delete-button" onClick={() => { removeDishHandler(dish.dish) }}>-</button>
+                                        </div>
+                                        <button
+                                            className="list-item__remove-button"
+                                            style={{ gridArea: "delete", backgroundImage: `url(${RemoveButton})` }}
+                                            onClick={() => { removeDishHandler(dish.dish, true) }} />
+                                        <p style={{ gridArea: "price" }}>{getDishTotalCostById(dish.id, dish.quantity)} руб.</p>
+                                    </div>
+                                </>
+                            })}
+                        </div>
+                        <div className="cart-container__result-container">
+                            <h4 className="result-container__title">Итого</h4>
+                            <p className="result-container__total-cost">{props.userCart.total_cost} руб.</p>
+                        </div>
+                    </> : <>
+                        <div>
+                            <img src={CartIcon} alt="cartIcon" />
+                            <p>Ваша корзина сейчас, к сожалению, пуста :(</p>
                         </div>
                     </>
-                })}
-            </div>
-            <div className="cart-container__result-container">
-                <h4 className="result-container__title">Итого</h4>
-                <p className="result-container__total-cost">{props.userCart.total_cost} руб.</p>
-            </div>
+            }
         </div>
     </>
 }
