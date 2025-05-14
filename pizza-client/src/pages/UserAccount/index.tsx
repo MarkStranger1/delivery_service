@@ -489,18 +489,22 @@ export const UserAccountPage = () => {
                         </div>
                         <button
                             disabled={
-                                userRegisterPass.length === 0
-                                || userLoginPass.length === 0
-                                || userLoginPass !== tmpPass
+                                (
+                                    userRegisterPass.length !== 0
+                                    && userLoginPass.length !== 0
+                                    && tmpPass.length !== 0
+                                    && userLoginPass !== tmpPass
+                                    && !validateData(userLoginPass, "password")
+                                )
                                 || !validateForm(editUser)
-                                || !validateData(userLoginPass, "password")
                             }
                             className="edit-user-info__button-submit button-dark hover-button"
                             onClick={() => {
                                 if (editUser) {
                                     const mainApi = new MainApi();
                                     const copy = JSON.parse(JSON.stringify(editUser))
-                                    Object.assign(copy, { "old_password": userRegisterPass, "new_password": userLoginPass });
+                                    if (userRegisterPass.length !== 0 && userLoginPass.length !== 0)
+                                        Object.assign(copy, { "old_password": userRegisterPass, "new_password": userLoginPass });
                                     setTmpPass("");
                                     setUserLoginPass("");
                                     setUserRegisterPass("");
@@ -1143,18 +1147,22 @@ export const UserAccountPage = () => {
                         </div>
                         <button
                             disabled={
-                                userRegisterPass.length === 0
-                                || userLoginPass.length === 0
-                                || userLoginPass !== tmpPass
+                                (
+                                    userRegisterPass.length !== 0
+                                    && userLoginPass.length !== 0
+                                    && tmpPass.length !== 0
+                                    && userLoginPass !== tmpPass
+                                    && !validateData(userLoginPass, "password")
+                                )
                                 || !validateForm(editUser)
-                                || !validateData(userLoginPass, "password")
                             }
                             className="edit-user-info__button-submit button-dark hover-button"
                             onClick={() => {
                                 if (editUser) {
                                     const mainApi = new MainApi();
                                     const copy = JSON.parse(JSON.stringify(editUser))
-                                    Object.assign(copy, { "old_password": userRegisterPass, "new_password": userLoginPass });
+                                    if (userRegisterPass.length !== 0 && userLoginPass.length !== 0)
+                                        Object.assign(copy, { "old_password": userRegisterPass, "new_password": userLoginPass });
                                     setTmpPass("");
                                     setUserLoginPass("");
                                     setUserRegisterPass("");
@@ -1304,18 +1312,22 @@ export const UserAccountPage = () => {
                 </div>
                 <button
                     disabled={
-                        userRegisterPass.length === 0
-                        || userLoginPass.length === 0
-                        || userLoginPass !== tmpPass
+                        (
+                            userRegisterPass.length !== 0
+                            && userLoginPass.length !== 0
+                            && tmpPass.length !== 0
+                            && userLoginPass !== tmpPass
+                            && !validateData(userLoginPass, "password")
+                        )
                         || !validateForm(editUser)
-                        || !validateData(userLoginPass, "password")
                     }
                     className="edit-user-info__button-submit button-dark hover-button"
                     onClick={() => {
                         if (editUser) {
                             const mainApi = new MainApi();
                             const copy = JSON.parse(JSON.stringify(editUser))
-                            Object.assign(copy, { "old_password": userRegisterPass, "new_password": userLoginPass });
+                            if (userRegisterPass.length !== 0 && userLoginPass.length !== 0)
+                                Object.assign(copy, { "old_password": userRegisterPass, "new_password": userLoginPass });
                             setTmpPass("");
                             setUserLoginPass("");
                             setUserRegisterPass("");
