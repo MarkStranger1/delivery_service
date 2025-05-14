@@ -18,6 +18,7 @@ dialog:-internal-dialog-in-top-layer::backdrop {
     width: 100%;
     background-color: #B6DFF8;
     padding-bottom: 30px;
+    overflow: auto;
 }
 
 .main-content:has(div.spinner-border) {

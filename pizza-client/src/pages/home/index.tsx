@@ -9,6 +9,9 @@ import Cart from "../../components/Cart";
 import { Footer } from "../../components/Footer";
 import { DishImg } from "../../components/DishImg";
 
+
+import AliceCarousel from 'react-alice-carousel';
+
 //@ts-ignore
 import FirstStock from "../../shared/assets/креветочное комбо.png"
 //@ts-ignore
@@ -39,23 +42,11 @@ export const HomePage = () => {
 
     const { user } = useContext(UserContainer);
 
-    const responsive = {
-        desktop: {
-            breakpoint: { max: 3000, min: 1024 },
-            items: 3,
-            slidesToSlide: 3 // optional, default to 1.
-        },
-        tablet: {
-            breakpoint: { max: 1024, min: 464 },
-            items: 2,
-            slidesToSlide: 2 // optional, default to 1.
-        },
-        mobile: {
-            breakpoint: { max: 464, min: 0 },
-            items: 1,
-            slidesToSlide: 1 // optional, default to 1.
-        }
-    };
+    const carouselItems = [
+        <img style={{ maxHeight: "250px" }} src={FirstStock} alt="stock-img" />,
+        <img style={{ maxHeight: "250px" }} src={SecondStock} alt="stock-img" />,
+        <img style={{ maxHeight: "250px" }} src={ThirdStock} alt="stock-img" />,
+    ];
 
     const applyFilter = (data: Array<Dish>) => {
         enum cuisineConvert {
@@ -172,17 +163,25 @@ export const HomePage = () => {
                     && productsType
                     ?
                     <>
-                        {/* <div style={{
+                        <div style={{
                             width: "fit-content",
                             margin: "0 auto",
                             paddingTop: "30px"
                         }}>
-                            <Carousel centerMode={true} responsive={responsive}>
-                                <img style={{ maxHeight: "250px" }} src={FirstStock} alt="stock-img" />
-                                <img style={{ maxHeight: "250px" }} src={SecondStock} alt="stock-img" />
-                                <img style={{ maxHeight: "250px" }} src={ThirdStock} alt="stock-img" />
-                            </Carousel>
-                        </div> */}
+                            <AliceCarousel
+                                autoHeight={true}
+                                autoWidth={true}
+                                autoPlay={true}
+                                animationDuration={1800}
+                                mouseTracking={false}
+                                controlsStrategy="responsive"
+                                disableButtonsControls={false}
+                                disableDotsControls={false}
+                                infinite={true}
+                                items={carouselItems}
+                                responsive={{ 0: { items: 3 } }}
+                            />
+                        </div>
 
                         {modalData && <>
                             <dialog className="modal-container" ref={dialogRef}>

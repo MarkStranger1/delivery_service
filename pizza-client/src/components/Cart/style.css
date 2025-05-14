@@ -1,5 +1,6 @@
 .cart-container {
     position: fixed;
+    top: 40%;
     right: 20px;
     min-width: 225px;
     width: fit-content;

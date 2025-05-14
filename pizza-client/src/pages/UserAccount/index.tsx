@@ -1061,6 +1061,45 @@ export const UserAccountPage = () => {
                                     </div>
 
                                     <p className="user-cart__address">{cart.address ? cart.address : "! Адрес не указан !"}</p>
+
+                                    <div className="container__buttons-container">
+                                        <button
+                                            className="buttons-container__button button-dark hover-button"
+                                            onClick={() => {
+                                                if (userCart) {
+                                                    const copy = JSON.parse(JSON.stringify(userCart));
+
+                                                    Object.assign(copy, { dishes_ordered: cart.dishes });
+                                                    delete copy.dishes;
+
+                                                    if (!copy.address) {
+                                                        const defaultAddress = userAddresses?.find((address: DeliveryAddress) => address.is_default) as DeliveryAddress;
+                                                        copy.address = defaultAddress.id ?? "";
+                                                    }
+                                                    else {
+                                                        const address = userAddresses?.find((add: DeliveryAddress) => add.delivery_address === copy.address) as DeliveryAddress;
+                                                        copy.address = address.id
+                                                    }
+
+                                                    copy.dishes_ordered.forEach((d: any) => {
+                                                        if (typeof d.dish === "string" && d.id) {
+                                                            d.dish = d.id
+                                                            delete d.id;
+                                                        }
+                                                    })
+
+                                                    clientApi.updateUserCart(copy)
+                                                        .then(r => {
+                                                            clientApi.getUserCart()
+                                                                .then(res => {
+                                                                    setUserCart(res[0]);
+                                                                    setSelectedPage("currOrder");
+                                                                })
+                                                        })
+                                                }
+                                            }}
+                                        >Повторить</button>
+                                    </div>
                                 </div>
                             </div >
                         </>
