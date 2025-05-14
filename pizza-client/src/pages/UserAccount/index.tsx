@@ -627,7 +627,7 @@ export const UserAccountPage = () => {
                             onClick={() => {
                                 if (userCart) {
                                     const copy = JSON.parse(JSON.stringify(userCart));
-                                    copy.status = "deliver";
+                                    copy.status = "awaiting_courier";
 
                                     const address = userAddresses?.find((add: DeliveryAddress) => add.delivery_address === copy.address) as DeliveryAddress;
                                     copy.address = address.id
