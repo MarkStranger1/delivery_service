@@ -164,18 +164,18 @@ export const HomePage = () => {
                     ?
                     <>
                         <div style={{
-                            width: "fit-content",
+                            width: "100%",
                             margin: "0 auto",
                             paddingTop: "30px"
                         }}>
                             <AliceCarousel
                                 autoHeight={true}
                                 autoWidth={true}
-                                autoPlay={true}
+                                autoPlay={false}
                                 animationDuration={1800}
                                 mouseTracking={false}
                                 controlsStrategy="responsive"
-                                disableButtonsControls={false}
+                                disableButtonsControls={true}
                                 disableDotsControls={false}
                                 infinite={true}
                                 items={carouselItems}

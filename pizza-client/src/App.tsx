@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Routes, Route } from 'react-router-dom';
-import { HomePage } from './pages/home';
+import { HomePage } from './pages/Home';
 import { UserAccountPage } from './pages/UserAccount';
 import { NotFoundPage } from './pages/NotFound/Index';
 import { UserContainer } from './shared/Containers/UserContainer';

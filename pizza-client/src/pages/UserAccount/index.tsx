@@ -286,7 +286,11 @@ export const UserAccountPage = () => {
             .then((r) => {
                 if (!r.detail) {
                     setUserLogin(r);
-                    selectedPage === 'login' && setSelectedPage('updData');
+                    if (selectedPage === 'login') {
+                        if (r.role === "client") setSelectedPage('currOrder');
+                        if (r.role === "courier") setSelectedPage('currOrder');
+                        if (r.role === "manager") setSelectedPage('allActiveOrders');
+                    }
                 }
             })
 
