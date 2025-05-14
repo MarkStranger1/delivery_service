@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Routes, Route } from 'react-router-dom';
-import { HomePage } from './pages/Home';
+import { HomePage } from './pages/home';
 import { UserAccountPage } from './pages/UserAccount';
 import { NotFoundPage } from './pages/NotFound/Index';
 import { UserContainer } from './shared/Containers/UserContainer';
@@ -19,7 +19,6 @@ const App = () => {
 
   const [modalData, setModalData] = useState<ApproveModalType | null>(null);
   const approveModalRef = useRef<HTMLDialogElement>(null);
-
   useEffect(() => {
     const mainApi = new MainApi();
     mainApi.getUserInfo()
