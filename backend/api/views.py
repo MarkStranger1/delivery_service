@@ -233,7 +233,8 @@ class OrderViewSet(viewsets.ModelViewSet):
         allowed_statuses = [
             Order.Status.awaiting_courier,
             Order.Status.deliver,
-            Order.Status.delivered
+            Order.Status.delivered,
+            Order.Status.cancelled
         ]
         return Order.objects.filter(status__in=allowed_statuses)
 

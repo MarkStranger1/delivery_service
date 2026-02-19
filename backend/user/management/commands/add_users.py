@@ -27,7 +27,7 @@ class Command(BaseCommand):
                         'password': 'defaultpassword'  # Просто заглушка
                     }
                 )
-                user[0].set_password("defaultpassword")  # Вызываем set_password на объекте user
-                user[0].save()
+                user.set_password("defaultpassword")  # Вызываем set_password на объекте user
+                user.save()
 
         self.stdout.write(self.style.SUCCESS('Пользователи загружены успешно!'))
