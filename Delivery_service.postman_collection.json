@@ -1,0 +1,1092 @@
+{
+	"info": {
+		"_postman_id": "c7715386-61e8-4d1d-a421-7b483f377575",
+		"name": "Delivery_service",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "35671454"
+	},
+	"item": [
+		{
+			"name": "Клиент",
+			"item": [
+				{
+					"name": "Dish, Ingredient and Types",
+					"item": [
+						{
+							"name": "Получение списка ингредиентов",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://127.0.0.1/api/ingredients/",
+									"protocol": "http",
+									"host": [
+										"127",
+										"0",
+										"0",
+										"1"
+									],
+									"path": [
+										"api",
+										"ingredients",
+										""
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Получение списка типов",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://127.0.0.1/api/types/",
+									"protocol": "http",
+									"host": [
+										"127",
+										"0",
+										"0",
+										"1"
+									],
+									"path": [
+										"api",
+										"types",
+										""
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Получение всех блюд",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Token 79592b2d1b65bc0323bd9f2a5d4f3c36855b979b",
+										"type": "text",
+										"disabled": true
+									}
+								],
+								"url": {
+									"raw": "http://127.0.0.1/api/dishes/",
+									"protocol": "http",
+									"host": [
+										"127",
+										"0",
+										"0",
+										"1"
+									],
+									"path": [
+										"api",
+										"dishes",
+										""
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Получение определенного блюда по ID",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://127.0.0.1/api/dishes/17",
+									"protocol": "http",
+									"host": [
+										"127",
+										"0",
+										"0",
+										"1"
+									],
+									"path": [
+										"api",
+										"dishes",
+										"17"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Cart",
+					"item": [
+						{
+							"name": "Получение корзины пользователя по токену",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Token 805d633bd8632ac4f23c97572e65dcfe45f64d82",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "http://127.0.0.1/api/orders/cart",
+									"protocol": "http",
+									"host": [
+										"127",
+										"0",
+										"0",
+										"1"
+									],
+									"path": [
+										"api",
+										"orders",
+										"cart"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Изменение корзины пользователя по токену",
+							"request": {
+								"method": "PATCH",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Token 805d633bd8632ac4f23c97572e65dcfe45f64d82",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"status\": \"awaiting_payment\",\r\n    \"comment\": \"Побыстрее, пожалуйста!\",\r\n    \"delivery_time\": \"2024-05-15T18:30:00\",\r\n    \"address\": 18,\r\n    \"dishes_ordered\": [\r\n        {\r\n            \"dish\": 6,\r\n            \"quantity\": 3\r\n        },\r\n        {\r\n            \"dish\": 16,\r\n            \"quantity\": 3\r\n        }\r\n    ]\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://127.0.0.1/api/orders/cart/13/",
+									"protocol": "http",
+									"host": [
+										"127",
+										"0",
+										"0",
+										"1"
+									],
+									"path": [
+										"api",
+										"orders",
+										"cart",
+										"13",
+										""
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Добавление корзины пользователя по токену",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Token 805d633bd8632ac4f23c97572e65dcfe45f64d82",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"dishes_ordered\": [\r\n        {\r\n            \"dish\": 40,\r\n            \"quantity\": 10\r\n        }\r\n    ]\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://127.0.0.1/api/orders/cart/",
+									"protocol": "http",
+									"host": [
+										"127",
+										"0",
+										"0",
+										"1"
+									],
+									"path": [
+										"api",
+										"orders",
+										"cart",
+										""
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "History",
+					"item": [
+						{
+							"name": "Получение истории заказов пользователя по токену",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Token b3fc29c567e35039ad34cd9de53f42b3695ec663",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://127.0.0.1/api/orders/history",
+									"protocol": "http",
+									"host": [
+										"127",
+										"0",
+										"0",
+										"1"
+									],
+									"path": [
+										"api",
+										"orders",
+										"history"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Active",
+					"item": [
+						{
+							"name": "Получение активных заказов по токену пользователя",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Token 4df8099e24887a208ea621fab8f2768e4fb88deb",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "http://127.0.0.1/api/orders/active",
+									"protocol": "http",
+									"host": [
+										"127",
+										"0",
+										"0",
+										"1"
+									],
+									"path": [
+										"api",
+										"orders",
+										"active"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Изменение активного заказа по токену пользователя",
+							"request": {
+								"method": "PATCH",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Token 4df8099e24887a208ea621fab8f2768e4fb88deb",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"status\": \"cancelled\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://127.0.0.1/api/orders/active/14/",
+									"protocol": "http",
+									"host": [
+										"127",
+										"0",
+										"0",
+										"1"
+									],
+									"path": [
+										"api",
+										"orders",
+										"active",
+										"14",
+										""
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "User",
+					"item": [
+						{
+							"name": "Создание нового пользователя",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"username\": \"nik1234\",\r\n    \"email\": \"Nik12313@mail.ru\",\r\n    \"password\": \"123qweasd123\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://127.0.0.1/api/users/",
+									"protocol": "http",
+									"host": [
+										"127",
+										"0",
+										"0",
+										"1"
+									],
+									"path": [
+										"api",
+										"users",
+										""
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Получение токена пользователя",
+							"request": {
+								"auth": {
+									"type": "noauth"
+								},
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"email\": \"bogdanovtimofe@zao.biz\",\r\n    \"password\": \"1234567890\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://127.0.0.1/api/auth/token/login/",
+									"protocol": "http",
+									"host": [
+										"127",
+										"0",
+										"0",
+										"1"
+									],
+									"path": [
+										"api",
+										"auth",
+										"token",
+										"login",
+										""
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Получение данных о пользователе с помощью токена",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Token dc74d92e2678385faf4bc7d945b1c8d80afcb59b",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "http://127.0.0.1/api/users/me",
+									"protocol": "http",
+									"host": [
+										"127",
+										"0",
+										"0",
+										"1"
+									],
+									"path": [
+										"api",
+										"users",
+										"me"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Изменение данных о пользователе с помощью токена",
+							"request": {
+								"method": "PATCH",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Token dc74d92e2678385faf4bc7d945b1c8d80afcb59b",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"email\": \"bogdanovtimofe@zao.biz\",\r\n    \"username\": \"bobilevinnokenti\",\r\n    \"phone\": \"+74278498084\",\r\n    \"scores\": 0,\r\n    \"old_password\": \"defaultpassword\",\r\n    \"new_password\": \"1234567890\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://127.0.0.1/api/users/me",
+									"protocol": "http",
+									"host": [
+										"127",
+										"0",
+										"0",
+										"1"
+									],
+									"path": [
+										"api",
+										"users",
+										"me"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "DeliveryAddress",
+					"item": [
+						{
+							"name": "Получение адресов доставки пользователя по токену",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Token b3fc29c567e35039ad34cd9de53f42b3695ec663",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "http://127.0.0.1/api/deliveryaddress/",
+									"protocol": "http",
+									"host": [
+										"127",
+										"0",
+										"0",
+										"1"
+									],
+									"path": [
+										"api",
+										"deliveryaddress",
+										""
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Добавление адреса доставки пользователя по токену",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Token b3fc29c567e35039ad34cd9de53f42b3695ec663",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"delivery_address\": \"ул. Авроры д 47 кв 10\",\r\n    \"is_default\": false\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://127.0.0.1/api/deliveryaddress/",
+									"protocol": "http",
+									"host": [
+										"127",
+										"0",
+										"0",
+										"1"
+									],
+									"path": [
+										"api",
+										"deliveryaddress",
+										""
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Удаление адреса доставки пользователя",
+							"request": {
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Token b3fc29c567e35039ad34cd9de53f42b3695ec663",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "http://127.0.0.1/api/deliveryaddress/51/",
+									"protocol": "http",
+									"host": [
+										"127",
+										"0",
+										"0",
+										"1"
+									],
+									"path": [
+										"api",
+										"deliveryaddress",
+										"51",
+										""
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Изменение адреса доставки пользователя по токену",
+							"request": {
+								"method": "PATCH",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Token b3fc29c567e35039ad34cd9de53f42b3695ec663",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"is_default\": true\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://127.0.0.1/api/deliveryaddress/51/",
+									"protocol": "http",
+									"host": [
+										"127",
+										"0",
+										"0",
+										"1"
+									],
+									"path": [
+										"api",
+										"deliveryaddress",
+										"51",
+										""
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "Менеджер",
+			"item": [
+				{
+					"name": "User",
+					"item": [
+						{
+							"name": "Получение токена пользователя",
+							"request": {
+								"auth": {
+									"type": "noauth"
+								},
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"email\": \"dobromisl1973@hotmail.com\",\r\n    \"password\": \"defaultpassword\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://127.0.0.1/api/auth/token/login/",
+									"protocol": "http",
+									"host": [
+										"127",
+										"0",
+										"0",
+										"1"
+									],
+									"path": [
+										"api",
+										"auth",
+										"token",
+										"login",
+										""
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Получение данных о пользователе с помощью токена",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Token 0b0a0757d4b635e629205e1fe9e5c8bf3f1054a2",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "http://127.0.0.1/api/users/me",
+									"protocol": "http",
+									"host": [
+										"127",
+										"0",
+										"0",
+										"1"
+									],
+									"path": [
+										"api",
+										"users",
+										"me"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Изменение данных о пользователе с помощью токена",
+							"request": {
+								"method": "PATCH",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Token 0b0a0757d4b635e629205e1fe9e5c8bf3f1054a2",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"email\": \"dobromisl1973@hotmail.com\",\r\n    \"username\": \"nlapin\",\r\n    \"phone\": \"+79083807057\",\r\n    \"scores\": 0,\r\n    \"old_password\": \"defaultpassword\",\r\n    \"new_password\": \"1234567890\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://127.0.0.1/api/users/me",
+									"protocol": "http",
+									"host": [
+										"127",
+										"0",
+										"0",
+										"1"
+									],
+									"path": [
+										"api",
+										"users",
+										"me"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Orders",
+					"item": [
+						{
+							"name": "Получение всего списка заказов",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Token 0b0a0757d4b635e629205e1fe9e5c8bf3f1054a2",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "http://127.0.0.1/api/orders/",
+									"protocol": "http",
+									"host": [
+										"127",
+										"0",
+										"0",
+										"1"
+									],
+									"path": [
+										"api",
+										"orders",
+										""
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Получение определенного заказа",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Token 0b0a0757d4b635e629205e1fe9e5c8bf3f1054a2",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "http://127.0.0.1/api/orders/2",
+									"protocol": "http",
+									"host": [
+										"127",
+										"0",
+										"0",
+										"1"
+									],
+									"path": [
+										"api",
+										"orders",
+										"2"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Изменение данных определенного заказа",
+							"request": {
+								"method": "PATCH",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Token 0b0a0757d4b635e629205e1fe9e5c8bf3f1054a2",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"courier\": 4,\r\n    \"orderdish_set\": [\r\n        {\r\n            \"dish\": 1,\r\n            \"quantity\": 15\r\n        },\r\n        {\r\n            \"dish\": 4,\r\n            \"quantity\": 15\r\n        }\r\n    ],\r\n    \"status\": \"awaiting_courier\",\r\n    \"comment\": \"Абоба\",\r\n    \"delivery_time\": \"2024-02-28T18:45:00\",\r\n    \"address\": 2\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://127.0.0.1/api/orders/2/",
+									"protocol": "http",
+									"host": [
+										"127",
+										"0",
+										"0",
+										"1"
+									],
+									"path": [
+										"api",
+										"orders",
+										"2",
+										""
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Couriers",
+					"item": [
+						{
+							"name": "Получение информации о всех курьерах",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Token 0b0a0757d4b635e629205e1fe9e5c8bf3f1054a2",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "http://127.0.0.1/api/couriers/",
+									"protocol": "http",
+									"host": [
+										"127",
+										"0",
+										"0",
+										"1"
+									],
+									"path": [
+										"api",
+										"couriers",
+										""
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Получение информации о определенном курьере",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Token 0b0a0757d4b635e629205e1fe9e5c8bf3f1054a2",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "http://127.0.0.1/api/couriers/4",
+									"protocol": "http",
+									"host": [
+										"127",
+										"0",
+										"0",
+										"1"
+									],
+									"path": [
+										"api",
+										"couriers",
+										"4"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "Курьер",
+			"item": [
+				{
+					"name": "User",
+					"item": [
+						{
+							"name": "Получение токена пользователя",
+							"request": {
+								"auth": {
+									"type": "noauth"
+								},
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"email\": \"kirillovplaton@hotmail.com\",\r\n    \"password\": \"defaultpassword\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://127.0.0.1/api/auth/token/login/",
+									"protocol": "http",
+									"host": [
+										"127",
+										"0",
+										"0",
+										"1"
+									],
+									"path": [
+										"api",
+										"auth",
+										"token",
+										"login",
+										""
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Получение данных о пользователе с помощью токена",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Token b30fd635a339fecf413258992c28ee33e535c64f",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "http://127.0.0.1/api/users/me",
+									"protocol": "http",
+									"host": [
+										"127",
+										"0",
+										"0",
+										"1"
+									],
+									"path": [
+										"api",
+										"users",
+										"me"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Изменение данных о пользователе с помощью токена",
+							"request": {
+								"method": "PATCH",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Token b30fd635a339fecf413258992c28ee33e535c64f",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"email\": \"kirillovplaton@hotmail.com\",\r\n    \"username\": \"polikarp_98\",\r\n    \"phone\": \"+76934060883\",\r\n    \"scores\": 0,\r\n    \"old_password\": \"defaultpassword\",\r\n    \"new_password\": \"1234567890\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://127.0.0.1/api/users/me",
+									"protocol": "http",
+									"host": [
+										"127",
+										"0",
+										"0",
+										"1"
+									],
+									"path": [
+										"api",
+										"users",
+										"me"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Orders",
+					"item": [
+						{
+							"name": "Получение активных заказов для курьера",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Token b30fd635a339fecf413258992c28ee33e535c64f",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "http://127.0.0.1/api/orders/courier/active",
+									"protocol": "http",
+									"host": [
+										"127",
+										"0",
+										"0",
+										"1"
+									],
+									"path": [
+										"api",
+										"orders",
+										"courier",
+										"active"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Получение истории доставок для курьера",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Token b30fd635a339fecf413258992c28ee33e535c64f",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "http://127.0.0.1/api/orders/courier/history",
+									"protocol": "http",
+									"host": [
+										"127",
+										"0",
+										"0",
+										"1"
+									],
+									"path": [
+										"api",
+										"orders",
+										"courier",
+										"history"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				}
+			]
+		}
+	]
+}
